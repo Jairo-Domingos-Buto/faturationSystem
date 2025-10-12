@@ -1,0 +1,1490 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "API de Faturação",
+        "description": "Documentação automática gerada pelo Swagger para a API de Faturação.",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/register": {
+            "post": {
+                "tags": [
+                    "Autenticação"
+                ],
+                "summary": "Cadastrar novo usuário",
+                "description": "Permite o cadastro de um novo usuário no sistema, independentemente do nível de acesso.",
+                "operationId": "8e4e3cb7b46126f4696379d3c7eeb4ad",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nome_completo",
+                                    "nome_usuario",
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "nome_completo": {
+                                        "type": "string",
+                                        "example": "Inocêncio Bumba"
+                                    },
+                                    "nome_usuario": {
+                                        "type": "string",
+                                        "example": "inocencio"
+                                    },
+                                    "telefone": {
+                                        "type": "string",
+                                        "example": "923000000"
+                                    },
+                                    "funcao": {
+                                        "type": "string",
+                                        "example": "Gestor de Faturação"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "inocencio@gmail.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "123456"
+                                    },
+                                    "nivel_acesso": {
+                                        "type": "string",
+                                        "enum": [
+                                            "admin",
+                                            "gestor",
+                                            "usuario"
+                                        ],
+                                        "example": "usuario"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Usuário cadastrado com sucesso"
+                    },
+                    "422": {
+                        "description": "Erro de validação"
+                    }
+                }
+            }
+        },
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Autenticação"
+                ],
+                "summary": "Login de usuário",
+                "description": "Permite que o usuário entre no sistema e receba um token de autenticação.",
+                "operationId": "222b2625838e3c57e017987f73598fda",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "inocencio@gmail.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "123456"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login efetuado com sucesso"
+                    },
+                    "401": {
+                        "description": "Credenciais inválidas"
+                    }
+                }
+            }
+        },
+        "/api/usuarios": {
+            "get": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Listar todos os usuários cadastrados",
+                "description": "Retorna a lista de todos os usuários do sistema. Apenas acessível com autenticação (token válido).",
+                "operationId": "4c7c74bc96df592cbfb9acb4f08de327",
+                "responses": {
+                    "200": {
+                        "description": "Lista de usuários retornada com sucesso"
+                    },
+                    "401": {
+                        "description": "Não autorizado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "tags": [
+                    "Autenticação"
+                ],
+                "summary": "Logout do usuário",
+                "description": "Finaliza a sessão do usuário autenticado (invalida o token atual).",
+                "operationId": "ad65cbbd4e9f201619eae184a5961a98",
+                "responses": {
+                    "200": {
+                        "description": "Logout realizado com sucesso"
+                    },
+                    "401": {
+                        "description": "Não autorizado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/backup/run": {
+            "post": {
+                "tags": [
+                    "Backup"
+                ],
+                "summary": "Executa o backup do sistema",
+                "description": "Executa o comando de backup do sistema utilizando o Artisan. Retorna uma mensagem de sucesso ou erro.",
+                "operationId": "2f513fc93355ab420857cf9e56e3ecdf",
+                "responses": {
+                    "200": {
+                        "description": "Backup criado com sucesso!",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Backup criado com sucesso!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro ao criar backup.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Erro ao criar backup."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/backup/logs": {
+            "get": {
+                "tags": [
+                    "Backup"
+                ],
+                "summary": "Obtém o arquivo de log do sistema",
+                "description": "Retorna o arquivo de log principal do sistema (laravel.log) se existir, ou uma mensagem informando que não há logs.",
+                "operationId": "a36d0c95695dd6df908db13c5afc4b84",
+                "responses": {
+                    "200": {
+                        "description": "Arquivo de log retornado com sucesso."
+                    },
+                    "404": {
+                        "description": "Nenhum log encontrado.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Nenhum log encontrado."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/categorias": {
+            "get": {
+                "tags": [
+                    "Categorias"
+                ],
+                "summary": "Listar todas as categorias",
+                "operationId": "684188b8d25abcad5e1c8a786226c02b",
+                "responses": {
+                    "200": {
+                        "description": "Lista de categorias retornada com sucesso"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Categorias"
+                ],
+                "summary": "Criar nova categoria",
+                "operationId": "240f085d72cd493a2f869e93edc2c132",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nome",
+                                    "descricao"
+                                ],
+                                "properties": {
+                                    "nome": {
+                                        "type": "string",
+                                        "example": "Eletrônicos"
+                                    },
+                                    "descricao": {
+                                        "type": "string",
+                                        "example": "Produtos eletrônicos em geral"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Categoria criada com sucesso"
+                    }
+                }
+            }
+        },
+        "/api/categorias/{id}": {
+            "get": {
+                "tags": [
+                    "Categorias"
+                ],
+                "summary": "Mostrar categoria específica",
+                "operationId": "0644cd38b2452f7e5c9495574afcba4e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Categoria retornada com sucesso"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Categorias"
+                ],
+                "summary": "Atualizar categoria existente",
+                "operationId": "8124c319ebe2032b571b923486a66a77",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nome": {
+                                        "type": "string",
+                                        "example": "Eletrodomésticos"
+                                    },
+                                    "descricao": {
+                                        "type": "string",
+                                        "example": "Produtos para casa e cozinha"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Categoria atualizada com sucesso"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Categorias"
+                ],
+                "summary": "Remover categoria",
+                "operationId": "266668bb5896ce68b7848fb39bf8107e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Categoria removida com sucesso"
+                    }
+                }
+            }
+        },
+        "/api/clientes": {
+            "get": {
+                "tags": [
+                    "Clientes"
+                ],
+                "summary": "Listar todos os clientes",
+                "operationId": "f8eafbc2e9500413091c7f84a4470b84",
+                "responses": {
+                    "200": {
+                        "description": "Lista de clientes retornada com sucesso"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Clientes"
+                ],
+                "summary": "Criar um novo cliente",
+                "operationId": "2a8a28c7aec782e1af95193a65053e68",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nome"
+                                ],
+                                "properties": {
+                                    "nome": {
+                                        "type": "string",
+                                        "maxLength": 255
+                                    },
+                                    "nif": {
+                                        "type": "string",
+                                        "maxLength": 50
+                                    },
+                                    "provincia": {
+                                        "type": "string",
+                                        "maxLength": 100
+                                    },
+                                    "cidade": {
+                                        "type": "string",
+                                        "maxLength": 100
+                                    },
+                                    "localizacao": {
+                                        "type": "string",
+                                        "maxLength": 255
+                                    },
+                                    "telefone": {
+                                        "type": "string",
+                                        "maxLength": 50
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Cliente criado com sucesso"
+                    }
+                }
+            }
+        },
+        "/api/clientes/{id}": {
+            "get": {
+                "tags": [
+                    "Clientes"
+                ],
+                "summary": "Exibir um cliente específico",
+                "operationId": "7be647ff4c2ab71c5a1f042133b13428",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cliente retornado com sucesso"
+                    },
+                    "404": {
+                        "description": "Cliente não encontrado"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Clientes"
+                ],
+                "summary": "Atualizar um cliente existente",
+                "operationId": "1cc735d14964cb4b25557d546e807a9c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nome": {
+                                        "type": "string",
+                                        "maxLength": 255
+                                    },
+                                    "nif": {
+                                        "type": "string",
+                                        "maxLength": 50
+                                    },
+                                    "provincia": {
+                                        "type": "string",
+                                        "maxLength": 100
+                                    },
+                                    "cidade": {
+                                        "type": "string",
+                                        "maxLength": 100
+                                    },
+                                    "localizacao": {
+                                        "type": "string",
+                                        "maxLength": 255
+                                    },
+                                    "telefone": {
+                                        "type": "string",
+                                        "maxLength": 50
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Cliente atualizado com sucesso"
+                    },
+                    "422": {
+                        "description": "Dados de entrada inválidos"
+                    },
+                    "404": {
+                        "description": "Cliente não encontrado"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Clientes"
+                ],
+                "summary": "Remover um cliente",
+                "operationId": "fae533cf0841c3ece1414287d89ef42b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cliente removido com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Cliente não encontrado"
+                    }
+                }
+            }
+        },
+        "/api/faturas": {
+            "get": {
+                "tags": [
+                    "Faturas"
+                ],
+                "summary": "Lista todas as faturas",
+                "operationId": "8b148ee68128220c5969c7198aeb8878",
+                "responses": {
+                    "200": {
+                        "description": "Lista de faturas retornada com sucesso"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Faturas"
+                ],
+                "summary": "Cria uma nova fatura",
+                "operationId": "18d8ee93ee1feb08768c8396662c1e91",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "cliente_id",
+                                    "data_emissao",
+                                    "valor_total"
+                                ],
+                                "properties": {
+                                    "cliente_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "data_emissao": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-06-01"
+                                    },
+                                    "valor_total": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 100.5
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Fatura criada com sucesso"
+                    },
+                    "422": {
+                        "description": "Erro de validação"
+                    }
+                }
+            }
+        },
+        "/api/faturas/{id}": {
+            "get": {
+                "tags": [
+                    "Faturas"
+                ],
+                "summary": "Exibe uma fatura específica",
+                "operationId": "cb743f4c0c9c0398cd7c6db69c6ea39e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Fatura retornada com sucesso"
+                    },
+                    "404": {
+                        "description": "Fatura não encontrada"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Faturas"
+                ],
+                "summary": "Atualiza uma fatura existente",
+                "operationId": "ef6aa2637d424d5522497b4b1b187981",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "cliente_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "data_emissao": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-06-01"
+                                    },
+                                    "valor_total": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 100.5
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Fatura atualizada com sucesso"
+                    },
+                    "404": {
+                        "description": "Fatura não encontrada"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Faturas"
+                ],
+                "summary": "Remove uma fatura",
+                "operationId": "a2c402b1d4eb5bad2a2deda76bfbd700",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Fatura removida com sucesso"
+                    },
+                    "404": {
+                        "description": "Fatura não encontrada"
+                    }
+                }
+            }
+        },
+        "/api/faturas/{id}/emitir": {
+            "post": {
+                "tags": [
+                    "Faturas"
+                ],
+                "summary": "Emite uma fatura",
+                "operationId": "f60c9f3cacd460577831cede7debcc91",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Fatura emitida com sucesso"
+                    },
+                    "404": {
+                        "description": "Fatura não encontrada"
+                    }
+                }
+            }
+        },
+        "/api/faturas/{id}/anular": {
+            "post": {
+                "tags": [
+                    "Faturas"
+                ],
+                "summary": "Anula uma fatura",
+                "operationId": "c4a8fa6cf9935184ee92c3225e6519ae",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Fatura anulada com sucesso"
+                    },
+                    "404": {
+                        "description": "Fatura não encontrada"
+                    }
+                }
+            }
+        },
+        "/api/faturas/{id}/pdf": {
+            "get": {
+                "tags": [
+                    "Faturas"
+                ],
+                "summary": "Gera o PDF da fatura",
+                "operationId": "6c735aeba2cf712c23e485101e7e230c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Gerador de PDF em desenvolvimento"
+                    },
+                    "404": {
+                        "description": "Fatura não encontrada"
+                    }
+                }
+            }
+        },
+        "/api/faturas/exportar-saft": {
+            "get": {
+                "tags": [
+                    "Faturas"
+                ],
+                "summary": "Exporta as faturas em formato SAFT",
+                "operationId": "6c9dcf0f498917a0d8119f42907690c5",
+                "responses": {
+                    "200": {
+                        "description": "Exportação SAFT em desenvolvimento"
+                    }
+                }
+            }
+        },
+        "/api/fatura-itens": {
+            "get": {
+                "tags": [
+                    "Itens de Fatura"
+                ],
+                "summary": "Listar itens de faturas",
+                "operationId": "c971647584fab83306e50ce58b2ecdc2",
+                "responses": {
+                    "200": {
+                        "description": "Itens listados com sucesso"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Itens de Fatura"
+                ],
+                "summary": "Adicionar item à fatura",
+                "operationId": "dbc2546b0578c016a1044c36e1ef0d55",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "fatura_id",
+                                    "itemable_id",
+                                    "itemable_type",
+                                    "descricao",
+                                    "quantidade",
+                                    "preco_unit"
+                                ],
+                                "properties": {
+                                    "fatura_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "itemable_id": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "itemable_type": {
+                                        "type": "string",
+                                        "example": "App\\\\Models\\\\Produto"
+                                    },
+                                    "descricao": {
+                                        "type": "string",
+                                        "example": "Produto X"
+                                    },
+                                    "quantidade": {
+                                        "type": "number",
+                                        "example": 2
+                                    },
+                                    "preco_unit": {
+                                        "type": "number",
+                                        "example": 5000
+                                    },
+                                    "desconto": {
+                                        "type": "number",
+                                        "example": 0
+                                    },
+                                    "taxa_imposto": {
+                                        "type": "number",
+                                        "example": 0.18
+                                    },
+                                    "total_item": {
+                                        "type": "number",
+                                        "example": 10000
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Item adicionado com sucesso"
+                    }
+                }
+            }
+        },
+        "/api/fatura-itens/{id}": {
+            "get": {
+                "tags": [
+                    "Itens de Fatura"
+                ],
+                "summary": "Ver item específico",
+                "operationId": "b832ec8a76265e0c0d7c0e73cdb423f9",
+                "responses": {
+                    "200": {
+                        "description": "Item retornado com sucesso"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Itens de Fatura"
+                ],
+                "summary": "Atualizar item da fatura",
+                "operationId": "77b2d490befb972024050e50a3b6da1f",
+                "responses": {
+                    "200": {
+                        "description": "Item atualizado com sucesso"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Itens de Fatura"
+                ],
+                "summary": "Remover item da fatura",
+                "operationId": "cbe7b64a78a1e19aa0471502c8ee355f",
+                "responses": {
+                    "200": {
+                        "description": "Item removido com sucesso"
+                    }
+                }
+            }
+        },
+        "/api/fornecedores": {
+            "get": {
+                "tags": [
+                    "Fornecedores"
+                ],
+                "summary": "Listar todos os fornecedores",
+                "operationId": "a1839fece77c60e9e96e216c09e77641",
+                "responses": {
+                    "200": {
+                        "description": "Lista de fornecedores retornada"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Fornecedores"
+                ],
+                "summary": "Criar novo fornecedor",
+                "operationId": "9a6ad64039a9c27f8bf6541a1f334a9a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nome",
+                                    "nif",
+                                    "email",
+                                    "telefone",
+                                    "provincia",
+                                    "cidade",
+                                    "localizacao"
+                                ],
+                                "properties": {
+                                    "nome": {
+                                        "type": "string",
+                                        "example": "Fornecedor ABC"
+                                    },
+                                    "nif": {
+                                        "type": "string",
+                                        "example": "500100000"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "abc@email.com"
+                                    },
+                                    "telefone": {
+                                        "type": "string",
+                                        "example": "+244923000000"
+                                    },
+                                    "provincia": {
+                                        "type": "string",
+                                        "example": "Luanda"
+                                    },
+                                    "cidade": {
+                                        "type": "string",
+                                        "example": "Luanda"
+                                    },
+                                    "localizacao": {
+                                        "type": "string",
+                                        "example": "Rua 1, Bairro X"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Fornecedor criado com sucesso"
+                    }
+                }
+            }
+        },
+        "/api/fornecedores/{id}": {
+            "get": {
+                "tags": [
+                    "Fornecedores"
+                ],
+                "summary": "Mostrar um fornecedor específico",
+                "operationId": "16460009376fc1de0dd931ce319f07a3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Fornecedor retornado com sucesso"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Fornecedores"
+                ],
+                "summary": "Atualizar fornecedor",
+                "operationId": "44b6456df117348f9efef8d8d4e76de5",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Fornecedor atualizado com sucesso"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Fornecedores"
+                ],
+                "summary": "Remover fornecedor",
+                "operationId": "50ee28e7a365f4702945dee6de07976a",
+                "responses": {
+                    "200": {
+                        "description": "Fornecedor removido com sucesso"
+                    }
+                }
+            }
+        },
+        "/api/impostos": {
+            "get": {
+                "tags": [
+                    "Impostos"
+                ],
+                "summary": "Lista todos os impostos",
+                "operationId": "c7c0fc4f36950ad9640c60f4141e61bd",
+                "responses": {
+                    "200": {
+                        "description": "Lista de impostos retornada com sucesso"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Impostos"
+                ],
+                "summary": "Cria um novo imposto",
+                "operationId": "7f57fda3ce548852a49ad4aca9e80b2a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "descricao",
+                                    "taxa",
+                                    "codigo"
+                                ],
+                                "properties": {
+                                    "descricao": {
+                                        "type": "string",
+                                        "example": "Imposto sobre valor acrescentado"
+                                    },
+                                    "taxa": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "maximum": 100,
+                                        "minimum": 0,
+                                        "example": 17
+                                    },
+                                    "codigo": {
+                                        "type": "string",
+                                        "maxLength": 50,
+                                        "example": "IVA"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Imposto criado com sucesso"
+                    },
+                    "422": {
+                        "description": "Erro de validação"
+                    }
+                }
+            }
+        },
+        "/api/impostos/{id}": {
+            "get": {
+                "tags": [
+                    "Impostos"
+                ],
+                "summary": "Exibe um imposto específico",
+                "operationId": "72e1dc328e11cdd2fdf5dcc9f408332d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Imposto retornado com sucesso"
+                    },
+                    "404": {
+                        "description": "Imposto não encontrado"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Impostos"
+                ],
+                "summary": "Atualiza um imposto existente",
+                "operationId": "0a1904e0e5210aa47f56626b88fa0ff4",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nome": {
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "IVA"
+                                    },
+                                    "percentagem": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "maximum": 100,
+                                        "minimum": 0,
+                                        "example": 17
+                                    },
+                                    "descricao": {
+                                        "type": "string",
+                                        "example": "Imposto sobre valor acrescentado",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Imposto atualizado com sucesso"
+                    },
+                    "404": {
+                        "description": "Imposto não encontrado"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Impostos"
+                ],
+                "summary": "Remove um imposto",
+                "operationId": "d9a824a697037ab5955d545039ca6286",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Imposto removido com sucesso"
+                    },
+                    "404": {
+                        "description": "Imposto não encontrado"
+                    }
+                }
+            }
+        },
+        "/api/produtos": {
+            "get": {
+                "tags": [
+                    "Produtos"
+                ],
+                "summary": "Listar produtos",
+                "operationId": "68de3067634ab4598e5d2fe1adc9b3da",
+                "responses": {
+                    "200": {
+                        "description": "Lista de produtos retornada"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Produtos"
+                ],
+                "summary": "Criar produto",
+                "operationId": "7c186445d191eabc09f48da5cb16782f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "descricao",
+                                    "categoria_id",
+                                    "fornecedor_id",
+                                    "codigo_barras",
+                                    "preco_compra",
+                                    "preco_venda",
+                                    "data_validade",
+                                    "estoque"
+                                ],
+                                "properties": {
+                                    "descricao": {
+                                        "type": "string",
+                                        "example": "Produto exemplo"
+                                    },
+                                    "categoria_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "fornecedor_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "codigo_barras": {
+                                        "type": "string",
+                                        "example": "1234567890123"
+                                    },
+                                    "preco_compra": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": "100.50"
+                                    },
+                                    "preco_venda": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": "150.75"
+                                    },
+                                    "data_validade": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-12-31"
+                                    },
+                                    "estoque": {
+                                        "type": "integer",
+                                        "example": 50
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Produto criado com sucesso"
+                    }
+                }
+            }
+        },
+        "/api/produtos/{id}": {
+            "get": {
+                "tags": [
+                    "Produtos"
+                ],
+                "summary": "Mostrar produto específico",
+                "operationId": "358d7f18152ccef1268ce3edd2bb7f6b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Produto retornado com sucesso"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Produtos"
+                ],
+                "summary": "Atualizar produto",
+                "operationId": "7b8dd7116a9918178331971ec5cca4b1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "descricao": {
+                                        "type": "string",
+                                        "example": "Produto atualizado"
+                                    },
+                                    "preco_venda": {
+                                        "type": "number",
+                                        "example": "250.75"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Produto atualizado com sucesso"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Produtos"
+                ],
+                "summary": "Remover produto",
+                "operationId": "3d951d710d523eca6d888cbf7f3c698c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Produto removido com sucesso"
+                    }
+                }
+            }
+        },
+        "/api/saft/exportar": {
+            "get": {
+                "tags": [
+                    "Exportação SAFT"
+                ],
+                "summary": "Exportar dados SAFT",
+                "operationId": "31ddfb756d553cc3802afa9b0028dd66",
+                "responses": {
+                    "200": {
+                        "description": "Ficheiro SAFT gerado com sucesso"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Categorias",
+            "description": "Gestão de categorias no sistema de faturação"
+        },
+        {
+            "name": "Clientes",
+            "description": "Gestão de clientes do sistema de faturação"
+        },
+        {
+            "name": "Itens de Fatura",
+            "description": "Gestão dos itens dentro de uma fatura"
+        },
+        {
+            "name": "Fornecedores",
+            "description": "Gestão de fornecedores no sistema de faturação"
+        },
+        {
+            "name": "Produtos",
+            "description": "Gestão de produtos no sistema de faturação"
+        },
+        {
+            "name": "Exportação SAFT",
+            "description": "Geração e exportação de ficheiros SAFT"
+        },
+        {
+            "name": "Autenticação",
+            "description": "Autenticação"
+        },
+        {
+            "name": "Usuários",
+            "description": "Usuários"
+        },
+        {
+            "name": "Backup",
+            "description": "Backup"
+        },
+        {
+            "name": "Faturas",
+            "description": "Faturas"
+        },
+        {
+            "name": "Impostos",
+            "description": "Impostos"
+        }
+    ]
+}

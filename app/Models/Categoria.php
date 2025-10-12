@@ -10,7 +10,7 @@ class Categoria extends Model
 
     protected $fillable = [
         'nome',
-        'descricao',
+        'descricao'
     ];
 
     protected $dates = [

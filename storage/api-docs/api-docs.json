@@ -6,6 +6,163 @@
         "version": "1.0.0"
     },
     "paths": {
+        "/api/register": {
+            "post": {
+                "tags": [
+                    "Autenticação"
+                ],
+                "summary": "Cadastrar novo usuário",
+                "description": "Permite o cadastro de um novo usuário no sistema, independentemente do nível de acesso.",
+                "operationId": "8e4e3cb7b46126f4696379d3c7eeb4ad",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nome_completo",
+                                    "nome_usuario",
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "nome_completo": {
+                                        "type": "string",
+                                        "example": "Inocêncio Bumba"
+                                    },
+                                    "nome_usuario": {
+                                        "type": "string",
+                                        "example": "inocencio"
+                                    },
+                                    "telefone": {
+                                        "type": "string",
+                                        "example": "923000000"
+                                    },
+                                    "funcao": {
+                                        "type": "string",
+                                        "example": "Gestor de Faturação"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "inocencio@gmail.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "123456"
+                                    },
+                                    "nivel_acesso": {
+                                        "type": "string",
+                                        "enum": [
+                                            "admin",
+                                            "gestor",
+                                            "usuario"
+                                        ],
+                                        "example": "usuario"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Usuário cadastrado com sucesso"
+                    },
+                    "422": {
+                        "description": "Erro de validação"
+                    }
+                }
+            }
+        },
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Autenticação"
+                ],
+                "summary": "Login de usuário",
+                "description": "Permite que o usuário entre no sistema e receba um token de autenticação.",
+                "operationId": "222b2625838e3c57e017987f73598fda",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "inocencio@gmail.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "123456"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login efetuado com sucesso"
+                    },
+                    "401": {
+                        "description": "Credenciais inválidas"
+                    }
+                }
+            }
+        },
+        "/api/usuarios": {
+            "get": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Listar todos os usuários cadastrados",
+                "description": "Retorna a lista de todos os usuários do sistema. Apenas acessível com autenticação (token válido).",
+                "operationId": "4c7c74bc96df592cbfb9acb4f08de327",
+                "responses": {
+                    "200": {
+                        "description": "Lista de usuários retornada com sucesso"
+                    },
+                    "401": {
+                        "description": "Não autorizado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "tags": [
+                    "Autenticação"
+                ],
+                "summary": "Logout do usuário",
+                "description": "Finaliza a sessão do usuário autenticado (invalida o token atual).",
+                "operationId": "ad65cbbd4e9f201619eae184a5961a98",
+                "responses": {
+                    "200": {
+                        "description": "Logout realizado com sucesso"
+                    },
+                    "401": {
+                        "description": "Não autorizado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/backup/run": {
             "post": {
                 "tags": [
@@ -1275,6 +1432,15 @@
             }
         }
     },
+    "components": {
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
     "tags": [
         {
             "name": "Categorias",
@@ -1299,6 +1465,14 @@
         {
             "name": "Exportação SAFT",
             "description": "Geração e exportação de ficheiros SAFT"
+        },
+        {
+            "name": "Autenticação",
+            "description": "Autenticação"
+        },
+        {
+            "name": "Usuários",
+            "description": "Usuários"
         },
         {
             "name": "Backup",

@@ -13,7 +13,14 @@ use App\Http\Controllers\Controller;
  *     version="1.0.0",
  *     description="Documentação automática gerada pelo Swagger para a API de Faturação."
  * )
- *
+ * 
+ *  * @OA\SecurityScheme(
+ *     type="http",
+ *     securityScheme="sanctum",
+ *     scheme="bearer",
+ *     bearerFormat="JWT"
+ * )
+ * 
  * @OA\Tag(
  *     name="Clientes",
  *     description="Gestão de clientes do sistema de faturação"

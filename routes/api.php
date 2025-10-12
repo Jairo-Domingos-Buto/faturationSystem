@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\FaturaItemController;
 use App\Http\Controllers\Api\ReciboController;
 use App\Http\Controllers\Api\SaftExportController;
 use App\Http\Controllers\Api\CategoriaController;
+use App\Http\Controllers\Api\AuthController;
 
 
 
@@ -57,3 +58,14 @@ Route::get('saft', [SaftExportController::class, 'index']);
 Route::post('saft/export', [SaftExportController::class, 'export']);
 Route::get('saft/download/{filename}', [SaftExportController::class, 'download'])->where('filename', '.*');
 Route::delete('saft/{filename}', [SaftExportController::class, 'destroy'])->where('filename', '.*');
+
+
+
+Route::post('register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/usuarios', [AuthController::class, 'index']); // 🔹 Novo GET de listagem
+    Route::post('/logout', [AuthController::class, 'logout']);
+});
+

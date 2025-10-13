@@ -241,19 +241,19 @@
         "/api/categorias": {
             "get": {
                 "tags": [
-                    "Categorias"
+                    "Categoria"
                 ],
                 "summary": "Listar todas as categorias",
                 "operationId": "684188b8d25abcad5e1c8a786226c02b",
                 "responses": {
                     "200": {
-                        "description": "Lista de categorias retornada com sucesso"
+                        "description": "Lista de categorias"
                     }
                 }
             },
             "post": {
                 "tags": [
-                    "Categorias"
+                    "Categoria"
                 ],
                 "summary": "Criar nova categoria",
                 "operationId": "240f085d72cd493a2f869e93edc2c132",
@@ -269,11 +269,11 @@
                                 "properties": {
                                     "nome": {
                                         "type": "string",
-                                        "example": "Eletrônicos"
+                                        "example": "Informática"
                                     },
                                     "descricao": {
                                         "type": "string",
-                                        "example": "Produtos eletrônicos em geral"
+                                        "example": "Produtos eletrônicos e acessórios."
                                     }
                                 },
                                 "type": "object"
@@ -291,62 +291,25 @@
         "/api/categorias/{id}": {
             "get": {
                 "tags": [
-                    "Categorias"
+                    "Categoria"
                 ],
                 "summary": "Mostrar categoria específica",
                 "operationId": "0644cd38b2452f7e5c9495574afcba4e",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "Categoria retornada com sucesso"
+                    },
+                    "404": {
+                        "description": "Categoria não encontrada"
                     }
                 }
             },
             "put": {
                 "tags": [
-                    "Categorias"
+                    "Categoria"
                 ],
                 "summary": "Atualizar categoria existente",
                 "operationId": "8124c319ebe2032b571b923486a66a77",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "nome": {
-                                        "type": "string",
-                                        "example": "Eletrodomésticos"
-                                    },
-                                    "descricao": {
-                                        "type": "string",
-                                        "example": "Produtos para casa e cozinha"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
                 "responses": {
                     "200": {
                         "description": "Categoria atualizada com sucesso"
@@ -355,23 +318,13 @@
             },
             "delete": {
                 "tags": [
-                    "Categorias"
+                    "Categoria"
                 ],
                 "summary": "Remover categoria",
                 "operationId": "266668bb5896ce68b7848fb39bf8107e",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
-                        "description": "Categoria removida com sucesso"
+                        "description": "Categoria excluída com sucesso"
                     }
                 }
             }
@@ -1613,8 +1566,8 @@
     },
     "tags": [
         {
-            "name": "Categorias",
-            "description": "Gestão de categorias no sistema de faturação"
+            "name": "Categoria",
+            "description": "Endpoints para gestão de categorias de produtos"
         },
         {
             "name": "Clientes",

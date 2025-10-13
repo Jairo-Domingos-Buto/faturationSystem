@@ -8,8 +8,8 @@ use Illuminate\Http\Request;
 
 /**
  * @OA\Tag(
- *     name="Categorias",
- *     description="Gestão de categorias no sistema de faturação"
+ *     name="Categoria",
+ *     description="Endpoints para gestão de categorias de produtos"
  * )
  */
 class CategoriaController extends Controller
@@ -17,9 +17,9 @@ class CategoriaController extends Controller
     /**
      * @OA\Get(
      *     path="/api/categorias",
-     *     tags={"Categorias"},
      *     summary="Listar todas as categorias",
-     *     @OA\Response(response=200, description="Lista de categorias retornada com sucesso")
+     *     tags={"Categoria"},
+     *     @OA\Response(response=200, description="Lista de categorias")
      * )
      */
     public function index()
@@ -30,14 +30,14 @@ class CategoriaController extends Controller
     /**
      * @OA\Post(
      *     path="/api/categorias",
-     *     tags={"Categorias"},
      *     summary="Criar nova categoria",
+     *     tags={"Categoria"},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"nome", "descricao"},
-     *             @OA\Property(property="nome", type="string", example="Eletrônicos"),
-     *             @OA\Property(property="descricao", type="string", example="Produtos eletrônicos em geral")
+     *             required={"nome","descricao"},
+     *             @OA\Property(property="nome", type="string", example="Informática"),
+     *             @OA\Property(property="descricao", type="string", example="Produtos eletrônicos e acessórios.")
      *         )
      *     ),
      *     @OA\Response(response=201, description="Categoria criada com sucesso")
@@ -47,7 +47,7 @@ class CategoriaController extends Controller
     {
         $validated = $request->validate([
             'nome' => 'required|string|max:255',
-            'descricao' => 'nullable|string|max:255',
+            'descricao' => 'required|string|max:255',
         ]);
 
         $categoria = Categoria::create($validated);
@@ -57,35 +57,36 @@ class CategoriaController extends Controller
     /**
      * @OA\Get(
      *     path="/api/categorias/{id}",
-     *     tags={"Categorias"},
      *     summary="Mostrar categoria específica",
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Response(response=200, description="Categoria retornada com sucesso")
+     *     tags={"Categoria"},
+     *     @OA\Response(response=200, description="Categoria retornada com sucesso"),
+     *     @OA\Response(response=404, description="Categoria não encontrada")
      * )
      */
-    public function show(Categoria $categoria)
+    public function show($id)
     {
+        $categoria = Categoria::find($id);
+        if (!$categoria) {
+            return response()->json(['message' => 'Categoria não encontrada'], 404);
+        }
         return response()->json($categoria, 200);
     }
 
     /**
      * @OA\Put(
      *     path="/api/categorias/{id}",
-     *     tags={"Categorias"},
      *     summary="Atualizar categoria existente",
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             @OA\Property(property="nome", type="string", example="Eletrodomésticos"),
-     *             @OA\Property(property="descricao", type="string", example="Produtos para casa e cozinha")
-     *         )
-     *     ),
+     *     tags={"Categoria"},
      *     @OA\Response(response=200, description="Categoria atualizada com sucesso")
      * )
      */
-    public function update(Request $request, Categoria $categoria)
+    public function update(Request $request, $id)
     {
+        $categoria = Categoria::find($id);
+        if (!$categoria) {
+            return response()->json(['message' => 'Categoria não encontrada'], 404);
+        }
+
         $validated = $request->validate([
             'nome' => 'required|string|max:255',
             'descricao' => 'nullable|string|max:255',
@@ -98,15 +99,19 @@ class CategoriaController extends Controller
     /**
      * @OA\Delete(
      *     path="/api/categorias/{id}",
-     *     tags={"Categorias"},
      *     summary="Remover categoria",
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Response(response=200, description="Categoria removida com sucesso")
+     *     tags={"Categoria"},
+     *     @OA\Response(response=200, description="Categoria excluída com sucesso")
      * )
      */
-    public function destroy(Categoria $categoria)
+    public function destroy($id)
     {
+        $categoria = Categoria::find($id);
+        if (!$categoria) {
+            return response()->json(['message' => 'Categoria não encontrada'], 404);
+        }
+
         $categoria->delete();
-        return response()->json(['message' => 'Categoria removida com sucesso'], 200);
+        return response()->json(['message' => 'Categoria excluída com sucesso'], 200);
     }
 }

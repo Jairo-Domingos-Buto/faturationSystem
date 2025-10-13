@@ -5,17 +5,17 @@
     <div class="p-6 space-y-6">
         <div class="d-flex justify-content-between align-items-center mb-3"
             style="background-color: #dad6d6e8; height: 70px; width: 100%; border-radius: 10px;">
-
-            <button type="button" class="btn btn" data-bs-toggle="modal" data-bs-target="#novoClienteModal"
+            <button type="button" class="btn btn" data-bs-toggle="modal" data-bs-target="#novoFornecedorModal"
                 style="margin-left: 20px; background-color: #6C6FFF; color:white;">
                 Novo
             </button>
-            <button type="button" class="btn btn" data-bs-toggle="modal" data-bs-target="#novoClienteModal"
-                style="margin-right: 20px; background-color: #6C6FFF; color:white;">
+            <button type="button" class="btn btn" style="margin-right: 20px; background-color: #6C6FFF; color:white;">
                 Pesquisar
             </button>
         </div>
     </div>
+
+
 
     <div class="card">
         <table class="table table-hover">

@@ -31,7 +31,7 @@ Route::apiResource('servicos', ServicoController::class);
 
 // Impostos e Motivos de Isenção
 Route::apiResource('impostos', ImpostoController::class);
-Route::apiResource('motivos-isencao', MotivoIsencaoController::class);
+Route::apiResource('motivo_isencaos', MotivoIsencaoController::class);
 
 // Faturação
 Route::apiResource('faturas', FaturaController::class);
@@ -68,4 +68,3 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/usuarios', [AuthController::class, 'index']); // 🔹 Novo GET de listagem
     Route::post('/logout', [AuthController::class, 'logout']);
 });
-

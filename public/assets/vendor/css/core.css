@@ -15235,6 +15235,7 @@ html:not(.layout-menu-fixed) .menu-inner-shadow {
   flex: 1 1 auto;
   align-items: stretch;
   padding: 0;
+  background-color: #E2E3E5;
 }
 .layout-without-menu .layout-page {
   padding-right: 0 !important;

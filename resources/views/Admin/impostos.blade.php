@@ -4,76 +4,48 @@
 <main class="flex-1 overflow-auto">
     <div class="p-6 space-y-6">
         <div class="d-flex justify-content-between align-items-center mb-3"
-            style="background-color: #E2E3E5; height: 70px; width: 100%; border-radius: 10px;">
-
-            <button type="button" class="btn btn" data-bs-toggle="modal" data-bs-target="#novoClienteModal"
+            style="background-color: #dad6d6e8; height: 70px; width: 100%; border-radius: 10px;">
+            <button type="button" class="btn btn" data-bs-toggle="modal" data-bs-target="#novoImpostoModal"
                 style="margin-left: 20px; background-color: #6C6FFF; color:white;">
                 Novo
             </button>
-            <button type="button" class="btn btn" data-bs-toggle="modal" data-bs-target="#novoClienteModal"
-                style="margin-right: 20px; background-color: #6C6FFF; color:white;">
+            <button type="button" class="btn btn" style="margin-right: 20px; background-color: #6C6FFF; color:white;">
                 Pesquisar
             </button>
         </div>
-
-
     </div>
-    <!-- Hoverable Table rows -->
-    <div class=" card">
 
-
+    <!-- Tabela de Impostos -->
+    <div class="card">
         <table class="table table-hover">
             <thead class='p-1'>
                 <tr>
-                    <th>NOME </th>
-                    <th>NIF</th>
-                    <th>PROVÍNCIA</th>
-                    <th>CIDADE</th>
-                    <th>TELEFONE</th>
+                    <th>DESCRIÇÃO</th>
+                    <th>TAXA (%)</th>
+                    <th>CÓDIGO</th>
                     <th>AÇÕES</th>
                 </tr>
             </thead>
-            <tbody class="table-border-bottom-0">
-
+            <tbody class="table-border-bottom-0" id="tabela-impostos">
                 <tr>
-                    <td><i class="fab fa-angular fa-lg text-danger me-3"></i> <strong>Inocencio</strong></td>
-                    <td>04934034034LA049</td>
-                    <td>Luanda</td>
-                    <td>Luanda</td>
-                    <td>934543562</td>
-                    <td>
-                        <div class="dropdown">
-                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                                <i class="bx bx-dots-vertical-rounded"></i>
-                            </button>
-                            <div class="dropdown-menu">
-                                <a onclick="openModal()" class="dropdown-item" href="javascript:void(0);"><i
-                                        class="bx bx-edit-alt me-1"></i> Edit</a>
-                                <a class="dropdown-item" href="javascript:void(0);"><i class="bx bx-trash me-1"></i>
-                                    Delete</a>
-                            </div>
-                        </div>
-                    </td>
+                    <td colspan="4" class="text-center text-muted">A carregar impostos...</td>
                 </tr>
             </tbody>
         </table>
     </div>
-    </div>
-    <!--/ Hoverable Table rows -->
 
-    <!-- Modal Novo Cliente -->
-    <div class="modal fade" id="novoClienteModal" tabindex="-1" aria-labelledby="novoClienteModalLabel"
+    <!-- Modal Novo/Editar Imposto -->
+    <div class="modal fade" id="novoImpostoModal" tabindex="-1" aria-labelledby="novoImpostoModalLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-md">
             <div class="modal-content shadow-lg border-0 rounded-3">
                 <form id="imposto-form" enctype="multipart/form-data" method="POST">
                     @csrf
                     <div class="modal-header text-white" style="background-color: #6C6FFF;">
-                        <h5 class="modal-title text-white fw-bold" id="novoClienteModalLabel">
+                        <h5 class="modal-title text-white fw-bold" id="novoImpostoModalLabel">
                             <i class="bx bx-calculator me-2"></i> Cadastro de Imposto
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-
                     </div>
 
                     <div class="modal-body bg-light">
@@ -92,7 +64,7 @@
                                 <div class="input-group">
                                     <span class="input-group-text bg-white"><i class="bx bx-percent"></i></span>
                                     <input type="number" class="form-control" id="taxa" name="taxa" placeholder="Ex: 14"
-                                        step="0.01" required>
+                                        step="0.01" min="0" required>
                                 </div>
                             </div>
 
@@ -119,6 +91,6 @@
             </div>
         </div>
     </div>
-
-    </script>
-    @endsection
+</main>
+<script src="{{ asset('../js/Admin/impostos.js') }}"></script>
+@endsection

@@ -40,3 +40,6 @@ Route::get('/impostos', function () {
 Route::get('/isencao', function () {
     return view('Admin/isencao');
 });
+Route::get('/categorias', function () {
+    return view('Admin/categorias');
+});

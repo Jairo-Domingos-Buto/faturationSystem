@@ -76,9 +76,9 @@ class ImpostoController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             @OA\Property(property="nome", type="string", maxLength=255, example="IVA"),
-     *             @OA\Property(property="percentagem", type="number", format="float", minimum=0, maximum=100, example=17),
-     *             @OA\Property(property="descricao", type="string", nullable=true, example="Imposto sobre valor acrescentado")
+     *             @OA\Property(property="descricao", type="string", maxLength=255, example="IVA"),
+     *             @OA\Property(property="taxa", type="number", format="float", minimum=0, maximum=100, example=17),
+     *             @OA\Property(property="codigo", type="string", nullable=true, example="Imposto sobre valor acrescentado")
      *         )
      *     ),
      *     @OA\Response(
@@ -119,9 +119,9 @@ class ImpostoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nome' => 'required|string|max:255',
-            'percentagem' => 'required|numeric|min:0|max:100',
-            'descricao' => 'nullable|string',
+            'descricao' => 'required|string|max:255',
+            'taxa' => 'required|numeric|min:0|max:100',
+            'codigo' => 'nullable|string',
         ]);
 
         $imposto = Imposto::create($request->all());

@@ -11,6 +11,8 @@
     <title>Faturation System</title>
 
     <meta name="description" content="" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="../assets/img/favicon/favicon.ico" />
@@ -160,6 +162,12 @@
 
                     <!-- Produtos -->
                     <li class="menu-item">
+                        <a href="/categoria" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-package"></i>
+                            <div data-i18n="Analytics">Categoria</div>
+                        </a>
+                    </li>
+                    <li class="menu-item">
                         <a href="/produtos" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-package"></i>
                             <div data-i18n="Analytics">Produtos</div>
@@ -212,7 +220,7 @@
                 <!-- Navbar -->
 
                 <nav class="layout-navbar navbar navbar-expand-xl align-items-center" id="layout-navbar"
-                    style="width: 100%; margin-top: 0; background-color: #E2E3E5;">
+                    style="width: 100%; margin-top: 0;">
 
                     <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
                         <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">

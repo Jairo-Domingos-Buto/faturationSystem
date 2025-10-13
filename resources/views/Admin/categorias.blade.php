@@ -118,6 +118,6 @@
         </div>
     </div>
 </main>
-<script src="{{ asset('../js/Admin/clientes.js') }}"></script>
+<script src="{{ asset('../js/Admin/categorias.js') }}"></script>
 
 @endsection

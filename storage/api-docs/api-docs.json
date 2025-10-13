@@ -1189,19 +1189,19 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "nome": {
+                                    "descricao": {
                                         "type": "string",
                                         "maxLength": 255,
                                         "example": "IVA"
                                     },
-                                    "percentagem": {
+                                    "taxa": {
                                         "type": "number",
                                         "format": "float",
                                         "maximum": 100,
                                         "minimum": 0,
                                         "example": 17
                                     },
-                                    "descricao": {
+                                    "codigo": {
                                         "type": "string",
                                         "example": "Imposto sobre valor acrescentado",
                                         "nullable": true
@@ -1243,6 +1243,176 @@
                     },
                     "404": {
                         "description": "Imposto não encontrado"
+                    }
+                }
+            }
+        },
+        "/api/motivo_isencaos": {
+            "get": {
+                "tags": [
+                    "MotivoIsencao"
+                ],
+                "summary": "Listar todos os motivos de isenção",
+                "description": "Retorna a lista completa dos motivos de isenção cadastrados no sistema.",
+                "operationId": "d806c043478ec5cf7a6ad8e39493964f",
+                "responses": {
+                    "200": {
+                        "description": "Lista de motivos de isenção retornada com sucesso"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "MotivoIsencao"
+                ],
+                "summary": "Criar novo motivo de isenção",
+                "description": "Cadastra um novo motivo de isenção no sistema.",
+                "operationId": "1b75265b2dc17b27925922786e3bbafb",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "codigo",
+                                    "razao",
+                                    "descricao"
+                                ],
+                                "properties": {
+                                    "codigo": {
+                                        "type": "string",
+                                        "maxLength": 10,
+                                        "example": "M02"
+                                    },
+                                    "razao": {
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "Isento por doação"
+                                    },
+                                    "descricao": {
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "Aplica-se a doações de caridade."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Motivo de isenção criado com sucesso"
+                    },
+                    "422": {
+                        "description": "Erro de validação dos campos"
+                    }
+                }
+            }
+        },
+        "/api/motivo_isencaos/{id}": {
+            "get": {
+                "tags": [
+                    "MotivoIsencao"
+                ],
+                "summary": "Mostrar motivo de isenção específico",
+                "description": "Retorna os detalhes de um motivo de isenção existente através do ID informado.",
+                "operationId": "074b183d0b077c6ecf9062064f4b098e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID do motivo de isenção",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Motivo de isenção não encontrado"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "MotivoIsencao"
+                ],
+                "summary": "Atualizar motivo de isenção existente",
+                "description": "Atualiza os dados de um motivo de isenção já cadastrado.",
+                "operationId": "daaecbac2fb0b3f40cafe05bc2c0bc1b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID do motivo de isenção a ser atualizado",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "codigo": {
+                                        "type": "string",
+                                        "example": "M03"
+                                    },
+                                    "razao": {
+                                        "type": "string",
+                                        "example": "Isento por exportação"
+                                    },
+                                    "descricao": {
+                                        "type": "string",
+                                        "example": "Aplica-se a exportações internacionais."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Motivo de isenção atualizado com sucesso"
+                    },
+                    "404": {
+                        "description": "Motivo de isenção não encontrado"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "MotivoIsencao"
+                ],
+                "summary": "Remover motivo de isenção",
+                "description": "Exclui um motivo de isenção existente através do ID informado.",
+                "operationId": "ec63840039552f581df61070cef6ffba",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID do motivo de isenção a ser excluído",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Motivo de isenção removido com sucesso"
+                    },
+                    "404": {
+                        "description": "Motivo de isenção não encontrado"
                     }
                 }
             }
@@ -1457,6 +1627,10 @@
         {
             "name": "Fornecedores",
             "description": "Gestão de fornecedores no sistema de faturação"
+        },
+        {
+            "name": "MotivoIsencao",
+            "description": "Endpoints para gestão de Motivos de Isenção"
         },
         {
             "name": "Produtos",

@@ -43,3 +43,17 @@ Route::get('/isencao', function () {
 Route::get('/categoria', function () {
     return view('Admin/categoria');
 });
+/* Faturas e pontos de venda */
+
+Route::get('/faturas', function(){
+  return view('Admin/fatura');
+});
+Route::get('/faturas-recibo', function () {
+  return view('Admin/fatura-recibo');
+});
+Route::get('/recibos', function () {
+  return view('Admin/recibo');
+});
+Route::get('/pov', function () {
+  return view('Admin/pov');
+});

@@ -33,10 +33,10 @@
                     <span class='font-medium text-[15px]'>Fornecedores</span><span class="p-2 rounded-lg bg-[#E7F6EC]">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                             fill="none" stroke="green" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="w-4 h-4 lucide lucide-truck text-accent" data-lov-id="src/pages/Dashboard.tsx:97:18"
-                            data-lov-name="stat.icon" data-component-path="src/pages/Dashboard.tsx" data-component-line="97"
-                            data-component-file="Dashboard.tsx" data-component-name="stat.icon"
-                            data-component-content="%7B%7D">
+                            class="w-4 h-4 lucide lucide-truck text-accent"
+                           
+                           
+                           >
                             <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"></path>
                             <path d="M15 18H9"></path>
                             <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14">
@@ -56,10 +56,10 @@
                     <span class='font-medium text-[15px]'>Produtos</span><span class="p-2 rounded-lg bg-[#e6f6fd]">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                             fill="none" stroke="blue" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="w-4 h-4 lucide lucide-package text-info" data-lov-id="src/pages/Dashboard.tsx:97:18"
-                            data-lov-name="stat.icon" data-component-path="src/pages/Dashboard.tsx" data-component-line="97"
-                            data-component-file="Dashboard.tsx" data-component-name="stat.icon"
-                            data-component-content="%7B%7D">
+                            class="w-4 h-4 lucide lucide-package text-info"
+                           
+                           
+                           >
                             <path
                                 d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z">
                             </path>
@@ -80,10 +80,10 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                             fill="none" stroke="orange" stroke-width="2" stroke-linecap="round"
                             stroke-linejoin="round" class="w-4 h-4 lucide lucide-wrench text-warning"
-                            data-lov-id="src/pages/Dashboard.tsx:97:18" data-lov-name="stat.icon"
-                            data-component-path="src/pages/Dashboard.tsx" data-component-line="97"
-                            data-component-file="Dashboard.tsx" data-component-name="stat.icon"
-                            data-component-content="%7B%7D">
+                           
+                           
+                           
+                           >
                             <path
                                 d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
                             </path>
@@ -105,10 +105,10 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                         fill="none" stroke="green" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                         class="w-5 h-5 lucide lucide-trending-up text-success"
-                        data-lov-id="src/pages/Dashboard.tsx:113:14" data-lov-name="TrendingUp"
-                        data-component-path="src/pages/Dashboard.tsx" data-component-line="113"
-                        data-component-file="Dashboard.tsx" data-component-name="TrendingUp"
-                        data-component-content="%7B%22className%22%3A%22h-5%20w-5%20text-success%22%7D">
+                       
+                       
+                       
+                       >
                         <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
                         <polyline points="16 7 22 7 22 13"></polyline>
                     </svg>Bem-vindo ao FaturaSys

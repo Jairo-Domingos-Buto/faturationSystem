@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 data.forEach(prod => {
                     tabelaBody.innerHTML += `
                         <tr>
-                            <td>${prod.nome}</td>
+                            <td>${prod.descricao}</td>
                             <td>${prod.categoria?.nome || '—'}</td>
                             <td>${prod.fornecedor?.nome || '—'}</td>
                             <td>${prod.preco_compra} Kz</td>
@@ -91,39 +91,39 @@ document.addEventListener('DOMContentLoaded', function() {
     carregarProdutos();
 
     // 🟢 Submeter Formulário
-    formProduto.addEventListener('submit', async function(e) {
-        e.preventDefault();
+   formProduto.addEventListener('submit', async function(e) {
+    e.preventDefault();
 
-        const formData = new FormData(formProduto);
+    const formData = new FormData(formProduto);
 
-        try {
-            console.log('Enviando produto...');
-            const res = await fetch(apiProdutos, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': getCsrf()
-                },
-                body: formData
-            });
+    try {
+        console.log('Enviando produto...');
+        const res = await fetch(apiProdutos, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': getCsrf(),
+                'Accept': 'application/json'
+            },
+            body: formData
+        });
 
-            if (!res.ok) {
-                const errorText = await res.text();
-                console.error('Erro ao cadastrar produto:', errorText);
-                throw new Error('Falha ao cadastrar produto');
-            }
-
-            const data = await res.json();
-            console.log('Produto cadastrado:', data);
-
-            alert('✅ Produto cadastrado com sucesso!');
-            formProduto.reset();
-            carregarProdutos();
-
-            const modal = bootstrap.Modal.getInstance(document.getElementById('novoProdutoModal'));
-            modal.hide();
-        } catch (err) {
-            console.error('Erro ao salvar produto:', err);
-            alert('❌ Erro ao salvar produto. Verifique o console.');
+        if (!res.ok) {
+            const errorText = await res.text();
+            console.error('Erro ao cadastrar produto (resposta bruta):', errorText);
+            throw new Error(`Falha ao cadastrar produto: ${res.status}`);
         }
-    });
+
+        const data = await res.json();
+        console.log('Produto cadastrado:', data);
+
+        formProduto.reset();
+        carregarProdutos();
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById('novoProdutoModal'));
+        modal.hide();
+    } catch (err) {
+        console.error('Erro ao salvar produto:', err);
+        alert('❌ Erro ao salvar produto. Veja o console para detalhes.');
+    }
+});
 });

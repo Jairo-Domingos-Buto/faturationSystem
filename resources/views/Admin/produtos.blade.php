@@ -53,18 +53,20 @@
                     </div>
 
                     <div class="modal-body bg-light">
-                        <div class="form-group mb-2">
-                            <label class="form-label fw-semibold">Nome do Produto</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-white">
-                                    <i class="bx bx-box"></i>
-                                </span>
-                                <input type="text" class="form-control" id="nome" name="nome"
-                                    placeholder="Ex: Arroz Tio João 1Kg" required>
-                            </div>
-                        </div>
-
                         <div class="row">
+
+                            <div class="form-group col-sm-6">
+
+                                <label class="form-label fw-semibold">Nome do Produto</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white">
+                                        <i class="bx bx-box"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="descricao" name="descricao"
+                                        placeholder="Ex: Arroz Tio João 1Kg" required>
+                                </div>
+                            </div>
+
                             <div class="form-group col-sm-6">
                                 <label class="form-label fw-semibold">Categoria</label>
                                 <div class="input-group">
@@ -88,45 +90,53 @@
                                     </select>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="form-group mb-2">
-                            <label class="form-label fw-semibold">Código de Barras</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-white"><i class="bx bx-barcode"></i></span>
-                                <input type="text" class="form-control" id="codigo_barra" name="codigo_barra"
-                                    placeholder="Ex: 5601234567890">
+                            <div class="form-group col-sm-6">
+                                <label class="form-label fw-semibold">Código de Barras</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="bx bx-barcode"></i></span>
+                                    <input type="text" class="form-control" id="codigo_barras" name="codigo_barras"
+                                        placeholder="Ex: 5601234567890">
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="form-group mb-2">
-                            <label class="form-label fw-semibold">Preço de Compra</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-white"><i class="bx bx-purchase-tag"></i></span>
-                                <input type="number" class="form-control" id="preco_compra" name="preco_compra"
-                                    placeholder="Ex: 1500" required>
+                            <div class="form-group col-sm-6">
+                                <label class="form-label fw-semibold">Preço de Compra</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="bx bx-purchase-tag"></i></span>
+                                    <input type="number" class="form-control" id="preco_compra" name="preco_compra"
+                                        placeholder="Ex: 1500" required>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="form-group mb-2">
-                            <label class="form-label fw-semibold">Preço de Venda</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-white"><i class="bx bx-money"></i></span>
-                                <input type="number" class="form-control" id="preco_venda" name="preco_venda"
-                                    placeholder="Ex: 2000" required>
+                            <div class="form-group col-sm-6">
+                                <label class="form-label fw-semibold">Preço de Venda</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="bx bx-money"></i></span>
+                                    <input type="number" class="form-control" id="preco_venda" name="preco_venda"
+                                        placeholder="Ex: 2000" required>
+                                </div>
                             </div>
-                        </div>
+                            <div class="form-group col-sm-6">
+                                <label class="form-label fw-semibold">Data Validade</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="bx bx-money"></i></span>
+                                    <input type="date" class="form-control" id="data_validade" name="data_validade"
+                                        required>
 
-                        <div class="form-group mb-2">
-                            <label class="form-label fw-semibold">Estoque</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-white"><i class="bx bx-layer"></i></span>
-                                <input type="number" class="form-control" id="estoque" name="estoque"
-                                    placeholder="Ex: 100" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group col-sm-6">
+                                <label class="form-label fw-semibold">Estoque</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="bx bx-layer"></i></span>
+                                    <input type="number" class="form-control" id="estoque" name="estoque"
+                                        placeholder="Ex: 100" required>
+                                </div>
                             </div>
                         </div>
                     </div>
-
                     <div class="modal-footer bg-white">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                             <i class="bx bx-x"></i> Cancelar

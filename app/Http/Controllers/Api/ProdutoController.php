@@ -22,10 +22,13 @@ class ProdutoController extends Controller
      *     @OA\Response(response=200, description="Lista de produtos retornada")
      * )
      */
+    
     public function index()
     {
-        return response()->json(Produto::all(), 200);
+        $produtos = Produto::with(['categoria', 'fornecedor'])->get();
+        return response()->json($produtos);
     }
+
 
     /**
      * @OA\Post(

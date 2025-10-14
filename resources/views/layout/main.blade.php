@@ -202,6 +202,40 @@
                             <div data-i18n="Analytics">Motivos de Isenção</div>
                         </a>
                     </li>
+                       <!-- Faturas -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text">Faturas</span>
+                    </li>
+
+                    <!-- Faturas -->
+                    <li class="menu-item">
+                        <a href="/faturas" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-receipt"></i>
+                            <div data-i18n="Analytics">Faturas</div>
+                        </a>
+                    </li>
+
+                    <!-- Recibos -->
+                    <li class="menu-item">
+                        <a href="/recibos" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-shield"></i>
+                            <div data-i18n="Analytics">Recibos</div>
+                        </a>
+                    </li>
+                    {{-- Faturas Recibos --}}
+                      <li class="menu-item">
+                        <a href="/faturas-recibo" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-shield"></i>
+                            <div data-i18n="Analytics">Faturas-Recibo</div>
+                        </a>
+                    </li>
+                    {{-- Ponto de Venda --}}
+                      <li class="menu-item">
+                        <a href="/pov" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-shield"></i>
+                            <div data-i18n="Analytics">Ponto de Venda</div>
+                        </a>
+                    </li>
                 </ul>
 
             </aside>
@@ -329,7 +363,7 @@
 
                 <!-- Content wrapper -->
                 <div class="content-wrapper">
-                    <div class="container-fluid flex-grow-1 container-p-y ">
+                    <div class=" flex-grow-1 p-2 ">
                         <!-- Layout Demo -->
                         @yield('content')
                         <!--/ Layout Demo -->

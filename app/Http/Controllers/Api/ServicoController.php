@@ -6,7 +6,6 @@ use App\Models\Servico;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
-
 class ServicoController extends Controller
 {
     /**
@@ -19,7 +18,13 @@ class ServicoController extends Controller
      *         description="Lista de serviços retornada com sucesso"
      *     )
      * )
-     *
+     */
+    public function index()
+    {
+        return response()->json(Servico::all(), 200);
+    }
+
+    /**
      * @OA\Post(
      *     path="/api/servicos",
      *     summary="Cria um novo serviço",
@@ -27,9 +32,9 @@ class ServicoController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"descricao","preco"},
+     *             required={"descricao","valor"},
      *             @OA\Property(property="descricao", type="string", maxLength=255, example="Serviço de limpeza"),
-     *             @OA\Property(property="preco", type="number", format="float", example=99.99)
+     *             @OA\Property(property="valor", type="number", format="float", example=5000.00)
      *         )
      *     ),
      *     @OA\Response(
@@ -41,7 +46,19 @@ class ServicoController extends Controller
      *         description="Dados inválidos"
      *     )
      * )
-     *
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'descricao' => 'required|string|max:255',
+            'valor' => 'required|numeric|min:0',
+        ]);
+
+        $servico = Servico::create($validated);
+        return response()->json($servico, 201);
+    }
+
+    /**
      * @OA\Get(
      *     path="/api/servicos/{id}",
      *     summary="Exibe um serviço específico",
@@ -61,7 +78,17 @@ class ServicoController extends Controller
      *         description="Serviço não encontrado"
      *     )
      * )
-     *
+     */
+    public function show($id)
+    {
+        $servico = Servico::find($id);
+        if (!$servico) {
+            return response()->json(['message' => 'Serviço não encontrado'], 404);
+        }
+        return response()->json($servico);
+    }
+
+    /**
      * @OA\Put(
      *     path="/api/servicos/{id}",
      *     summary="Atualiza um serviço existente",
@@ -76,7 +103,7 @@ class ServicoController extends Controller
      *         required=true,
      *         @OA\JsonContent(
      *             @OA\Property(property="descricao", type="string", maxLength=255, example="Serviço atualizado"),
-     *             @OA\Property(property="preco", type="number", format="float", example=120.00)
+     *             @OA\Property(property="valor", type="number", format="float", example=7500.00)
      *         )
      *     ),
      *     @OA\Response(
@@ -88,7 +115,24 @@ class ServicoController extends Controller
      *         description="Serviço não encontrado"
      *     )
      * )
-     *
+     */
+    public function update(Request $request, $id)
+    {
+        $servico = Servico::find($id);
+        if (!$servico) {
+            return response()->json(['message' => 'Serviço não encontrado'], 404);
+        }
+
+        $validated = $request->validate([
+            'descricao' => 'required|string|max:255',
+            'valor' => 'required|numeric|min:0',
+        ]);
+
+        $servico->update($validated);
+        return response()->json($servico);
+    }
+
+    /**
      * @OA\Delete(
      *     path="/api/servicos/{id}",
      *     summary="Remove um serviço",
@@ -109,4 +153,13 @@ class ServicoController extends Controller
      *     )
      * )
      */
+    public function destroy($id)
+    {
+        $servico = Servico::find($id);
+        if (!$servico) {
+            return response()->json(['message' => 'Serviço não encontrado'], 404);
+        }
+        $servico->delete();
+        return response()->json(['message' => 'Serviço removido com sucesso'], 200);
+    }
 }

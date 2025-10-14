@@ -2,7 +2,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const apiUrl = '/api/servicos';
     const tabela = document.getElementById('tabela-servicos');
     const form = document.getElementById('servico-form');
+    const modal = document.getElementById('servicoModal');
     let editandoId = null;
+
+    // ✅ Função para obter CSRF
+    function getCsrf() {
+        const meta = document.querySelector('meta[name="csrf-token"]');
+        return meta ? meta.content : '';
+    }
 
     // 🔹 Carregar lista
     async function carregarServicos() {
@@ -51,29 +58,40 @@ document.addEventListener('DOMContentLoaded', function() {
     // 🔹 Salvar / Atualizar
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
+
         const dados = {
             descricao: form.descricao.value.trim(),
             valor: form.valor.value.trim()
         };
+
         const url = editandoId ? `${apiUrl}/${editandoId}` : apiUrl;
         const method = editandoId ? 'PUT' : 'POST';
+
         try {
             const res = await fetch(url, {
                 method,
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': getCsrf()
                 },
                 body: JSON.stringify(dados)
             });
-            if (!res.ok) throw new Error(await res.text());
+
+            if (!res.ok) {
+                const text = await res.text();
+                console.error('Erro ao salvar serviço:', text);
+                alert('❌ Erro ao salvar serviço. Veja o console.');
+                return;
+            }
+
             form.reset();
             editandoId = null;
-            bootstrap.Modal.getInstance(document.getElementById('servicoModal')).hide();
+            bootstrap.Modal.getInstance(modal).hide();
             carregarServicos();
         } catch (err) {
             console.error('Erro ao salvar serviço:', err);
-            alert('Erro ao salvar serviço.');
+            alert('❌ Erro ao salvar serviço.');
         }
     });
 
@@ -85,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
             form.descricao.value = item.descricao;
             form.valor.value = item.valor;
             editandoId = id;
-            new bootstrap.Modal(document.getElementById('servicoModal')).show();
+            new bootstrap.Modal(modal).show();
         } catch (err) {
             console.error('Erro ao carregar serviço para edição:', err);
         }
@@ -96,9 +114,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!confirm('Desejas realmente excluir este serviço?')) return;
         try {
             const res = await fetch(`${apiUrl}/${id}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': getCsrf()
+                }
             });
             if (res.ok) carregarServicos();
+            else alert('Erro ao excluir serviço.');
         } catch (err) {
             console.error('Erro ao excluir serviço:', err);
         }

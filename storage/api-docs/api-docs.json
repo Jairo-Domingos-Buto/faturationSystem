@@ -1553,6 +1553,160 @@
                     }
                 }
             }
+        },
+        "/api/servicos": {
+            "get": {
+                "tags": [
+                    "Serviços"
+                ],
+                "summary": "Lista todos os serviços",
+                "operationId": "689a5b2f7eb60d9ae9c1f5b9910e93c1",
+                "responses": {
+                    "200": {
+                        "description": "Lista de serviços retornada com sucesso"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Serviços"
+                ],
+                "summary": "Cria um novo serviço",
+                "operationId": "55a9a31c81912209f262aebcfcef47db",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "descricao",
+                                    "valor"
+                                ],
+                                "properties": {
+                                    "descricao": {
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "Serviço de limpeza"
+                                    },
+                                    "valor": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 5000
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Serviço criado com sucesso"
+                    },
+                    "422": {
+                        "description": "Dados inválidos"
+                    }
+                }
+            }
+        },
+        "/api/servicos/{id}": {
+            "get": {
+                "tags": [
+                    "Serviços"
+                ],
+                "summary": "Exibe um serviço específico",
+                "operationId": "0b640d7df6070c0694f05f199d00acee",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Serviço retornado com sucesso"
+                    },
+                    "404": {
+                        "description": "Serviço não encontrado"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Serviços"
+                ],
+                "summary": "Atualiza um serviço existente",
+                "operationId": "ede0efdb179e2fc758cbfc7d72cd1f2b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "descricao": {
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "Serviço atualizado"
+                                    },
+                                    "valor": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 7500
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Serviço atualizado com sucesso"
+                    },
+                    "404": {
+                        "description": "Serviço não encontrado"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Serviços"
+                ],
+                "summary": "Remove um serviço",
+                "operationId": "c31c631bbd06112adf7434d7097b5cc5",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Serviço removido com sucesso"
+                    },
+                    "404": {
+                        "description": "Serviço não encontrado"
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -1612,6 +1766,10 @@
         {
             "name": "Impostos",
             "description": "Impostos"
+        },
+        {
+            "name": "Serviços",
+            "description": "Serviços"
         }
     ]
 }

@@ -40,7 +40,7 @@
                 <form id="servico-form">
                     @csrf
                     <div class="modal-header text-white" style="background-color: #6C6FFF;">
-                        <h5 class="modal-title fw-bold" id="servicoModalLabel">
+                        <h5 class="modal-title text-white fw-bold" id="servicoModalLabel">
                             <i class="bx bx-cog me-2"></i> Cadastro de Serviço
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>

@@ -2,7 +2,9 @@
 
 @section('content')
 <main class='bg-white p-3 h-full'>
-
+  <div>
+    <h2>Fatura-Recibos</h2>
+  </div>
   <header class='bg-gray-50 rounded border p-3'>
     <div class='flex justify-between items-center w-full'>
       {{-- filter de datas --}}
@@ -53,13 +55,12 @@
                         <th>Número</th>
                         <th>Cliente</th>
                         <th>Usuário</th>
-                        <th>Estado</th>
-                        <th>Preço</th>
+                        <th>Total</th>
                         <th>Acções</th>
                       </tr>
                     </thead>
                     <tbody class="table-border-bottom-0">
-                      <td colspan='7' class='text-center'>
+                      <td colspan='6' class='text-center'>
 
                         <p>Sem Dados encontrados</p>
                       </td>

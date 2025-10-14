@@ -2,7 +2,9 @@
 
 @section('content')
 <main class='bg-white p-3 h-full'>
-
+  <div>
+    <h2>Faturas</h2>
+  </div>
   <header class='bg-gray-50 rounded border p-3'>
     <div class='flex justify-between items-center w-full'>
       {{-- filter de datas --}}

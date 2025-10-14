@@ -5,7 +5,7 @@
 
 <header class='flex justify-between'>
   <div class='flex flex-col gap-0'>
-    <h2 class='m-0 mb-0.5 font-bold'>Nova Fatura</h2>
+    <h2 class='m-0 mb-0.5 font-bold'>Ponto de Venda</h2>
     <p>Crie e imprima faturas para seus clientes</p>
   </div>
   <div class='flex gap-2 items-center justify-center'>
@@ -32,10 +32,13 @@
   <div  class="p-6 pt-0 space-y-4">
     <div >
       <label  class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Cliente</label>
-      <button type="button" role="combobox" aria-controls="radix-:r3:" aria-expanded="false" aria-autocomplete="none" dir="ltr" class="flex h-10 w-full items-center justify-between rounded-md border border-input px-3 py-2 text-sm ">
+      <select type="button" role="combobox" aria-controls="radix-:r3:" aria-expanded="false" aria-autocomplete="none" dir="ltr" class="flex h-10 w-full items-center justify-between rounded-md border border-input px-3 py-2 text-sm ">
         <span  style="pointer-events: none;">Selecione o cliente</span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down h-4 w-4 opacity-50"  aria-hidden="true"><path d="m6 9 6 6 6-6"></path>
-        </svg>
-      </button>
+
+        </svg
+        >
+        <option value="">Selecione o Seu cliente</option>
+      </select>
     </div>
   </div>
 </div>
@@ -49,17 +52,23 @@
     <div class="grid gap-4 md:grid-cols-2">
       <div>
         <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Tipo</label>
-        <button type="button" role="combobox" aria-controls="radix-:r4:" aria-expanded="false" aria-autocomplete="none" dir="ltr" class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1">
+       {{-- select --}}
+        <select type="button" role="combobox" aria-controls="radix-:r4:" aria-expanded="false" aria-autocomplete="none" dir="ltr" class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1">
           <span style="pointer-events: none;">Produto</span>
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down h-4 w-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
-        </button>
+          {{-- options --}}
+          <option value="produto">Produto</option>
+          <option value="servico">Servico</option>
+          {{-- fim options --}}
+        </select>
       </div>
       <div>
         <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Produto</label>
-        <button type="button" role="combobox" aria-controls="radix-:r5:" aria-expanded="false" aria-autocomplete="none" dir="ltr" class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1">
+        <select type="button" role="combobox" aria-controls="radix-:r5:" aria-expanded="false" aria-autocomplete="none" dir="ltr" class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ">
           <span style="pointer-events: none;">Selecione o produto</span>
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down h-4 w-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
-        </button>
+          <option value="">Selecione o produto</option>
+        </select>
       </div>
     </div>
 
@@ -70,21 +79,23 @@
       </div>
       <div>
         <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Imposto</label>
-        <button type="button" role="combobox" aria-controls="radix-:r6:" aria-expanded="false" aria-autocomplete="none" dir="ltr" class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1">
+        <select type="button" role="combobox" aria-controls="radix-:r6:" aria-expanded="false" aria-autocomplete="none" dir="ltr" class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1">
           <span style="pointer-events: none;">Selecione</span>
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down h-4 w-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
-        </button>
+          <option value="">Nenhum</option>
+        </select>
       </div>
       <div>
         <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Isenção</label>
-        <button type="button" role="combobox" aria-controls="radix-:r7:" aria-expanded="false" aria-autocomplete="none" dir="ltr" class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1">
+        <select type="button" role="combobox" aria-controls="radix-:r7:" aria-expanded="false" aria-autocomplete="none" dir="ltr" class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1">
           <span style="pointer-events: none;">Selecione</span>
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down h-4 w-4 opacity-50" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
-        </button>
+          <option value="">Sem motivo</option>
+        </select>
       </div>
     </div>
 
-    <button class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full">
+    <button class="inline-flex items-center justify-center gap-2 whitespace-nowrap  text-sm bg-[#3c83f6] p-2 text-white w-full rounded">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus mr-2 h-4 w-4"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Adicionar Item
     </button>
   </div>
@@ -112,7 +123,7 @@
         <p class="text-sm">Nº: FT-1760464137969</p>
         <p class="text-sm">Data: 14/10/2025</p>
       </div>
-      
+
       <div class="space-y-2 border-t pt-4">
 
         <div class="flex justify-between text-sm">

@@ -908,7 +908,7 @@
                 "operationId": "a1839fece77c60e9e96e216c09e77641",
                 "responses": {
                     "200": {
-                        "description": "Lista de fornecedores retornada"
+                        "description": "Lista de fornecedores retornada com sucesso"
                     }
                 }
             },
@@ -916,7 +916,7 @@
                 "tags": [
                     "Fornecedores"
                 ],
-                "summary": "Criar novo fornecedor",
+                "summary": "Criar um novo fornecedor",
                 "operationId": "9a6ad64039a9c27f8bf6541a1f334a9a",
                 "requestBody": {
                     "required": true,
@@ -924,41 +924,42 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "nome",
-                                    "nif",
-                                    "email",
-                                    "telefone",
-                                    "provincia",
-                                    "cidade",
-                                    "localizacao"
+                                    "nome"
                                 ],
                                 "properties": {
                                     "nome": {
                                         "type": "string",
+                                        "maxLength": 255,
                                         "example": "Fornecedor ABC"
                                     },
                                     "nif": {
                                         "type": "string",
+                                        "maxLength": 50,
                                         "example": "500100000"
                                     },
                                     "email": {
                                         "type": "string",
+                                        "format": "email",
                                         "example": "abc@email.com"
                                     },
                                     "telefone": {
                                         "type": "string",
+                                        "maxLength": 50,
                                         "example": "+244923000000"
                                     },
                                     "provincia": {
                                         "type": "string",
+                                        "maxLength": 100,
                                         "example": "Luanda"
                                     },
                                     "cidade": {
                                         "type": "string",
+                                        "maxLength": 100,
                                         "example": "Luanda"
                                     },
                                     "localizacao": {
                                         "type": "string",
+                                        "maxLength": 255,
                                         "example": "Rua 1, Bairro X"
                                     }
                                 },
@@ -979,12 +980,13 @@
                 "tags": [
                     "Fornecedores"
                 ],
-                "summary": "Mostrar um fornecedor específico",
+                "summary": "Exibir um fornecedor específico",
                 "operationId": "16460009376fc1de0dd931ce319f07a3",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID do fornecedor",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -994,6 +996,9 @@
                 "responses": {
                     "200": {
                         "description": "Fornecedor retornado com sucesso"
+                    },
+                    "404": {
+                        "description": "Fornecedor não encontrado"
                     }
                 }
             },
@@ -1001,12 +1006,86 @@
                 "tags": [
                     "Fornecedores"
                 ],
-                "summary": "Atualizar fornecedor",
+                "summary": "Atualizar um fornecedor existente",
                 "operationId": "44b6456df117348f9efef8d8d4e76de5",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID do fornecedor a ser atualizado",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nome": {
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "Fornecedor Atualizado"
+                                    },
+                                    "nif": {
+                                        "type": "string",
+                                        "maxLength": 50,
+                                        "example": "500100001"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "novo@email.com"
+                                    },
+                                    "telefone": {
+                                        "type": "string",
+                                        "maxLength": 50,
+                                        "example": "+244922999999"
+                                    },
+                                    "provincia": {
+                                        "type": "string",
+                                        "maxLength": 100,
+                                        "example": "Benguela"
+                                    },
+                                    "cidade": {
+                                        "type": "string",
+                                        "maxLength": 100,
+                                        "example": "Lobito"
+                                    },
+                                    "localizacao": {
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "Avenida 4 de Fevereiro"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Fornecedor atualizado com sucesso"
+                    },
+                    "404": {
+                        "description": "Fornecedor não encontrado"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Fornecedores"
+                ],
+                "summary": "Remover um fornecedor",
+                "operationId": "50ee28e7a365f4702945dee6de07976a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID do fornecedor a ser removido",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -1015,19 +1094,23 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Fornecedor atualizado com sucesso"
-                    }
-                }
-            },
-            "delete": {
-                "tags": [
-                    "Fornecedores"
-                ],
-                "summary": "Remover fornecedor",
-                "operationId": "50ee28e7a365f4702945dee6de07976a",
-                "responses": {
-                    "200": {
-                        "description": "Fornecedor removido com sucesso"
+                        "description": "Fornecedor removido com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Fornecedor removido com sucesso"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Fornecedor não encontrado"
                     }
                 }
             }

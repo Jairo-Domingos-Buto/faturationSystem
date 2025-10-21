@@ -1,11 +1,12 @@
 @extends('layout.main')
 
 @section('content')
+
 <main class="flex-1 overflow-auto">
     <div class="p-6 space-y-6">
         <div class="d-flex justify-content-between align-items-center mb-3"
             style="background-color: #dad6d6e8; height: 70px; width: 100%; border-radius: 10px;">
-            <button type="button" class="btn btn" data-bs-toggle="modal" data-bs-target="#novoFornecedorModal"
+            <button type="button" class="btn btn" data-bs-toggle="modal" data-bs-target="#novoClienteModal"
                 style="margin-left: 20px; background-color: #6C6FFF; color:white;">
                 Novo
             </button>
@@ -15,8 +16,7 @@
         </div>
     </div>
 
-
-
+    <!-- Tabela de Fornecedores -->
     <div class="card">
         <table class="table table-hover">
             <thead class='p-1'>
@@ -30,7 +30,9 @@
                 </tr>
             </thead>
             <tbody class="table-border-bottom-0">
-                <!-- Linhas serão carregadas pela API -->
+                <tr>
+                    <td colspan="8" class="text-center text-muted">A carregar clientes...</td>
+                </tr>
             </tbody>
         </table>
     </div>

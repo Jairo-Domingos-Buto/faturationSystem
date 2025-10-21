@@ -1,6 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ImpressaoController;
+
+
+
 
 Route::get('/login',function(){
     return view('auth.login');
@@ -57,3 +61,8 @@ Route::get('/recibos', function () {
 Route::get('/pov', function () {
   return view('Admin/pov');
 });
+
+
+
+Route::get('/admin/impressao/servicos', [ImpressaoController::class, 'servicos'])->name('impressao.servicos');
+Route::get('/admin/impressao/produtos', [ImpressaoController::class, 'produtos'])->name('imprimir.produtos');

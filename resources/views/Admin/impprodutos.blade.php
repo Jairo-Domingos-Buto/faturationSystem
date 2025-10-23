@@ -124,8 +124,6 @@
         </div>
         <div class="empresa-info">
             <h2>MAINDSEAT</h2>
-            <p>Sistema de Faturação e Gestão Comercial</p>
-            <p>Luanda, Angola</p>
             <p>Emitido em {{ date('d/m/Y H:i') }}</p>
         </div>
     </header>

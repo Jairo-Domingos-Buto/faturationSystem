@@ -27,7 +27,7 @@
             <p class='text-[17px] text-gray-500 text-'>Visão geral do sistema de faturação</p> -->
     </div>
     {{-- cards --}}
-    <div id='cards' class='flex gap-5 justify-center'>
+    <div id='cards' class='flex gap-3 justify-center'>
         <!-- Clientes -->
         <div class='bg-white text-black w-1/4 p-3 border-gray-300 gap-15 border-1  rounded-xl'>
             <header class='flex items-center justify-between p-1 '>

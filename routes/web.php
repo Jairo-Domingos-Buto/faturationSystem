@@ -61,8 +61,9 @@ Route::get('/recibos', function () {
 Route::get('/pov', function () {
   return view('Admin/pov');
 });
-
-
+Route::get('/configuracoes', function () {
+  return view('Admin.configuracoes');
+});
 
 Route::get('/admin/impressao/servicos', [ImpressaoController::class, 'servicos'])->name('impressao.servicos');
 Route::get('/admin/impressao/produtos', [ImpressaoController::class, 'produtos'])->name('imprimir.produtos');

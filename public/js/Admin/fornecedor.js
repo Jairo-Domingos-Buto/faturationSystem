@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let editandoId = null;
 
     // Utilitário para obter token CSRF (se existir)
-    
+
     function getCsrf() {
         const meta = document.querySelector('meta[name="csrf-token"]');
         return meta ? meta.content : '';
@@ -176,3 +176,4 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 });
+

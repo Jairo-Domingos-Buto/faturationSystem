@@ -46,6 +46,9 @@
     <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
     <script src="../assets/js/config.js"></script>
+
+    {{-- livewire --}}
+       @livewireStyles
 </head>
 
 <body>
@@ -54,7 +57,7 @@
         <div class="layout-container">
             <!-- Menu -->
 
-            <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+            <aside id="layout-menu" class="layout-menu menu-vertical border menu bg-menu-theme">
                 <div class="app-brand demo">
                     <a href="/" class="app-brand-link">
                         <span class="app-brand-logo demo">
@@ -121,11 +124,6 @@
                         </a>
                     </li>
 
-                    <!-- Gestão de Terceiros -->
-                    <li class="menu-header small text-uppercase">
-                        <span class="menu-header-text">Gestão de Terceiros</span>
-                    </li>
-
                     <!-- Clientes -->
                     <li class="menu-item">
                         <a href="/clientes" class="menu-link">
@@ -142,22 +140,12 @@
                         </a>
                     </li>
 
-                    <!-- Gestão de Usuários -->
-                    <li class="menu-header small text-uppercase">
-                        <span class="menu-header-text">Gestão de Usuários</span>
-                    </li>
-
                     <!-- Usuários -->
                     <li class="menu-item">
                         <a href="/usuarios" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-group"></i>
                             <div data-i18n="Analytics">Usuários</div>
                         </a>
-                    </li>
-
-                    <!-- Catálogo -->
-                    <li class="menu-header small text-uppercase">
-                        <span class="menu-header-text">Catálogo</span>
                     </li>
 
                     <!-- Produtos -->
@@ -182,11 +170,6 @@
                         </a>
                     </li>
 
-                    <!-- Configurações Fiscais -->
-                    <li class="menu-header small text-uppercase">
-                        <span class="menu-header-text">Configurações Fiscais</span>
-                    </li>
-
                     <!-- Impostos -->
                     <li class="menu-item">
                         <a href="/impostos" class="menu-link">
@@ -202,11 +185,6 @@
                             <div data-i18n="Analytics">Motivos de Isenção</div>
                         </a>
                     </li>
-                       <!-- Faturas -->
-                    <li class="menu-header small text-uppercase">
-                        <span class="menu-header-text">Faturas</span>
-                    </li>
-
                     <!-- Faturas -->
                     <li class="menu-item">
                         <a href="/faturas" class="menu-link">
@@ -236,6 +214,12 @@
                             <div data-i18n="Analytics">Ponto de Venda</div>
                         </a>
                     </li>
+                    <li class="menu-item">
+                        <a href="/configuracoes" class="menu-link">
+                          <i class="menu-icon tf-icons bx bx-shield"></i>
+                          <div data-i18n="Analytics">COnfiguracoes</div>
+                        </a>
+                      </li>
                 </ul>
 
             </aside>
@@ -253,7 +237,7 @@
             <div class="layout-page">
                 <!-- Navbar -->
 
-                <nav class="layout-navbar navbar navbar-expand-xl align-items-center" id="layout-navbar"
+                <nav class="layout-navbar navbar navbar-expand-xl align-items-center border px-4" id="layout-navbar"
                     style="width: 100%; margin-top: 0;">
 
                     <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
@@ -262,7 +246,7 @@
                         </a>
                     </div>
 
-                    <div class="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
+                    <div class="navbar-nav-right d-flex align-items-center justify-content-end " id="navbar-collapse">
                         <div class="navbar-nav align-items-center">
                             <div class="nav-item dropdown me-2 me-xl-0">
                                 <a class="nav-link dropdown-toggle hide-arrow" id="nav-theme" href="javascript:void(0);"
@@ -349,7 +333,7 @@
                                         <div class="dropdown-divider my-1"></div>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="javascript:void(0);">
+                                        <a class="dropdown-item" href="/">
                                             <i class="icon-base bx bx-power-off icon-md me-3"></i><span>Log Out</span>
                                         </a>
                                     </li>
@@ -363,7 +347,7 @@
 
                 <!-- Content wrapper -->
                 <div class="content-wrapper">
-                    <div class=" flex-grow-1 p-2 ">
+                    <div class=" flex-grow-1 p-3 bg-white ">
                         <!-- Layout Demo -->
                         @yield('content')
                         <!--/ Layout Demo -->
@@ -400,6 +384,7 @@
 
     <!-- Place this tag in your head or just before your close body tag. -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
+      @livewireScripts
 </body>
 
 </html>

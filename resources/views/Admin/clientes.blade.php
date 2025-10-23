@@ -120,6 +120,6 @@
         </div>
     </div>
 </main>
-<script src="{{ asset('../js/Admin/clientes.js') }}"></script>
+<script src={{'assets/js/Admin/clientes.js'}}></script>
 
 @endsection

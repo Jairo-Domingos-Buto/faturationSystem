@@ -67,3 +67,9 @@ Route::get('/configuracoes', function () {
 
 Route::get('/admin/impressao/servicos', [ImpressaoController::class, 'servicos'])->name('impressao.servicos');
 Route::get('/admin/impressao/produtos', [ImpressaoController::class, 'produtos'])->name('imprimir.produtos');
+
+// routes/web.php
+use App\Http\Controllers\pdfController;
+
+Route::get('/fatura/download', [pdfController::class, 'downloadFatura'])
+    ->name('fatura.download');

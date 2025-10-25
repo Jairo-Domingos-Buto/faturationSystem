@@ -15,7 +15,7 @@
     <!-- Header -->
     <header class="flex justify-between items-center mb-6">
       <h1 class="text-3xl font-bold text-gray-800">Ponto de Venda</h1>
-      <button onclick="window.print()"
+      <button wire:click="exportarDadosFatura"
         class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-blue-500 hover:text-white transition-colors duration-200">
         <i class='bx bx-printer mr-2'></i>Imprimir
       </button>
@@ -207,7 +207,7 @@
           <div class="space-y-3 mb-4">
             <div class="relative">
               <i class='bx bx-money absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400'></i>
-              <input type="text" wire:model.live.debounce.300ms="totalRecebido"
+              <input type="text" wire:="totalRecebido"
                 class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 placeholder="Total recebido">
             </div>
@@ -229,6 +229,7 @@
         </div>
       </div>
     </div>
+
   </div>
 
   <!-- Modal de Clientes -->

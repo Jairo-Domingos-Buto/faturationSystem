@@ -5,26 +5,29 @@ namespace App\Livewire;
 use App\Models\Cliente;
 use App\Models\Produto;
 use Livewire\Component;
+use Illuminate\Support\Facades\Storage;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
 
 class Pov extends Component
 {
     // Propriedades do documento
     public $tipoDocumento = 'fatura';
     public $natureza = 'produto';
+    public $Dados;
 
-    // Propriedades do cliente
+    // Cliente
     public $clientes = [];
     public $clienteSelecionado = null;
     public $clienteNome = 'Nenhum cliente selecionado';
     public $showModal = false;
     public $searchClienteTerm = '';
 
-    // Propriedades dos produtos
+    // Produtos
     public $produtos = [];
     public $produtosCarrinho = [];
     public $searchProdutoTerm = '';
 
-    // Propriedades financeiras
+    // Financeiro
     public $subtotal = 0;
     public $incidencia = 0;
     public $iva = 0;
@@ -43,8 +46,8 @@ class Pov extends Component
     public function carregarClientes()
     {
         $this->clientes = Cliente::when($this->searchClienteTerm, function ($query) {
-            $query->where('nome', 'like', '%' . $this->searchClienteTerm . '%')
-                  ->orWhere('nif', 'like', '%' . $this->searchClienteTerm . '%');
+            $query->where('nome', 'like', '%'.$this->searchClienteTerm.'%')
+                  ->orWhere('nif', 'like', '%'.$this->searchClienteTerm.'%');
         })->get();
     }
 
@@ -52,17 +55,16 @@ class Pov extends Component
     {
         $this->produtos = Produto::with(['categoria', 'fornecedor'])
             ->when($this->searchProdutoTerm, function ($query) {
-                $query->where('descricao', 'like', '%' . $this->searchProdutoTerm . '%')
-                      ->orWhere('codigo_barras', 'like', '%' . $this->searchProdutoTerm . '%');
+                $query->where('descricao', 'like', '%'.$this->searchProdutoTerm.'%')
+                      ->orWhere('codigo_barras', 'like', '%'.$this->searchProdutoTerm.'%');
             })
-            ->where('estoque', '>', 0) // Apenas produtos com estoque
+            ->where('estoque', '>', 0)
             ->get();
     }
 
     public function alterarNatureza($tipo)
     {
         $this->natureza = $tipo;
-        // Você pode adicionar filtros adicionais aqui se necessário
     }
 
     public function abrirModal()
@@ -81,7 +83,7 @@ class Pov extends Component
         $cliente = Cliente::find($clienteId);
         if ($cliente) {
             $this->clienteSelecionado = $cliente->id;
-            $this->clienteNome = $cliente->nome . ' - ' . $cliente->nif;
+            $this->clienteNome = $cliente->nome.' - '.$cliente->nif;
         }
         $this->fecharModal();
     }
@@ -90,18 +92,16 @@ class Pov extends Component
     {
         $produto = Produto::find($produtoId);
 
-        if (!$produto) {
+        if (! $produto) {
             session()->flash('error', 'Produto não encontrado.');
             return;
         }
 
-        // Verifica se o produto já está no carrinho
         $index = collect($this->produtosCarrinho)->search(function ($item) use ($produtoId) {
             return $item['id'] == $produtoId;
         });
 
         if ($index !== false) {
-            // Verifica se tem estoque disponível
             $quantidadeAtual = $this->produtosCarrinho[$index]['quantidade'];
             if ($quantidadeAtual < $produto->estoque) {
                 $this->produtosCarrinho[$index]['quantidade']++;
@@ -110,14 +110,13 @@ class Pov extends Component
                 return;
             }
         } else {
-            // Se não existe, adiciona novo
             $this->produtosCarrinho[] = [
                 'id' => $produto->id,
                 'descricao' => $produto->descricao,
                 'codigo_barras' => $produto->codigo_barras,
-                'preco_venda' => $produto->preco_venda,
+                'preco_venda' => (float) $produto->preco_venda,
                 'quantidade' => 1,
-                'estoque_disponivel' => $produto->estoque
+                'estoque_disponivel' => $produto->estoque,
             ];
         }
 
@@ -126,16 +125,18 @@ class Pov extends Component
 
     public function alterarQuantidade($index, $valor)
     {
-        if (isset($this->produtosCarrinho[$index])) {
-            $novaQuantidade = $this->produtosCarrinho[$index]['quantidade'] + $valor;
-            $estoqueDisponivel = $this->produtosCarrinho[$index]['estoque_disponivel'];
+        if (! isset($this->produtosCarrinho[$index])) {
+            return;
+        }
 
-            if ($novaQuantidade >= 1 && $novaQuantidade <= $estoqueDisponivel) {
-                $this->produtosCarrinho[$index]['quantidade'] = $novaQuantidade;
-                $this->calcularTotais();
-            } elseif ($novaQuantidade > $estoqueDisponivel) {
-                session()->flash('error', 'Estoque insuficiente. Disponível: ' . $estoqueDisponivel);
-            }
+        $novaQuantidade = $this->produtosCarrinho[$index]['quantidade'] + $valor;
+        $estoqueDisponivel = $this->produtosCarrinho[$index]['estoque_disponivel'];
+
+        if ($novaQuantidade >= 1 && $novaQuantidade <= $estoqueDisponivel) {
+            $this->produtosCarrinho[$index]['quantidade'] = $novaQuantidade;
+            $this->calcularTotais();
+        } elseif ($novaQuantidade > $estoqueDisponivel) {
+            session()->flash('error', 'Estoque insuficiente. Disponível: '.$estoqueDisponivel);
         }
     }
 
@@ -143,7 +144,7 @@ class Pov extends Component
     {
         if (isset($this->produtosCarrinho[$index])) {
             unset($this->produtosCarrinho[$index]);
-            $this->produtosCarrinho = array_values($this->produtosCarrinho); // Reindexar array
+            $this->produtosCarrinho = array_values($this->produtosCarrinho);
             $this->calcularTotais();
         }
     }
@@ -151,14 +152,13 @@ class Pov extends Component
     public function calcularTotais()
     {
         $this->subtotal = 0;
-
         foreach ($this->produtosCarrinho as $item) {
-            $this->subtotal += $item['preco_venda'] * $item['quantidade'];
+            $this->subtotal += ($item['preco_venda'] * $item['quantidade']);
         }
 
         $this->incidencia = $this->subtotal;
-        $this->iva = $this->subtotal * 0.14;
-        $this->total = $this->subtotal + $this->iva - $this->desconto;
+        $this->iva = round($this->subtotal * 0.14, 2);
+        $this->total = round($this->subtotal + $this->iva - $this->desconto, 2);
 
         $this->calcularTroco();
     }
@@ -186,7 +186,7 @@ class Pov extends Component
 
     public function finalizarVenda()
     {
-        if (!$this->clienteSelecionado) {
+        if (! $this->clienteSelecionado) {
             session()->flash('error', 'Por favor, selecione um cliente antes de finalizar a venda.');
             return;
         }
@@ -196,7 +196,6 @@ class Pov extends Component
             return;
         }
 
-        // Verificar estoque antes de finalizar
         foreach ($this->produtosCarrinho as $item) {
             $produto = Produto::find($item['id']);
             if ($produto->estoque < $item['quantidade']) {
@@ -205,42 +204,46 @@ class Pov extends Component
             }
         }
 
-        // Aqui você pode adicionar a lógica para salvar a venda no banco de dados
-        // Exemplo:
-        // DB::transaction(function () {
-        //     $venda = Venda::create([
-        //         'cliente_id' => $this->clienteSelecionado,
-        //         'tipo_documento' => $this->tipoDocumento,
-        //         'subtotal' => $this->subtotal,
-        //         'iva' => $this->iva,
-        //         'total' => $this->total,
-        //         'desconto' => $this->desconto,
-        //         'data_venda' => now(),
-        //     ]);
-        //
-        //     foreach ($this->produtosCarrinho as $item) {
-        //         // Criar item da venda
-        //         $venda->itens()->create([
-        //             'produto_id' => $item['id'],
-        //             'quantidade' => $item['quantidade'],
-        //             'preco_unitario' => $item['preco_venda'],
-        //             'subtotal' => $item['preco_venda'] * $item['quantidade'],
-        //         ]);
-        //
-        //         // Atualizar estoque
-        //         $produto = Produto::find($item['id']);
-        //         $produto->decrement('estoque', $item['quantidade']);
-        //     }
-        // });
-
         session()->flash('success', 'Venda finalizada com sucesso!');
 
-        // Limpar o carrinho e resetar valores
         $this->reset(['produtosCarrinho', 'clienteSelecionado', 'clienteNome', 'totalRecebido', 'desconto']);
         $this->clienteNome = 'Nenhum cliente selecionado';
         $this->calcularTotais();
-        $this->carregarProdutos(); // Recarregar produtos para atualizar estoque
+        $this->carregarProdutos();
     }
+
+    /* exportar PDF usando dompdf */
+    public function exportarDadosFatura()
+{
+    if (! $this->clienteSelecionado || empty($this->produtosCarrinho)) {
+        session()->flash('error', 'Selecione um cliente e adicione produtos antes de exportar.');
+        return;
+    }
+
+    $dados_fatura = [
+        'tipo_documento' => $this->tipoDocumento,
+        'natureza' => $this->natureza,
+        'cliente' => [
+            'id' => $this->clienteSelecionado,
+            'nome' => $this->clienteNome,
+        ],
+        'produtos' => $this->produtosCarrinho,
+        'financeiro' => [
+            'subtotal' => $this->subtotal,
+            'incidencia' => $this->incidencia,
+            'iva' => $this->iva,
+            'total' => $this->total,
+            'desconto' => $this->desconto,
+            'total_recebido' => $this->totalRecebido,
+            'troco' => $this->troco,
+        ],
+    ];
+
+    // Salva os dados da fatura na sessão para o controller usar
+    session(['dados_fatura' => $dados_fatura]);
+    // Em Livewire v2: use return redirect()->route(...)
+    return redirect()->route('fatura.download');
+}
 
     public function render()
     {

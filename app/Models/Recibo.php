@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Recibo extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'recibos';
 
     protected $fillable = [
@@ -20,9 +22,9 @@ class Recibo extends Model
         'observacoes',
     ];
 
-    protected $dates = [
-        'data_emissao',
-        'deleted_at',
+    protected $casts = [
+        'data_emissao' => 'date',
+        'valor' => 'decimal:2',
     ];
 
     public function fatura()

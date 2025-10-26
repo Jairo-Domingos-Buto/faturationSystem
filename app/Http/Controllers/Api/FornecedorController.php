@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\Fornecedor;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 
 /**
  * @OA\Tag(
@@ -19,6 +19,7 @@ class FornecedorController extends Controller
      *     path="/api/fornecedores",
      *     tags={"Fornecedores"},
      *     summary="Listar todos os fornecedores",
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Lista de fornecedores retornada com sucesso"
@@ -27,7 +28,7 @@ class FornecedorController extends Controller
      */
     public function index()
     {
-        return response()->json(Fornecedor::all(), 200);
+        return \response()->json(Fornecedor::all(), 200);
     }
 
     /**
@@ -35,10 +36,13 @@ class FornecedorController extends Controller
      *     path="/api/fornecedores",
      *     tags={"Fornecedores"},
      *     summary="Criar um novo fornecedor",
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\JsonContent(
      *             required={"nome"},
+     *
      *             @OA\Property(property="nome", type="string", maxLength=255, example="Fornecedor ABC"),
      *             @OA\Property(property="nif", type="string", maxLength=50, example="500100000"),
      *             @OA\Property(property="email", type="string", format="email", example="abc@email.com"),
@@ -48,6 +52,7 @@ class FornecedorController extends Controller
      *             @OA\Property(property="localizacao", type="string", maxLength=255, example="Rua 1, Bairro X")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=201,
      *         description="Fornecedor criado com sucesso"
@@ -68,7 +73,7 @@ class FornecedorController extends Controller
 
         $fornecedor = Fornecedor::create($validated);
 
-        return response()->json($fornecedor, 201);
+        return \response()->json($fornecedor, 201);
     }
 
     /**
@@ -76,13 +81,16 @@ class FornecedorController extends Controller
      *     path="/api/fornecedores/{id}",
      *     tags={"Fornecedores"},
      *     summary="Exibir um fornecedor específico",
+     *
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
      *         description="ID do fornecedor",
+     *
      *         @OA\Schema(type="integer")
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Fornecedor retornado com sucesso"
@@ -97,11 +105,11 @@ class FornecedorController extends Controller
     {
         $fornecedor = Fornecedor::find($id);
 
-        if (!$fornecedor) {
-            return response()->json(['message' => 'Fornecedor não encontrado'], 404);
+        if (! $fornecedor) {
+            return \response()->json(['message' => 'Fornecedor não encontrado'], 404);
         }
 
-        return response()->json($fornecedor, 200);
+        return \response()->json($fornecedor, 200);
     }
 
     /**
@@ -109,16 +117,21 @@ class FornecedorController extends Controller
      *     path="/api/fornecedores/{id}",
      *     tags={"Fornecedores"},
      *     summary="Atualizar um fornecedor existente",
+     *
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
      *         description="ID do fornecedor a ser atualizado",
+     *
      *         @OA\Schema(type="integer")
      *     ),
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="nome", type="string", maxLength=255, example="Fornecedor Atualizado"),
      *             @OA\Property(property="nif", type="string", maxLength=50, example="500100001"),
      *             @OA\Property(property="email", type="string", format="email", example="novo@email.com"),
@@ -128,6 +141,7 @@ class FornecedorController extends Controller
      *             @OA\Property(property="localizacao", type="string", maxLength=255, example="Avenida 4 de Fevereiro")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Fornecedor atualizado com sucesso"
@@ -142,8 +156,8 @@ class FornecedorController extends Controller
     {
         $fornecedor = Fornecedor::find($id);
 
-        if (!$fornecedor) {
-            return response()->json(['message' => 'Fornecedor não encontrado'], 404);
+        if (! $fornecedor) {
+            return \response()->json(['message' => 'Fornecedor não encontrado'], 404);
         }
 
         $validated = $request->validate([
@@ -158,9 +172,9 @@ class FornecedorController extends Controller
 
         $fornecedor->update($validated);
 
-        return response()->json([
+        return \response()->json([
             'message' => 'Fornecedor atualizado com sucesso',
-            'data' => $fornecedor
+            'data' => $fornecedor,
         ], 200);
     }
 
@@ -169,20 +183,26 @@ class FornecedorController extends Controller
      *     path="/api/fornecedores/{id}",
      *     tags={"Fornecedores"},
      *     summary="Remover um fornecedor",
+     *
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
      *         description="ID do fornecedor a ser removido",
+     *
      *         @OA\Schema(type="integer")
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Fornecedor removido com sucesso",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Fornecedor removido com sucesso")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=404,
      *         description="Fornecedor não encontrado"
@@ -193,12 +213,12 @@ class FornecedorController extends Controller
     {
         $fornecedor = Fornecedor::find($id);
 
-        if (!$fornecedor) {
-            return response()->json(['message' => 'Fornecedor não encontrado'], 404);
+        if (! $fornecedor) {
+            return \response()->json(['message' => 'Fornecedor não encontrado'], 404);
         }
 
         $fornecedor->delete();
 
-        return response()->json(['message' => 'Fornecedor removido com sucesso'], 200);
+        return \response()->json(['message' => 'Fornecedor removido com sucesso'], 200);
     }
 }

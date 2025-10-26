@@ -15,7 +15,8 @@
         <!-- Header -->
         <header class="flex justify-between items-center mb-6">
             <h1 class="text-3xl font-bold text-gray-800">Ponto de Venda</h1>
-            <button onclick="window.print()"
+
+            <button wire:click="exportarDadosFatura"
                 class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-blue-500 hover:text-white transition-colors duration-200">
                 <i class='bx bx-printer mr-2'></i>Imprimir
             </button>
@@ -32,12 +33,25 @@
                             <i class='bx bx-file-blank text-blue-500 text-xl'></i>
                             <span class="font-semibold text-gray-700">Documento</span>
                         </div>
+                        <!-- Alterar as opções do tipo de documento -->
                         <select wire:model="tipoDocumento"
                             class="w-full p-2.5 bg-gray-100 border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none">
                             <option value="fatura">Fatura</option>
-                            <option value="fatura-recibo">Fatura-Recibo</option>
                             <option value="recibo">Recibo</option>
                         </select>
+
+                        <!-- Adicionar campo para método de pagamento -->
+                        @if($tipoDocumento === 'recibo')
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Método de Pagamento</label>
+                            <select wire:model="metodoPagamento"
+                                class="w-full p-2.5 bg-gray-100 border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                <option value="dinheiro">Dinheiro</option>
+                                <option value="cartao">Cartão</option>
+                                <option value="transferencia">Transferência</option>
+                            </select>
+                        </div>
+                        @endif
                     </div>
 
                     <!-- Natureza Card -->
@@ -99,8 +113,8 @@
                                 <div class="font-semibold text-gray-800 text-sm">{{ $produto->descricao }}</div>
                                 <div class="text-xs text-gray-500 mb-1">Cód: {{ $produto->codigo_barras }}</div>
                                 <div class="flex justify-between items-center">
-                                    <span
-                                        class="text-sm font-bold text-blue-600">{{ number_format($produto->preco_venda, 2, ',', '.') }}
+                                    <span class="text-sm font-bold text-blue-600">{{
+                                        number_format($produto->preco_venda, 2, ',', '.') }}
                                         KZ</span>
                                     <span class="text-xs text-gray-600">
                                         <i class='bx bx-package'></i> {{ $produto->estoque }}
@@ -132,8 +146,8 @@
                                     <div class="flex flex-col flex-1">
                                         <span class="font-semibold text-gray-800">{{ $item['descricao'] }}</span>
                                         <span class="text-xs text-gray-500">Cód: {{ $item['codigo_barras'] }}</span>
-                                        <span
-                                            class="text-sm text-gray-600">{{ number_format($item['preco_venda'], 2, ',', '.') }}
+                                        <span class="text-sm text-gray-600">{{ number_format($item['preco_venda'], 2,
+                                            ',', '.') }}
                                             KZ/un</span>
                                     </div>
                                     <button wire:click="removerProduto({{ $index }})"
@@ -179,8 +193,9 @@
             <!-- Right Section (35%) - Resumo -->
             <div class="w-[400px]">
                 <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-5 sticky top-6">
+                    <!-- Modificar o título do resumo baseado no tipo de documento -->
                     <h2 class="text-xl font-bold text-gray-800 mb-4 pb-3 border-b border-gray-200">
-                        Resumo da Fatura
+                        Resumo do {{ $tipoDocumento === 'fatura' ? 'Fatura' : 'Recibo' }}
                     </h2>
 
                     <div class="mb-4 text-sm text-gray-600">
@@ -195,6 +210,8 @@
                             <span>Subtotal:</span>
                             <span class="font-semibold">{{ number_format($subtotal, 2, ',', '.') }} KZ</span>
                         </div>
+
+                        @if($tipoDocumento === 'fatura')
                         <div class="flex justify-between text-gray-700">
                             <span>Incidência:</span>
                             <span class="font-semibold">{{ number_format($incidencia, 2, ',', '.') }} KZ</span>
@@ -203,6 +220,7 @@
                             <span>IVA (14%):</span>
                             <span class="font-semibold">{{ number_format($iva, 2, ',', '.') }} KZ</span>
                         </div>
+                        @endif
                     </div>
 
                     <div class="flex justify-between items-center mb-4 pb-4 border-b border-gray-200">
@@ -211,7 +229,7 @@
                             KZ</span>
                     </div>
 
-                    <div class="space-y-3 mb-4">
+                    {{-- <div class="space-y-3 mb-4">
                         <div class="relative">
                             <i class='bx bx-money absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400'></i>
                             <input type="text" wire:model.live.debounce.300ms="totalRecebido"
@@ -227,12 +245,15 @@
                             <span class="font-semibold text-green-600">{{ number_format($troco, 2, ',', '.') }}
                                 KZ</span>
                         </div>
-                    </div>
+                    </div> --}}
 
-                    <button wire:click="finalizarVenda"
-                        class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
+                    <!-- Atualizar o botão de finalizar -->
+                    <button wire:click="finalizarVenda" wire:loading.attr="disabled"
+                        class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-50">
                         <i class='bx bx-check-circle text-2xl'></i>
-                        Finalizar Venda
+                        <span wire:loading.remove>Finalizar {{ $tipoDocumento === 'fatura' ? 'Fatura' : 'Recibo'
+                            }}</span>
+                        <span wire:loading>Processando...</span>
                     </button>
                 </div>
             </div>

@@ -105,7 +105,7 @@
 </head>
 
 <body>
-  <h1>Fatura</h1>
+  <h1>{{ $tipo_documento }}</h1>
 
   <div class="info">
     <p><strong>Cliente:</strong> {{ $cliente['nome'] }}</p>

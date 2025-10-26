@@ -2,6 +2,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const apiProdutos = "/api/produtos";
     const apiCategorias = "/api/categorias";
     const apiFornecedores = "/api/fornecedores";
+    const apiImpostos = "/api/impostos";
+    const apiMotivos = '/api/motivo_isencaos';
+    const impostoSelect = document.getElementById("imposto");
+    const motivoContainer = document.getElementById("motivo-container");
+    const motivoSelect = document.getElementById("motivo_isencao");
 
     const tabelaBody = document.getElementById("produtos-body");
     const categoriaSelect = document.getElementById("categoria");
@@ -17,6 +22,47 @@ document.addEventListener("DOMContentLoaded", function () {
     function getCsrf() {
         const meta = document.querySelector('meta[name="csrf-token"]');
         return meta ? meta.content : "";
+    }
+    // 🟢 Carregar Impostos
+    function carregarImpostos() {
+        fetch(apiImpostos)
+            .then((res) => res.json())
+            .then((data) => {
+                // primeira opção fixa
+                impostoSelect.innerHTML = `
+                <option value="">-- Selecionar imposto --</option>
+                <option value="nenhum">Nenhum</option>
+            `;
+
+                if (!data.length) {
+                    impostoSelect.innerHTML +=
+                        "<option disabled>Nenhum imposto encontrado</option>";
+                } else {
+                    data.forEach((imp) => {
+                        impostoSelect.innerHTML += `<option value="${imp.id}">${imp.descricao} (${imp.taxa}%)</option>`;
+                    });
+                }
+            })
+            .catch((err) => console.error("Erro ao carregar impostos:", err));
+    }
+
+    // 🟢 Carregar Motivos de Isenção
+    function carregarMotivos() {
+        fetch(apiMotivos)
+            .then((res) => res.json())
+            .then((data) => {
+                motivoSelect.innerHTML =
+                    '<option value="">-- Selecionar motivo --</option>';
+                if (!data.length) {
+                    motivoSelect.innerHTML +=
+                        "<option disabled>Nenhum motivo encontrado</option>";
+                } else {
+                    data.forEach((mot) => {
+                        motivoSelect.innerHTML += `<option value="${mot.id}">${mot.codigo} - ${mot.razao}</option>`;
+                    });
+                }
+            })
+            .catch((err) => console.error("Erro ao carregar motivos:", err));
     }
 
     // 🟢 Carregar Categorias
@@ -224,8 +270,20 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+    // 🟣 Mostrar motivo de isenção apenas se o imposto for "nenhum"
+    impostoSelect.addEventListener("change", function () {
+        if (this.value === "nenhum") {
+            motivoContainer.style.display = "block";
+        } else {
+            motivoContainer.style.display = "none";
+            motivoSelect.value = "";
+        }
+    });
+
     // 🟢 Inicialização
     carregarCategorias();
     carregarFornecedores();
     carregarProdutos();
+    carregarImpostos();
+    carregarMotivos();
 });

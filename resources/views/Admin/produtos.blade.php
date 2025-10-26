@@ -135,6 +135,26 @@
                                         placeholder="Ex: 100" required>
                                 </div>
                             </div>
+                            <div class="form-group col-sm-6">
+                                <label class="form-label fw-semibold">Imposto</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="bx bx-percent"></i></span>
+                                    <select class="form-select" id="imposto" name="imposto_id">
+                                        <!-- <option value="">-- Selecione o imposto--</option> -->
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group col-sm-6" id="motivo-container" style="display: none;">
+                                <label class="form-label fw-semibold">Motivo de Isenção</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="bx bx-message-square"></i></span>
+                                    <select class="form-select" id="motivo_isencao" name="motivo_isencao_id">
+                                        <option value="">-- Selecione o motivo de isenção --</option>
+                                    </select>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                     <div class="modal-footer bg-white">

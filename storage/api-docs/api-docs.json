@@ -1470,7 +1470,7 @@
                 "tags": [
                     "Produtos"
                 ],
-                "summary": "Criar produto",
+                "summary": "Criar produto com imposto ou motivo de isenção",
                 "operationId": "7c186445d191eabc09f48da5cb16782f",
                 "requestBody": {
                     "required": true,
@@ -1481,11 +1481,8 @@
                                     "descricao",
                                     "categoria_id",
                                     "fornecedor_id",
-                                    "codigo_barras",
                                     "preco_compra",
-                                    "preco_venda",
-                                    "data_validade",
-                                    "estoque"
+                                    "preco_venda"
                                 ],
                                 "properties": {
                                     "descricao": {
@@ -1517,11 +1514,21 @@
                                     "data_validade": {
                                         "type": "string",
                                         "format": "date",
-                                        "example": "2024-12-31"
+                                        "example": "2025-12-31"
                                     },
                                     "estoque": {
                                         "type": "integer",
                                         "example": 50
+                                    },
+                                    "imposto_id": {
+                                        "description": "Obrigatório se o produto tiver imposto",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "motivo_isencaos_id": {
+                                        "description": "Obrigatório se o produto for isento de imposto",
+                                        "type": "integer",
+                                        "example": 2
                                     }
                                 },
                                 "type": "object"
@@ -1532,6 +1539,9 @@
                 "responses": {
                     "201": {
                         "description": "Produto criado com sucesso"
+                    },
+                    "422": {
+                        "description": "Erro de validação fiscal: imposto ou isenção obrigatória"
                     }
                 }
             }
@@ -1563,7 +1573,7 @@
                 "tags": [
                     "Produtos"
                 ],
-                "summary": "Atualizar produto",
+                "summary": "Atualizar produto com imposto ou motivo de isenção",
                 "operationId": "7b8dd7116a9918178331971ec5cca4b1",
                 "parameters": [
                     {
@@ -1587,6 +1597,14 @@
                                     "preco_venda": {
                                         "type": "number",
                                         "example": "250.75"
+                                    },
+                                    "imposto_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "motivo_isencaos_id": {
+                                        "type": "integer",
+                                        "example": null
                                     }
                                 },
                                 "type": "object"
@@ -1597,6 +1615,9 @@
                 "responses": {
                     "200": {
                         "description": "Produto atualizado com sucesso"
+                    },
+                    "422": {
+                        "description": "Erro fiscal: imposto ou isenção obrigatória"
                     }
                 }
             },

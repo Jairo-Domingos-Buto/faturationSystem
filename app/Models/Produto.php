@@ -17,6 +17,8 @@ class Produto extends Model
         'preco_venda',
         'data_validade',
         'estoque',
+        'imposto_id',
+        'motivo_isencaos_id',
     ];
 
     protected $casts = [
@@ -34,5 +36,15 @@ class Produto extends Model
     public function fornecedor()
     {
         return $this->belongsTo(Fornecedor::class);
+    }
+
+    public function imposto()
+    {
+        return $this->belongsTo(Imposto::class);
+    }
+
+    public function motivoIsencao()
+    {
+        return $this->belongsTo(MotivoIsencao::class);
     }
 }

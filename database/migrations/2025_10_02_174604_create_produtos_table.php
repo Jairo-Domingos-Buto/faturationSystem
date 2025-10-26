@@ -21,6 +21,10 @@ return new class extends Migration
         $table->decimal('preco_venda', 15, 2)->default(0);
         $table->date('data_validade')->nullable();
         $table->integer('estoque')->default(0);
+        $table->unsignedBigInteger('motivo_isencaos_id')->nullable();
+        $table->foreign('motivo_isencaos_id')->references('id')->on('motivo_isencaos')->onDelete('set null');
+        $table->unsignedBigInteger('imposto_id')->nullable();
+        $table->foreign('imposto_id')->references('id')->on('impostos')->onDelete('set null');
         $table->timestamps();
         $table->softDeletes();
 

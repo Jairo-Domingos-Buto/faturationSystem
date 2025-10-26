@@ -90,7 +90,7 @@
               <i class='bx bx-package text-blue-500'></i>
               Produtos Disponíveis
             </h3>
-            <div class="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto">
+            <div class="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto ">
               @foreach($produtos as $produto)
               <button wire:click="adicionarProduto({{ $produto->id }})"
                 class="p-3 bg-white border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors duration-150 text-left">
@@ -207,13 +207,15 @@
           <div class="space-y-3 mb-4">
             <div class="relative">
               <i class='bx bx-money absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400'></i>
-              <input type="text" wire:="totalRecebido"
+              <input type="text" wire:model.debounce.500ms="totalRecebido"
                 class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 placeholder="Total recebido">
             </div>
             <div class="flex justify-between items-center text-gray-700">
               <span>Desconto:</span>
-              <span class="font-semibold">{{ number_format($desconto, 2, ',', '.') }} KZ</span>
+              <input type="text" wire:model.debounce.500ms="desconto"
+                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                placeholder="Desconto">
             </div>
             <div class="flex justify-between items-center text-gray-700">
               <span>Troco:</span>

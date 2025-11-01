@@ -18,6 +18,7 @@
         <div class="p-6 pt-0">
             <p class="text-gray-500">Sistema completo de gestão e faturação. Utilize o menu lateral para
                 navegar entre os diferentes módulos do sistema.</p>
+            
         </div>
     </div>
 

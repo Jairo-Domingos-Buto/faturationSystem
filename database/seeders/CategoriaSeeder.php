@@ -2,24 +2,17 @@
 
 namespace Database\Seeders;
 
-use App\Models\Categoria;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class CategoriaSeeder extends Seeder
 {
     public function run(): void
     {
-        $categorias = [
-            ['nome' => 'Eletrônicos'],
-            ['nome' => 'Vestuário'],
-            ['nome' => 'Alimentos'],
-            ['nome' => 'Bebidas'],
-            ['nome' => 'Higiene'],
-            ['nome' => 'Limpeza'],
-        ];
-
-        foreach ($categorias as $categoria) {
-            Categoria::create($categoria);
-        }
+        DB::table('categorias')->insert([
+            ['nome' => 'Eletrônicos', 'descricao' => 'Produtos eletrônicos em geral', 'created_at' => now(), 'updated_at' => now()],
+            ['nome' => 'Serviços Técnicos', 'descricao' => 'Manutenção e instalação', 'created_at' => now(), 'updated_at' => now()],
+            ['nome' => 'Mobiliário', 'descricao' => 'Itens de escritório', 'created_at' => now(), 'updated_at' => now()],
+        ]);
     }
 }

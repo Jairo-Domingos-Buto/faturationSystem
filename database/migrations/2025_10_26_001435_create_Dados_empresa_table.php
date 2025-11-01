@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('nif');
-            $table->integer('telefone');
+            $table->string('telefone');
             $table->string('email');
             $table->text('website')->nullable();
             $table->string('nomeDoBanco');

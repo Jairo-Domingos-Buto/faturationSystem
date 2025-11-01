@@ -13,6 +13,7 @@
     <meta name="description" content="" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    <script src="//unpkg.com/alpinejs" defer></script>
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="../assets/img/favicon/favicon.ico" />
@@ -118,108 +119,115 @@
                 <ul class="menu-inner py-1">
                     <!-- Dashboard -->
                     <li class="menu-item">
-                        <a href="/dashboard" class="menu-link">
+                        <a href="{{ route('admin.dashboard') }}" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-grid-alt"></i>
                             <div data-i18n="Analytics">Dashboard</div>
                         </a>
                     </li>
-
+                
                     <!-- Clientes -->
                     <li class="menu-item">
-                        <a href="/clientes" class="menu-link">
+                        <a href="{{ route('admin.clientes') }}" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-user"></i>
                             <div data-i18n="Analytics">Clientes</div>
                         </a>
                     </li>
-
+                
                     <!-- Fornecedores -->
                     <li class="menu-item">
-                        <a href="/fornecedores" class="menu-link">
+                        <a href="{{ route('admin.fornecedores') }}" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-store"></i>
                             <div data-i18n="Analytics">Fornecedores</div>
                         </a>
                     </li>
-
+                
                     <!-- Usuários -->
                     <li class="menu-item">
-                        <a href="/usuarios" class="menu-link">
+                        <a href="{{ route('admin.usuarios') }}" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-group"></i>
                             <div data-i18n="Analytics">Usuários</div>
                         </a>
                     </li>
-
-                    <!-- Produtos -->
+                
+                    <!-- Categoria -->
                     <li class="menu-item">
-                        <a href="/categoria" class="menu-link">
+                        <a href="{{ route('admin.categoria') }}" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-category"></i>
                             <div data-i18n="Analytics">Categoria</div>
                         </a>
                     </li>
+                
+                    <!-- Produtos -->
                     <li class="menu-item">
-                        <a href="/produtos" class="menu-link">
+                        <a href="{{ route('admin.produtos') }}" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-package"></i>
                             <div data-i18n="Analytics">Produtos</div>
                         </a>
                     </li>
-
+                
                     <!-- Serviços -->
                     <li class="menu-item">
-                        <a href="/servicos" class="menu-link">
+                        <a href="{{ route('admin.servicos') }}" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-cog"></i>
                             <div data-i18n="Analytics">Serviços</div>
                         </a>
                     </li>
-
+                
                     <!-- Impostos -->
                     <li class="menu-item">
-                        <a href="/impostos" class="menu-link">
+                        <a href="{{ route('admin.impostos') }}" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-receipt"></i>
                             <div data-i18n="Analytics">Impostos</div>
                         </a>
                     </li>
-
+                
                     <!-- Motivos de Isenção -->
                     <li class="menu-item">
-                        <a href="/isencao" class="menu-link">
+                        <a href="{{ route('admin.isencao') }}" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-shield"></i>
                             <div data-i18n="Analytics">Motivos de Isenção</div>
                         </a>
                     </li>
+                
                     <!-- Faturas -->
                     <li class="menu-item">
-                        <a href="/faturas" class="menu-link">
+                        <a href="{{ route('admin.faturas') }}" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-receipt"></i>
                             <div data-i18n="Analytics">Faturas</div>
                         </a>
                     </li>
-
+                
                     <!-- Recibos -->
                     <li class="menu-item">
-                        <a href="/recibos" class="menu-link">
+                        <a href="{{ route('admin.recibos') }}" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-shield"></i>
                             <div data-i18n="Analytics">Recibos</div>
                         </a>
                     </li>
-                    {{-- Faturas Recibos --}}
-                      <li class="menu-item">
-                        <a href="/faturas-recibo" class="menu-link">
+                
+                    <!-- Faturas Recibos -->
+                    <li class="menu-item">
+                        <a href="{{ route('admin.faturas.recibo') }}" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-shield"></i>
                             <div data-i18n="Analytics">Faturas-Recibo</div>
                         </a>
                     </li>
-                    {{-- Ponto de Venda --}}
-                      <li class="menu-item">
-                        <a href="/pov" class="menu-link">
+                
+                    <!-- Ponto de Venda -->
+                    <li class="menu-item">
+                        <a href="{{ route('admin.pov') }}" class="menu-link">
                             <i class="menu-icon tf-icons bx bx-shield"></i>
                             <div data-i18n="Analytics">Ponto de Venda</div>
                         </a>
                     </li>
+                
+                    <!-- Configurações -->
                     <li class="menu-item">
-                        <a href="/configuracoes" class="menu-link">
-                          <i class="menu-icon tf-icons bx bx-shield"></i>
-                          <div data-i18n="Analytics">COnfiguracoes</div>
+                        <a href="{{ route('admin.configuracoes') }}" class="menu-link">
+                            <i class="menu-icon tf-icons bx bx-cog"></i>
+                            <div data-i18n="Analytics">Configurações</div>
                         </a>
-                      </li>
+                    </li>
                 </ul>
 
             </aside>
@@ -300,8 +308,8 @@
                                                     </div>
                                                 </div>
                                                 <div class="flex-grow-1">
-                                                    <h6 class="mb-0">John Doe</h6>
-                                                    <small class="text-body-secondary">Admin</small>
+                                                    <h6 class="mb-0">{{ auth()->user()->name }}</h6>
+                                                    <small class="text-body-secondary">{{ auth()->user()->typeUser->value }}</small>
                                                 </div>
                                             </div>
                                         </a>
@@ -311,31 +319,23 @@
                                     </li>
                                     <li>
                                         <a class="dropdown-item" href="#">
-                                            <i class="icon-base bx bx-user icon-md me-3"></i><span>My Profile</span>
+                                            <i class="icon-base bx bx-user icon-md me-3"></i><span>Meu Perfil</span>
                                         </a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item" href="#">
-                                            <i class="icon-base bx bx-cog icon-md me-3"></i><span>Settings</span>
+                                            <i class="icon-base bx bx-cog icon-md me-3"></i><span>Configurações</span>
                                         </a>
                                     </li>
-                                    <li>
-                                        <a class="dropdown-item" href="#">
-                                            <span class="d-flex align-items-center align-middle">
-                                                <i
-                                                    class="flex-shrink-0 icon-base bx bx-credit-card icon-md me-3"></i><span
-                                                    class="flex-grow-1 align-middle">Billing Plan</span>
-                                                <span class="flex-shrink-0 badge rounded-pill bg-danger">4</span>
-                                            </span>
-                                        </a>
-                                    </li>
+                               
                                     <li>
                                         <div class="dropdown-divider my-1"></div>
                                     </li>
-                                    <li>
-                                        <a class="dropdown-item" href="/">
-                                            <i class="icon-base bx bx-power-off icon-md me-3"></i><span>Log Out</span>
-                                        </a>
+                                    <li> 
+                                      <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                       <a href="#" onclick="event.preventDefault(); this.closest('form').submit();">Sair</a>
+                                    </form>
                                     </li>
                                 </ul>
                             </li>

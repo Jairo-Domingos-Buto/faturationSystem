@@ -2,13 +2,25 @@
 
 namespace Database\Seeders;
 
-use App\Models\Fornecedor;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class FornecedorSeeder extends Seeder
 {
     public function run(): void
     {
-        /* Fornecedor::factory(10)->create() */; // Cria 10 fornecedores aleatórios
+        DB::table('fornecedores')->insert([
+            [
+                'nome' => 'Fornecedor Global',
+                'nif' => '540987654',
+                'telefone' => '+244923456789',
+                'email' => 'contato@fornecedorglobal.com',
+                'localizacao' => 'Viana',
+                'provincia' => 'Luanda',
+                'cidade' => 'Viana',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        ]);
     }
 }

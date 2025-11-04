@@ -49,7 +49,7 @@ class ConfiguracoesEmpresa extends Component
             $this->cidade = $this->empresa->cidade;
             $this->rua = $this->empresa->rua;
             $this->edificio = $this->empresa->edificio;
-            $this->localizacao = $this->empresa->mucicipio;
+            $this->localizacao = $this->empresa->localizacao;
             $this->regime = $this->empresa->regime;
         }
     }
@@ -70,8 +70,9 @@ class ConfiguracoesEmpresa extends Component
                 'iban' => $this->iban,
                 'cidade' => $this->cidade,
                 'rua' => $this->rua,
+                'localizacao' => $this->localizacao,
                 'edificio' => $this->edificio,
-                'mucicipio' => $this->localizacao,
+              
                 'regime' => $this->regime,
             ]
         );

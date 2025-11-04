@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('cidade');
             $table->string('rua');
             $table->string('edificio');
+            $table->string('localizacao');
             $table->string('municipio')->nullable();
             $table->string('regime')->nullable();
             $table->timestamps();

@@ -52,9 +52,20 @@ class FaturaList extends Component
         }
     }
 
+    public function delete($id)
+    {
+        $fatura = Fatura::find($id);
+
+        if ($fatura) {
+            $fatura->delete();
+            session()->flash('message', 'Fatura eliminada com sucesso.');
+        }
+    }
+
     public function render()
     {
         $query = Fatura::query();
+        $faturas = $query->with(['cliente', 'user'])->get();
 
         if ($this->start_date && $this->end_date) {
             $start = $this->start_date.' 00:00:00';
@@ -72,6 +83,7 @@ class FaturaList extends Component
         // carrega relações corretas (cliente, user, items se existir)
         $faturas = $query
             ->with(['cliente', 'user']) // ajuste aqui se tiver 'items' ou outras relações
+
             ->orderByDesc('created_at')
             ->paginate(15);
 

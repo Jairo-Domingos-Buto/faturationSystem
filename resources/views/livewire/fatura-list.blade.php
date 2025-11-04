@@ -33,10 +33,10 @@
     {{-- estatitisca --}}
     <div class='mt-3 flex  items-center justify-between'>
         <div class='p-2.5 rounded bg-gray-100 border text-black '>
-            <span><strong> Faturas geradas:</strong> 0</span>
+            <span><strong> Faturas geradas:</strong> {{ $faturas->count() }}</span>
         </div>
         <div class='p-2.5 rounded bg-gray-100 border text-black'>
-            <span><strong> Total de Faturas (AOA):</strong> 0 KZ</span>
+            <span><strong> Total de Faturas (AOA):</strong> {{ $faturas->sum('total') }} KZ</span>
         </div>
         <div class='p-2.5 rounded bg-gray-100 border text-black '>
             <span><strong> Faturas em DInheiro:</strong> 0</span>
@@ -68,22 +68,24 @@
             </thead>
             <tbody class="table-border-bottom-0">
                 @forelse ($faturas as $fatura)
-                    <tr>
-                        <td>{{ $fatura->created_at }}</td>
-                        <td>{{ $fatura->numero }}</td>
-                        <td>{{ $fatura->cliente->name }}</td>
-                        <td>{{ $fatura->user->name }}</td>
-                        <td>{{ $fatura->estado }}</td>
-                        <td>{{ $fatura->preco }}</td>
-                        <td>
-                            <button class='bg-blue-500 text-white rounded p-1'>Ver</button>
-                            <button class='bg-red-500 text-white rounded p-1'>Eliminar</button>
-                        </td>
-                    </tr>
+                <tr>
+                    <td>{{ $fatura->created_at }}</td>
+                    <td>{{ $fatura->numero }}</td>
+                    <td>{{ $fatura->cliente?->nome ?? 'Sem nome' }}</td>
+                    <td>{{ $fatura->user->name }}</td>
+                    <td>{{ $fatura->estado }}</td>
+                    <td>{{ $fatura->total }}</td>
+                    <td>
+                        <button wire:click="delete({{ $fatura->id }})" class='bg-red-500 text-white rounded p-1'
+                            onclick="return confirm('Deseja realmente eliminar esta fatura?')">
+                            Eliminar
+                        </button>
+                    </td>
+                </tr>
                 @empty
-                    <tr>
-                        <td colspan='7' class='text-center'>Sem Dados encontrados</td>
-                    </tr>
+                <tr>
+                    <td colspan='7' class='text-center'>Sem Dados encontrados</td>
+                </tr>
                 @endforelse
             </tbody>
         </table>

@@ -21,6 +21,7 @@ class DadosEmpresaSeeder extends Seeder
             'municipio' => 'Talatona',
             'iban' => 'AO06004300000012345678901',
             'nomeDoBanco' => 'Banco BAI',
+            'localizacao' => 'Talatona',
             'regime' => 'Geral',
             'created_at' => now(),
             'updated_at' => now(),

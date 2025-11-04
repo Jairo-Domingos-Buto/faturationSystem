@@ -20,6 +20,7 @@ class DadosEmpresa extends Model
         'rua',
         'edificio',
         'municipio',
+        'localizacao',
         'regime',
     ];
 }

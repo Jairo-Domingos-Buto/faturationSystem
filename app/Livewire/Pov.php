@@ -322,7 +322,7 @@ class Pov extends Component
         session(['dados_fatura' => $dados_fatura]);
 
         // redireciona para o endpoint de download (rota web)
-        return redirect('/fatura/download');
+        return redirect('admin/fatura/download');
     }
 
     public function render()

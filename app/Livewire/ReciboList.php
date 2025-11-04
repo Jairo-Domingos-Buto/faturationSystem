@@ -56,6 +56,16 @@ class ReciboList extends Component
             [$this->start_date, $this->end_date] = [$this->end_date, $this->start_date];
         }
     }
+    public function delete($id)
+{
+    $recibo = Recibo::find($id);
+
+    if ($recibo) {
+        $recibo->delete();
+        session()->flash('message', 'Recibo eliminado com sucesso.');
+    }
+}
+
 
     public function render()
     {

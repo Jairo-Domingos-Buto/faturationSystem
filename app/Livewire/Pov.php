@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Cliente;
+use App\Models\DadosEmpresa;
 use App\Models\Fatura;
 use App\Models\Produto;
 use App\Models\Recibo;
@@ -24,7 +25,9 @@ class Pov extends Component
 
     public $clienteSelecionado = null;
 
+
     public $clienteNome = 'Nenhum cliente selecionado';
+    public $clienteLocalizacao = '';
 
     public $showModal = false;
 
@@ -99,7 +102,7 @@ class Pov extends Component
         $cliente = Cliente::find($clienteId);
         if ($cliente) {
             $this->clienteSelecionado = $cliente->id;
-            $this->clienteNome = $cliente->nome.' - '.$cliente->nif;
+            $this->clienteNome = $cliente->nome.' - '.$cliente->nif.' - '.$cliente->localizacao;
         }
         $this->fecharModal();
     }
@@ -291,40 +294,116 @@ class Pov extends Component
     }
 
     /* exportar PDF usando dompdf */
-    public function exportarDadosFatura()
-    {
-        if (! $this->clienteSelecionado || empty($this->produtosCarrinho)) {
-            session()->flash('error', 'Selecione um cliente e adicione produtos antes de exportar.');
-
-            return;
-        }
-
-        $dados_fatura = [
-            'tipo_documento' => $this->tipoDocumento,
-            'natureza' => $this->natureza,
-            'cliente' => [
-                'id' => $this->clienteSelecionado,
-                'nome' => $this->clienteNome,
-            ],
-            'produtos' => $this->produtosCarrinho,
-            'financeiro' => [
-                'subtotal' => $this->subtotal,
-                'incidencia' => $this->incidencia,
-                'iva' => $this->iva,
-                'total' => $this->total,
-                'desconto' => $this->desconto,
-                'total_recebido' => $this->totalRecebido,
-                'troco' => $this->troco,
-            ],
-        ];
-
-        // Salva os dados da fatura na sessão para o controller usar
-        session(['dados_fatura' => $dados_fatura]);
-
-        // redireciona para o endpoint de download (rota web)
-        return redirect('admin/fatura/download');
+public function exportarDadosFatura()
+{
+    if (!$this->clienteSelecionado || empty($this->produtosCarrinho)) {
+        session()->flash('error', 'Selecione um cliente e adicione produtos antes de exportar.');
+        return;
     }
 
+    // Busca dados completos do cliente
+    $cliente = Cliente::find($this->clienteSelecionado);
+    
+    // Busca dados da empresa
+    $empresa = DadosEmpresa::first();
+
+    // Gera número do documento baseado no tipo
+    if ($this->tipoDocumento === 'fatura') {
+        $numeroDocumento = 'FT-' . date('Ymd') . '-' . str_pad(Fatura::count() + 1, 4, '0', STR_PAD_LEFT);
+        $tipoLabel = 'Factura';
+    } else {
+        $numeroDocumento = 'RC-' . date('Ymd') . '-' . str_pad(Recibo::count() + 1, 4, '0', STR_PAD_LEFT);
+        $tipoLabel = 'Recibo';
+    }
+
+    // Prepara produtos com todos os detalhes
+    $produtosDetalhados = [];
+    foreach ($this->produtosCarrinho as $item) {
+        $produto = Produto::with(['imposto', 'motivoIsencao'])->find($item['id']);
+        
+        $precoUnitario = (float) $item['preco_venda'];
+        $quantidade = $item['quantidade'];
+        $subtotalProduto = $precoUnitario * $quantidade;
+        
+        // Calcula IVA do produto (se aplicável)
+        $taxaIva = $produto->imposto ? $produto->imposto->taxa : 14;
+        $ivaValor = $subtotalProduto * ($taxaIva / 100);
+        
+        $produtosDetalhados[] = [
+            'id' => $produto->id,
+            'codigo_barras' => $produto->codigo_barras,
+            'descricao' => $produto->descricao,
+            'quantidade' => $quantidade,
+            'unidade' => 'UN', // Adicione campo unidade na tabela se necessário
+            'preco_unitario' => $precoUnitario,
+            'desconto' => 0, // Implemente desconto por produto se necessário
+            'taxa_iva' => $taxaIva,
+            'iva_valor' => $ivaValor,
+            'subtotal' => $subtotalProduto,
+            'total' => $subtotalProduto + $ivaValor,
+            'motivo_isencao' => $produto->motivoIsencao ? $produto->motivoIsencao->descricao : null,
+        ];
+    }
+
+    $dados_fatura = [
+        // Informações do documento
+        'numero' => $numeroDocumento,
+        'tipo_documento' => $this->tipoDocumento,
+        'natureza' => $this->natureza,
+        'data_emissao' => now()->format('Y-m-d'),
+        'data_vencimento' => now()->addDays(30)->format('Y-m-d'), // 30 dias após emissão
+        'moeda' => 'AKZ',
+        'condicao_pagamento' => 'Pronto Pagamento',
+        
+        // Dados da empresa
+        'empresa' => [
+            'nome' => $empresa->name ?? '',
+            'nif' => $empresa->nif ?? '',
+            'telefone' => $empresa->telefone ?? '',
+            'email' => $empresa->email ?? '',
+            'website' => $empresa->website ?? '',
+            'rua' => $empresa->rua ?? '',
+            'edificio' => $empresa->edificio ?? '',
+            'cidade' => $empresa->cidade ?? '',
+            'municipio' => $empresa->municipio ?? '',
+            'localizacao' => $empresa->localizacao ?? '',
+            'regime' => $empresa->regime ?? '',
+            'banco' => $empresa->nomeDoBanco ?? '',
+            'iban' => $empresa->iban ?? '',
+        ],
+        
+        // Dados do cliente
+        'cliente' => [
+            'id' => $cliente->id,
+            'nome' => $cliente->nome,
+            'nif' => $cliente->nif,
+            'telefone' => $cliente->telefone ?? '',
+            'provincia' => $cliente->provincia ?? '',
+            'cidade' => $cliente->cidade ?? '',
+            'localizacao' => $cliente->localizacao ?? '',
+        ],
+        
+        // Produtos
+        'produtos' => $produtosDetalhados,
+        
+        // Resumo financeiro
+        'financeiro' => [
+            'subtotal' => $this->subtotal,
+            'incidencia' => $this->incidencia,
+            'iva' => $this->iva,
+            'desconto' => $this->desconto,
+            'total' => $this->total,
+            'total_recebido' => $this->totalRecebido,
+            'troco' => $this->troco,
+        ],
+    ];
+
+    // Grava na sessão
+    session()->put('dados_fatura', $dados_fatura);
+    session()->save();
+
+    return redirect()->route('admin.fatura.download');
+}
     public function render()
     {
         return view('livewire.pov');

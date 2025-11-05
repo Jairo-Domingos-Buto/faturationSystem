@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Recibo;
+use App\Models\DadosEmpresa;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -11,11 +12,9 @@ class ReciboList extends Component
     use WithPagination;
 
     public $start_date;
-
     public $end_date;
 
     protected $paginationTheme = 'tailwind';
-
     protected $queryString = ['start_date', 'end_date', 'page'];
 
     public function mount()
@@ -37,17 +36,13 @@ class ReciboList extends Component
         $this->resetPage();
     }
 
-    /**
-     * Garante que start_date e end_date estão em formato correto e que start <= end.
-     * Se start > end, faz swap para evitar queries inválidas.
-     */
     protected function normalizeDates()
     {
-        if (! $this->start_date) {
+        if (!$this->start_date) {
             $this->start_date = now()->subMonth()->format('Y-m-d');
         }
 
-        if (! $this->end_date) {
+        if (!$this->end_date) {
             $this->end_date = now()->format('Y-m-d');
         }
 
@@ -56,25 +51,25 @@ class ReciboList extends Component
             [$this->start_date, $this->end_date] = [$this->end_date, $this->start_date];
         }
     }
+
     public function delete($id)
-{
-    $recibo = Recibo::find($id);
+    {
+        $recibo = Recibo::find($id);
 
-    if ($recibo) {
-        $recibo->delete();
-        session()->flash('message', 'Recibo eliminado com sucesso.');
+        if ($recibo) {
+            $recibo->delete();
+            session()->flash('message', 'Recibo eliminado com sucesso.');
+        }
     }
-}
-
 
     public function render()
     {
         $query = Recibo::query();
 
-        // Se ambas as datas estão definidas, usa whereBetween com intervalo completo do dia
+        // Aplica filtro de datas
         if ($this->start_date && $this->end_date) {
-            $start = $this->start_date.' 00:00:00';
-            $end = $this->end_date.' 23:59:59';
+            $start = $this->start_date . ' 00:00:00';
+            $end = $this->end_date . ' 23:59:59';
             $query->whereBetween('created_at', [$start, $end]);
         } else {
             if ($this->start_date) {
@@ -85,8 +80,47 @@ class ReciboList extends Component
             }
         }
 
-        $recibos = $query->with(['fatura', 'cliente', 'user'])->orderByDesc('created_at')->paginate(15);
+        // Carrega relações e pagina
+        $recibos = $query
+            ->with(['fatura', 'cliente', 'user'])
+            ->orderByDesc('created_at')
+            ->paginate(15);
 
-        return view('livewire.recibo-list', compact('recibos'));
+        // Calcula estatísticas
+        $totalRecibos = $recibos->total();
+        $somaValores = $query->sum('valor');
+        
+        // Conta por método de pagamento
+        $recibosDinheiro = Recibo::query()
+            ->when($this->start_date && $this->end_date, function($q) {
+                $q->whereBetween('created_at', [
+                    $this->start_date . ' 00:00:00',
+                    $this->end_date . ' 23:59:59'
+                ]);
+            })
+            ->where('metodo_pagamento', 'dinheiro')
+            ->count();
+
+        $recibosMulticaixa = Recibo::query()
+            ->when($this->start_date && $this->end_date, function($q) {
+                $q->whereBetween('created_at', [
+                    $this->start_date . ' 00:00:00',
+                    $this->end_date . ' 23:59:59'
+                ]);
+            })
+            ->where('metodo_pagamento', 'multicaixa')
+            ->count();
+
+        // Busca dados da empresa
+        $empresa = DadosEmpresa::first();
+
+        return view('livewire.recibo-list', [
+            'recibos' => $recibos,
+            'empresa' => $empresa,
+            'totalRecibos' => $totalRecibos,
+            'somaValores' => $somaValores,
+            'recibosDinheiro' => $recibosDinheiro,
+            'recibosMulticaixa' => $recibosMulticaixa,
+        ]);
     }
 }

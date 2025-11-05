@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Factura FT FA.2025/6</title>
+  <title>Factura {{ $dados['numero'] }}</title>
   <style>
     * {
       margin: 0;
@@ -38,7 +38,6 @@
       color: #666;
     }
 
-    /* Header */
     .header {
       display: flex;
       justify-content: space-between;
@@ -87,7 +86,6 @@
       color: #000;
     }
 
-    /* Invoice title */
     .invoice-title {
       text-align: right;
       margin: 1mm 0 1mm;
@@ -103,7 +101,6 @@
       color: #555;
     }
 
-    /* Meta info */
     .invoice-meta-grid {
       display: flex;
       justify-content: space-between;
@@ -117,17 +114,18 @@
       display: flex;
       justify-content: space-between;
       margin-bottom: 3px;
+      min-width: 200px;
     }
 
     .meta-label {
       color: #555;
+      margin-right: 20px;
     }
 
     .meta-value {
       font-weight: 600;
     }
 
-    /* Table */
     .items-table {
       width: 100%;
       border-collapse: collapse;
@@ -172,14 +170,13 @@
       font-size: 7pt;
     }
 
-    /* Summary */
     .summary-section {
       margin-top: 10mm;
       border-top: 1px solid #e0e0e0;
       padding-top: 5mm;
+      display: flex;
+      justify-content: space-between;
     }
-
-
 
     .tax-summary {
       flex: 1;
@@ -193,7 +190,7 @@
     }
 
     .tax-table {
-      width: 50%;
+      width: 100%;
       border-collapse: collapse;
       font-size: 7.5pt;
     }
@@ -212,9 +209,9 @@
     .totals-box {
       flex: 0 0 280px;
       background: #f8f9fa;
-      width: 40%;
       border-radius: 6px;
       padding: 15px;
+      margin-left: 20px;
     }
 
     .total-line {
@@ -232,7 +229,6 @@
       padding-top: 6px;
     }
 
-    /* Bank info */
     .bank-info {
       margin-top: 10mm;
       background: #f8f9fa;
@@ -247,7 +243,6 @@
       color: #000;
     }
 
-    /* Footer */
     .footer {
       margin-top: 6mm;
       padding-top: 3mm;
@@ -257,7 +252,6 @@
       text-align: center;
     }
 
-    /* Print */
     @page {
       size: A4;
       margin: 10mm;
@@ -281,43 +275,63 @@
   <div class="invoice">
     <div class="page-number">Pág. 1/1</div>
 
+    <!-- HEADER -->
     <div class="header">
       <div>
-        <div class="logo-text">Ne<span class="x">X</span>corp</div>
+        <div class="logo-text">MINDSEAT</div>
         <div class="company-info">
-          <div class="company-name">NEXCORP - COMÉRCIO E PRESTAÇÃO DE SERVIÇOS, LDA</div>
-          <div>Contribuinte N.º: 5001925573</div>
-          <div>Bairro Luanda Sul, Rua Embondeiro 50</div>
-          <div>Luanda | Telef. 244 383732676</div>
-          <div>apoio.nexcorp@gmail.com</div>
+          <div class="company-name">{{ $dados['empresa']['nome'] }}</div>
+          <div>Contribuinte N.º: {{ $dados['empresa']['nif'] }}</div>
+          <div>{{ $dados['empresa']['rua'] }}, {{ $dados['empresa']['edificio'] }}</div>
+          <div>{{ $dados['empresa']['cidade'] }} | Telef. {{ $dados['empresa']['telefone'] }}</div>
+          <div>{{ $dados['empresa']['email'] }}</div>
         </div>
       </div>
 
       <div class="client-section">
         <div class="client-label">Exmo.(s) Sr.(s)</div>
-        <div class="client-name">TECNO EXCELÊNCIA (SU), LDA</div>
-        <div>Viana, Edifício Viana Shopping, 1º Andar</div>
+        <div class="client-name">{{ $dados['cliente']['nome'] }}</div>
+        <div>NIF: {{ $dados['cliente']['nif'] }}</div>
+        <div>{{ $dados['cliente']['localizacao'] }}</div>
+        <div>{{ $dados['cliente']['cidade'] }}, {{ $dados['cliente']['provincia'] }}</div>
+        @if($dados['cliente']['telefone'])
+        <div>Tel: {{ $dados['cliente']['telefone'] }}</div>
+        @endif
       </div>
     </div>
 
+    <!-- TÍTULO DA FATURA -->
     <div class="invoice-title">
-      <h1>Factura FT FA.2025/6</h1>
+
+      <h1 style="text-transform: uppercase;">{{ $dados['tipo_documento'] }} {{ $dados['numero'] }}</h1>
       <div class="original">Original</div>
     </div>
 
+    <!-- META INFORMAÇÕES -->
     <div class="invoice-meta-grid">
       <div>
-        <div class="meta-item"><span class="meta-label">Moeda</span><span class="meta-value">AKZ</span></div>
-        <div class="meta-item"><span class="meta-label">Vencimento</span><span class="meta-value">2025-05-07</span>
+        <div class="meta-item">
+          <span class="meta-label">Moeda</span>
+          <span class="meta-value">{{ $dados['moeda'] }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Vencimento</span>
+          <span class="meta-value">{{ $dados['data_vencimento'] }}</span>
         </div>
       </div>
       <div>
-        <div class="meta-item"><span class="meta-label">Data</span><span class="meta-value">2025-05-07</span></div>
-        <div class="meta-item"><span class="meta-label">Condição Pagamento</span><span class="meta-value">Pronto
-            Pagamento</span></div>
+        <div class="meta-item">
+          <span class="meta-label">Data</span>
+          <span class="meta-value">{{ $dados['data_emissao'] }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Condição Pagamento</span>
+          <span class="meta-value">{{ $dados['condicao_pagamento'] }}</span>
+        </div>
       </div>
     </div>
 
+    <!-- TABELA DE PRODUTOS -->
     <table class="items-table">
       <thead>
         <tr>
@@ -332,81 +346,80 @@
         </tr>
       </thead>
       <tbody>
+        @foreach ($dados['produtos'] as $produto)
         <tr>
-          <td>001</td>
-          <td>Computador - Core i7, 16gb Ram<br><span class="item-code">(90)</span></td>
-          <td class="text-right">6,00</td>
-          <td>UN</td>
-          <td class="text-right">812.522,00</td>
-          <td class="text-right">0,00</td>
-          <td class="text-right">0,00</td>
-          <td class="text-right">4.875.132,00</td>
+          <td>
+            {{ $produto['id'] }}<br>
+            <span class="item-code">{{ $produto['codigo_barras'] }}</span>
+          </td>
+          <td>{{ $produto['descricao'] }}</td>
+          <td class="text-right">{{ number_format($produto['quantidade'], 0) }}</td>
+          <td>{{ $produto['unidade'] }}</td>
+          <td class="text-right">{{ number_format($produto['preco_unitario'], 2, ',', '.') }}</td>
+          <td class="text-right">{{ number_format($produto['desconto'], 2, ',', '.') }}</td>
+          <td class="text-right">{{ number_format($produto['iva_valor'], 2, ',', '.') }}</td>
+          <td class="text-right">{{ number_format($produto['total'], 2, ',', '.') }}</td>
         </tr>
-        <tr>
-          <td>005</td>
-          <td>Controles de jogos (joysticks)<br><span class="item-code">(90)</span></td>
-          <td class="text-right">2,00</td>
-          <td>UN</td>
-          <td class="text-right">128.740,00</td>
-          <td class="text-right">0,00</td>
-          <td class="text-right">0,00</td>
-          <td class="text-right">257.480,00</td>
-        </tr>
-        <tr>
-          <td>006</td>
-          <td>Smart TV 55 Polegadas<br><span class="item-code">(90)</span></td>
-          <td class="text-right">1,00</td>
-          <td>UN</td>
-          <td class="text-right">223.810,00</td>
-          <td class="text-right">0,00</td>
-          <td class="text-right">0,00</td>
-          <td class="text-right">223.810,00</td>
-        </tr>
+        @endforeach
       </tbody>
     </table>
 
+    <!-- RESUMO E TOTAIS -->
     <div class="summary-section">
-      <div class="summary-grid">
-        <div class="tax-summary">
-          <h3>Quadro Resumo de Impostos</h3>
-          <table class="tax-table">
-            <thead>
-              <tr>
-                <th>Taxa/Valor</th>
-                <th class="text-right">Incid./Qtd.</th>
-                <th class="text-right">Total</th>
-                <th>Motivo Isenção</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>IVA (0,00)</td>
-                <td class="text-right">10.066.905,00</td>
-                <td class="text-right">0,00</td>
-                <td>(90) IVA - Regime de Exclusão</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      <div class="tax-summary">
+        <h3>Quadro Resumo de Impostos</h3>
+        <table class="tax-table">
+          <thead>
+            <tr>
+              <th>Taxa/Valor</th>
+              <th class="text-right">Incid./Qtd.</th>
+              <th class="text-right">Total</th>
+              <th>Motivo Isenção</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>IVA (14%)</td>
+              <td class="text-right">{{ number_format($dados['financeiro']['incidencia'], 2, ',', '.') }}</td>
+              <td class="text-right">{{ number_format($dados['financeiro']['iva'], 2, ',', '.') }}</td>
+              <td>{{ $dados['empresa']['regime'] }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-        <div class="totals-box">
-          <div class="total-line"><span>Mercadoria/Serviços</span><span>10.066.905,00</span></div>
-          <div class="total-line"><span>IVA</span><span>0,00</span></div>
-          <div class="total-line"><span>Descontos Comerciais</span><span>0,00</span></div>
-          <div class="total-line grand-total"><span>Total (AKZ)</span><span>10.066.905,00</span></div>
+      <div class="totals-box">
+        <div class="total-line">
+          <span>Mercadoria/Serviços</span>
+          <span>{{ number_format($dados['financeiro']['subtotal'], 2, ',', '.') }}</span>
+        </div>
+        <div class="total-line">
+          <span>IVA</span>
+          <span>{{ number_format($dados['financeiro']['iva'], 2, ',', '.') }}</span>
+        </div>
+        <div class="total-line">
+          <span>Descontos Comerciais</span>
+          <span>{{ number_format($dados['financeiro']['desconto'], 2, ',', '.') }}</span>
+        </div>
+        <div class="total-line grand-total">
+          <span>Total ({{ $dados['moeda'] }})</span>
+          <span>{{ number_format($dados['financeiro']['total'], 2, ',', '.') }}</span>
         </div>
       </div>
     </div>
 
+    <!-- INFORMAÇÕES BANCÁRIAS -->
+    @if($dados['empresa']['banco'] && $dados['empresa']['iban'])
     <div class="bank-info">
-      <strong>BANCO SOL</strong><br>
-      <strong>IBAN:</strong> AO06 0044 0000.2328.1391.1010.3<br>
-      <strong>Nº Conta:</strong> 22328139110001
+      <strong>{{ strtoupper($dados['empresa']['banco']) }}</strong><br>
+      <strong>IBAN:</strong> {{ $dados['empresa']['iban'] }}<br>
     </div>
+    @endif
 
+    <!-- RODAPÉ -->
     <div class="footer">
-      DwuV - Processado por programa validado n.º 41/AGT/2019 |
-      Os bens e/ou serviços foram colocados à disposição na data 2025-05-07 / © PRIMAVERA BSS
+      Processado por programa certificado |
+      Os bens e/ou serviços foram colocados à disposição na data {{ $dados['data_emissao'] }}
     </div>
   </div>
 </body>

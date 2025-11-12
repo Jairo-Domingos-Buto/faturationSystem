@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const apiCategorias = "/api/categorias";
     const apiFornecedores = "/api/fornecedores";
     const apiImpostos = "/api/impostos";
-    const apiMotivos = '/api/motivo_isencaos';
+    const apiMotivos = "/api/motivo_isencaos";
     const impostoSelect = document.getElementById("imposto");
     const motivoContainer = document.getElementById("motivo-container");
     const motivoSelect = document.getElementById("motivo_isencao");
@@ -226,11 +226,37 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
-    // 🟢 Submeter Formulário (Criar ou Atualizar)
     formProduto.addEventListener("submit", async function (e) {
         e.preventDefault();
 
         const formData = new FormData(formProduto);
+
+        // Capturar os selects
+        const impostoVal = impostoSelect.value;
+        const motivoVal = motivoSelect.value;
+
+        // 👉 Se o imposto for "nenhum", tratamos como isento
+        if (
+            impostoVal === "nenhum" ||
+            impostoVal === "" ||
+            impostoVal === null
+        ) {
+            formData.set("imposto_id", ""); // envia vazio (Laravel entende como null)
+
+            if (!motivoVal) {
+                alert(
+                    "⚠️ Se o produto é isento, deve selecionar o motivo de isenção!"
+                );
+                return;
+            }
+
+            formData.set("motivo_isencaos_id", motivoVal);
+        } else {
+            // 👉 Produto com imposto
+            formData.set("imposto_id", impostoVal);
+            formData.delete("motivo_isencaos_id");
+        }
+
         const metodo = editandoId ? "POST" : "POST";
         const url = editandoId
             ? `${apiProdutos}/${editandoId}?_method=PUT`
@@ -249,18 +275,24 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!res.ok) {
                 const errorText = await res.text();
                 console.error("Erro ao salvar produto:", errorText);
-                throw new Error(`Erro: ${res.status}`);
+                alert("❌ Erro ao salvar produto. Veja o console.");
+                return;
             }
 
             const data = await res.json();
             console.log("Produto salvo:", data);
-
             alert(
-                editandoId
-                    ? "✅ Produto atualizado com sucesso!"
-                    : "✅ Produto cadastrado com sucesso!"
+                editandoId ? "✅ Produto atualizado!" : "✅ Produto cadastrado!"
             );
+            // 🧹 Limpar completamente o formulário
             formProduto.reset();
+            impostoSelect.value = "";
+            motivoSelect.value = "";
+            categoriaSelect.value = "";
+            fornecedorSelect.value = "";
+            motivoContainer.style.display = "none"; // Esconde o campo de motivo
+
+            // Fecha o modal e recarrega a tabela
             modalProduto.hide();
             carregarProdutos();
             editandoId = null;

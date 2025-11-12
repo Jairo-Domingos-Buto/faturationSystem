@@ -226,49 +226,66 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
-    // 🟢 Submeter Formulário (Criar ou Atualizar)
-    formProduto.addEventListener("submit", async function (e) {
-        e.preventDefault();
+ formProduto.addEventListener("submit", async function (e) {
+    e.preventDefault();
 
-        const formData = new FormData(formProduto);
-        const metodo = editandoId ? "POST" : "POST";
-        const url = editandoId
-            ? `${apiProdutos}/${editandoId}?_method=PUT`
-            : apiProdutos;
+    const formData = new FormData(formProduto);
 
-        try {
-            const res = await fetch(url, {
-                method: metodo,
-                headers: {
-                    "X-CSRF-TOKEN": getCsrf(),
-                    Accept: "application/json",
-                },
-                body: formData,
-            });
+    // Capturar os selects
+    const impostoVal = impostoSelect.value;
+    const motivoVal = motivoSelect.value;
 
-            if (!res.ok) {
-                const errorText = await res.text();
-                console.error("Erro ao salvar produto:", errorText);
-                throw new Error(`Erro: ${res.status}`);
-            }
+    // 👉 Se o imposto for "nenhum", tratamos como isento
+    if (impostoVal === "nenhum" || impostoVal === "" || impostoVal === null) {
+        formData.set("imposto_id", ""); // envia vazio (Laravel entende como null)
 
-            const data = await res.json();
-            console.log("Produto salvo:", data);
-
-            alert(
-                editandoId
-                    ? "✅ Produto atualizado com sucesso!"
-                    : "✅ Produto cadastrado com sucesso!"
-            );
-            formProduto.reset();
-            modalProduto.hide();
-            carregarProdutos();
-            editandoId = null;
-        } catch (err) {
-            console.error("Erro ao salvar produto:", err);
-            alert("❌ Erro ao salvar produto. Veja o console.");
+        if (!motivoVal) {
+            alert("⚠️ Se o produto é isento, deve selecionar o motivo de isenção!");
+            return;
         }
-    });
+
+        formData.set("motivo_isencaos_id", motivoVal);
+    } else {
+        // 👉 Produto com imposto
+        formData.set("imposto_id", impostoVal);
+        formData.delete("motivo_isencaos_id");
+    }
+
+    const metodo = editandoId ? "POST" : "POST";
+    const url = editandoId
+        ? `${apiProdutos}/${editandoId}?_method=PUT`
+        : apiProdutos;
+
+    try {
+        const res = await fetch(url, {
+            method: metodo,
+            headers: {
+                "X-CSRF-TOKEN": getCsrf(),
+                Accept: "application/json",
+            },
+            body: formData,
+        });
+
+        if (!res.ok) {
+            const errorText = await res.text();
+            console.error("Erro ao salvar produto:", errorText);
+            alert("❌ Erro ao salvar produto. Veja o console.");
+            return;
+        }
+
+        const data = await res.json();
+        console.log("Produto salvo:", data);
+        alert(editandoId ? "✅ Produto atualizado!" : "✅ Produto cadastrado!");
+        formProduto.reset();
+        modalProduto.hide();
+        carregarProdutos();
+        editandoId = null;
+    } catch (err) {
+        console.error("Erro ao salvar produto:", err);
+        alert("❌ Erro ao salvar produto. Veja o console.");
+    }
+});
+
 
     // 🟣 Mostrar motivo de isenção apenas se o imposto for "nenhum"
     impostoSelect.addEventListener("change", function () {

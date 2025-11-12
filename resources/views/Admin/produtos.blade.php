@@ -149,7 +149,7 @@
                                 <label class="form-label fw-semibold">Motivo de Isenção</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-white"><i class="bx bx-message-square"></i></span>
-                                    <select class="form-select" id="motivo_isencao" name="motivo_isencao_id">
+                                    <select class="form-select" id="motivo_isencao" name="motivo_isencaos_id">
                                         <option value="">-- Selecione o motivo de isenção --</option>
                                     </select>
                                 </div>

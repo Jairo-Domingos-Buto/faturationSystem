@@ -15,45 +15,35 @@ class Pov extends Component
 {
     // Propriedades do documento
     public $tipoDocumento = 'fatura';
-
     public $natureza = 'produto';
-
     public $Dados;
 
     // Cliente
     public $clientes = [];
-
     public $clienteSelecionado = null;
-
-
     public $clienteNome = 'Nenhum cliente selecionado';
     public $clienteLocalizacao = '';
-
     public $showModal = false;
-
     public $searchClienteTerm = '';
 
     // Produtos
     public $produtos = [];
-
     public $produtosCarrinho = [];
-
     public $searchProdutoTerm = '';
 
     // Financeiro
     public $subtotal = 0;
-
     public $incidencia = 0;
-
     public $iva = 0;
-
     public $total = 0;
-
     public $totalRecebido = 0;
-
     public $desconto = 0;
-
+    public $totalImpostos = 0;
     public $troco = 0;
+
+    // Resumo de impostos
+    public $resumoImpostos = [];
+    public $subtotalItems = 0;
 
     public function mount()
     {
@@ -111,9 +101,8 @@ class Pov extends Component
     {
         $produto = Produto::find($produtoId);
 
-        if (! $produto) {
+        if (!$produto) {
             session()->flash('error', 'Produto não encontrado.');
-
             return;
         }
 
@@ -127,7 +116,6 @@ class Pov extends Component
                 $this->produtosCarrinho[$index]['quantidade']++;
             } else {
                 session()->flash('error', 'Estoque insuficiente para este produto.');
-
                 return;
             }
         } else {
@@ -146,7 +134,7 @@ class Pov extends Component
 
     public function alterarQuantidade($index, $valor)
     {
-        if (! isset($this->produtosCarrinho[$index])) {
+        if (!isset($this->produtosCarrinho[$index])) {
             return;
         }
 
@@ -170,18 +158,84 @@ class Pov extends Component
         }
     }
 
+    /**
+     * ✅ MÉTODO CALCULAR TOTAIS CORRIGIDO
+     * Aplica lógica correta de priorização: Isenção > Imposto > Padrão
+     */
     public function calcularTotais()
     {
+        // Reset das variáveis
         $this->subtotal = 0;
+        $this->totalImpostos = 0;
+        $this->resumoImpostos = [];
+
         foreach ($this->produtosCarrinho as $item) {
-            $this->subtotal += ($item['preco_venda'] * $item['quantidade']);
+            $produto = Produto::with(['imposto', 'motivoIsencao'])->find($item['id']);
+            $subtotalItem = $item['preco_venda'] * $item['quantidade'];
+            $this->subtotal += $subtotalItem;
+
+            // ✅ LÓGICA CORRIGIDA - Prioridade: Isenção > Imposto Específico > Padrão
+            if ($produto->motivoIsencao) {
+                // 🟢 CASO 1: Produto com ISENÇÃO (ex: Arroz)
+                $taxa = 0;
+                $motivoIsencao = $produto->motivoIsencao->descricao;
+                $descricaoImposto = 'Isento';
+                $codigoMotivo = $produto->motivoIsencao->codigo ?? null;
+
+            } elseif ($produto->imposto) {
+                // 🟡 CASO 2: Produto com IMPOSTO específico (ex: AGUA)
+                $taxa = (float) $produto->imposto->taxa;
+                $motivoIsencao = null;
+                $descricaoImposto = $produto->imposto->descricao;
+                $codigoMotivo = null;
+
+            } else {
+                // 🔵 CASO 3: Produto PADRÃO (IVA 14%)
+                $taxa = 14;
+                $motivoIsencao = null;
+                $descricaoImposto = 'IVA';
+                $codigoMotivo = null;
+            }
+
+            // ✅ CHAVE DE AGRUPAMENTO: taxa + descrição
+            $chaveResumo = $taxa . '|' . $descricaoImposto;
+
+            // Inicializa grupo se não existir
+            if (!isset($this->resumoImpostos[$chaveResumo])) {
+                $this->resumoImpostos[$chaveResumo] = [
+                    'taxa' => $taxa,
+                    'descricao' => $descricaoImposto,
+                    'motivo_isencao' => $motivoIsencao,
+                    'codigo_motivo' => $codigoMotivo,
+                    'incidencia' => 0,
+                    'valor_imposto' => 0,
+                ];
+            }
+
+            // Acumula incidência
+            $this->resumoImpostos[$chaveResumo]['incidencia'] += $subtotalItem;
+
+            // Calcula imposto apenas se taxa > 0
+            if ($taxa > 0) {
+                $valorImposto = $subtotalItem * ($taxa / 100);
+                $this->resumoImpostos[$chaveResumo]['valor_imposto'] += $valorImposto;
+                $this->totalImpostos += $valorImposto;
+            }
         }
 
+        // Totais gerais
         $this->incidencia = $this->subtotal;
-        $this->iva = round($this->subtotal * 0.14, 2);
+        $this->iva = $this->totalImpostos;
         $this->total = round($this->subtotal + $this->iva - $this->desconto, 2);
-
         $this->calcularTroco();
+
+        // 🔍 DEBUG (remova em produção)
+        if (app()->environment('local')) {
+            \Log::info('=== RESUMO IMPOSTOS ===', [
+                'resumo' => $this->resumoImpostos,
+                'total_impostos' => $this->totalImpostos,
+            ]);
+        }
     }
 
     public function calcularTroco()
@@ -207,15 +261,13 @@ class Pov extends Component
 
     public function finalizarVenda()
     {
-        if (! $this->clienteSelecionado) {
+        if (!$this->clienteSelecionado) {
             session()->flash('error', 'Por favor, selecione um cliente antes de finalizar a venda.');
-
             return;
         }
 
         if (count($this->produtosCarrinho) == 0) {
             session()->flash('error', 'Adicione pelo menos um produto ao carrinho.');
-
             return;
         }
 
@@ -224,7 +276,6 @@ class Pov extends Component
             $produto = Produto::find($item['id']);
             if ($produto->estoque < $item['quantidade']) {
                 session()->flash('error', "Estoque insuficiente para o produto: {$item['descricao']}");
-
                 return;
             }
         }
@@ -232,7 +283,6 @@ class Pov extends Component
         try {
             DB::beginTransaction();
 
-            // Dados comuns
             $dadosComuns = [
                 'cliente_id' => $this->clienteSelecionado,
                 'user_id' => auth()->id(),
@@ -240,7 +290,6 @@ class Pov extends Component
                 'observacoes' => null,
             ];
 
-            // Se for Fatura
             if ($this->tipoDocumento === 'fatura') {
                 $fatura = Fatura::create(array_merge($dadosComuns, [
                     'numero' => 'FT-'.date('Ymd').'-'.str_pad(Fatura::count() + 1, 4, '0', STR_PAD_LEFT),
@@ -250,21 +299,18 @@ class Pov extends Component
                     'total' => $this->total,
                 ]));
 
-                // Atualiza estoque dos produtos
                 foreach ($this->produtosCarrinho as $item) {
                     $produto = Produto::find($item['id']);
                     $produto->decrement('estoque', $item['quantidade']);
                 }
 
                 $mensagem = "Fatura nº {$fatura->numero} gerada.";
-            }
-            // Se for Recibo
-            elseif ($this->tipoDocumento === 'recibo') {
+            } elseif ($this->tipoDocumento === 'recibo') {
                 $recibo = Recibo::create(array_merge($dadosComuns, [
                     'numero' => 'RC-'.date('Ymd').'-'.str_pad(Recibo::count() + 1, 4, '0', STR_PAD_LEFT),
                     'valor' => $this->total,
-                    'metodo_pagamento' => 'dinheiro', // Você pode adicionar um campo para selecionar o método
-                    'fatura_id' => null, // Se estiver vinculado a uma fatura específica
+                    'metodo_pagamento' => 'dinheiro',
+                    'fatura_id' => null,
                 ]));
 
                 $mensagem = "Recibo nº {$recibo->numero} gerado.";
@@ -274,7 +320,6 @@ class Pov extends Component
 
             session()->flash('success', 'Venda finalizada com sucesso! '.$mensagem);
 
-            // Limpa o carrinho e reseta os dados
             $this->reset([
                 'produtosCarrinho',
                 'clienteSelecionado',
@@ -293,117 +338,146 @@ class Pov extends Component
         }
     }
 
-    /* exportar PDF usando dompdf */
-public function exportarDadosFatura()
-{
-    if (!$this->clienteSelecionado || empty($this->produtosCarrinho)) {
-        session()->flash('error', 'Selecione um cliente e adicione produtos antes de exportar.');
-        return;
-    }
+    /**
+     * ✅ MÉTODO EXPORTAR PDF CORRIGIDO
+     * Garante que produtos e resumo tenham mesma lógica
+     */
+    public function exportarDadosFatura()
+    {
+        if (!$this->clienteSelecionado || empty($this->produtosCarrinho)) {
+            session()->flash('error', 'Selecione um cliente e adicione produtos antes de exportar.');
+            return;
+        }
 
-    // Busca dados completos do cliente
-    $cliente = Cliente::find($this->clienteSelecionado);
-    
-    // Busca dados da empresa
-    $empresa = DadosEmpresa::first();
+        $cliente = Cliente::find($this->clienteSelecionado);
+        $empresa = DadosEmpresa::first();
 
-    // Gera número do documento baseado no tipo
-    if ($this->tipoDocumento === 'fatura') {
-        $numeroDocumento = 'FT-' . date('Ymd') . '-' . str_pad(Fatura::count() + 1, 4, '0', STR_PAD_LEFT);
-        $tipoLabel = 'Factura';
-    } else {
-        $numeroDocumento = 'RC-' . date('Ymd') . '-' . str_pad(Recibo::count() + 1, 4, '0', STR_PAD_LEFT);
-        $tipoLabel = 'Recibo';
-    }
+        // Gera número do documento
+        if ($this->tipoDocumento === 'fatura') {
+            $numeroDocumento = 'FT-'.date('Ymd').'-'.str_pad(Fatura::count() + 1, 4, '0', STR_PAD_LEFT);
+            $tipoLabel = 'Factura';
+        } else {
+            $numeroDocumento = 'RC-'.date('Ymd').'-'.str_pad(Recibo::count() + 1, 4, '0', STR_PAD_LEFT);
+            $tipoLabel = 'Recibo';
+        }
 
-    // Prepara produtos com todos os detalhes
-    $produtosDetalhados = [];
-    foreach ($this->produtosCarrinho as $item) {
-        $produto = Produto::with(['imposto', 'motivoIsencao'])->find($item['id']);
-        
-        $precoUnitario = (float) $item['preco_venda'];
-        $quantidade = $item['quantidade'];
-        $subtotalProduto = $precoUnitario * $quantidade;
-        
-        // Calcula IVA do produto (se aplicável)
-        $taxaIva = $produto->imposto ? $produto->imposto->taxa : 14;
-        $ivaValor = $subtotalProduto * ($taxaIva / 100);
-        
-        $produtosDetalhados[] = [
-            'id' => $produto->id,
-            'codigo_barras' => $produto->codigo_barras,
-            'descricao' => $produto->descricao,
-            'quantidade' => $quantidade,
-            'unidade' => 'UN', // Adicione campo unidade na tabela se necessário
-            'preco_unitario' => $precoUnitario,
-            'desconto' => 0, // Implemente desconto por produto se necessário
-            'taxa_iva' => $taxaIva,
-            'iva_valor' => $ivaValor,
-            'subtotal' => $subtotalProduto,
-            'total' => $subtotalProduto + $ivaValor,
-            'motivo_isencao' => $produto->motivoIsencao ? $produto->motivoIsencao->descricao : null,
+        // ✅ PREPARA PRODUTOS COM LÓGICA CORRIGIDA
+        $produtosDetalhados = [];
+        foreach ($this->produtosCarrinho as $item) {
+            $produto = Produto::with(['imposto', 'motivoIsencao'])->find($item['id']);
+
+            $precoUnitario = (float) $item['preco_venda'];
+            $quantidade = $item['quantidade'];
+            $subtotalProduto = $precoUnitario * $quantidade;
+
+            // ✅ MESMA LÓGICA DO calcularTotais()
+            if ($produto->motivoIsencao) {
+                $taxaIva = 0;
+                $motivoIsencao = $produto->motivoIsencao->descricao;
+                $descricaoImposto = 'Isento';
+            } elseif ($produto->imposto) {
+                $taxaIva = (float) $produto->imposto->taxa;
+                $motivoIsencao = null;
+                $descricaoImposto = $produto->imposto->descricao;
+            } else {
+                $taxaIva = 14;
+                $motivoIsencao = null;
+                $descricaoImposto = 'IVA';
+            }
+
+            $ivaValor = $taxaIva > 0 ? ($subtotalProduto * ($taxaIva / 100)) : 0;
+
+            $produtosDetalhados[] = [
+                'id' => $produto->id,
+                'codigo_barras' => $produto->codigo_barras,
+                'descricao' => $produto->descricao,
+                'quantidade' => $quantidade,
+                'unidade' => 'UN',
+                'preco_unitario' => $precoUnitario,
+                'desconto' => 0,
+                'taxa_iva' => $taxaIva,
+                'iva_valor' => $ivaValor,
+                'subtotal' => $subtotalProduto,
+                'total' => $subtotalProduto + $ivaValor,
+                'motivo_isencao' => $motivoIsencao,
+                'descricao_imposto' => $descricaoImposto,
+            ];
+        }
+
+        // ✅ PREPARA RESUMO DE IMPOSTOS (usa o já calculado)
+        $resumoImpostosPDF = [];
+        foreach ($this->resumoImpostos as $resumo) {
+            $resumoImpostosPDF[] = [
+                'descricao' => $resumo['descricao'],
+                'taxa' => $resumo['taxa'],
+                'incidencia' => $resumo['incidencia'],
+                'valor_imposto' => $resumo['valor_imposto'],
+                'motivo_isencao' => $resumo['motivo_isencao'],
+                'codigo_motivo' => $resumo['codigo_motivo'] ?? null,
+            ];
+        }
+
+        $dados_fatura = [
+            'numero' => $numeroDocumento,
+            'tipo_documento' => $this->tipoDocumento,
+            'tipo_label' => $tipoLabel,
+            'natureza' => $this->natureza,
+            'data_emissao' => now()->format('Y-m-d'),
+            'data_vencimento' => now()->addDays(30)->format('Y-m-d'),
+            'moeda' => 'AKZ',
+            'condicao_pagamento' => 'Pronto Pagamento',
+
+            'empresa' => [
+                'nome' => $empresa->name ?? '',
+                'nif' => $empresa->nif ?? '',
+                'telefone' => $empresa->telefone ?? '',
+                'email' => $empresa->email ?? '',
+                'website' => $empresa->website ?? '',
+                'rua' => $empresa->rua ?? '',
+                'edificio' => $empresa->edificio ?? '',
+                'cidade' => $empresa->cidade ?? '',
+                'municipio' => $empresa->municipio ?? '',
+                'localizacao' => $empresa->localizacao ?? '',
+                'regime' => $empresa->regime ?? '',
+                'banco' => $empresa->nomeDoBanco ?? '',
+                'iban' => $empresa->iban ?? '',
+            ],
+
+            'cliente' => [
+                'id' => $cliente->id,
+                'nome' => $cliente->nome,
+                'nif' => $cliente->nif,
+                'telefone' => $cliente->telefone ?? '',
+                'provincia' => $cliente->provincia ?? '',
+                'cidade' => $cliente->cidade ?? '',
+                'localizacao' => $cliente->localizacao ?? '',
+            ],
+
+            'produtos' => $produtosDetalhados,
+            'resumo_impostos' => $resumoImpostosPDF,
+
+            'financeiro' => [
+                'subtotal' => $this->subtotal,
+                'incidencia' => $this->incidencia,
+                'iva' => $this->iva,
+                'desconto' => $this->desconto,
+                'total' => $this->total,
+                'total_recebido' => $this->totalRecebido,
+                'troco' => $this->troco,
+            ],
         ];
+
+        // 🔍 DEBUG (remova em produção)
+        if (app()->environment('local')) {
+            \Log::info('=== DADOS PARA PDF ===', $dados_fatura);
+        }
+
+        session()->put('dados_fatura', $dados_fatura);
+        session()->save();
+
+        return redirect()->route('admin.fatura.download');
     }
 
-    $dados_fatura = [
-        // Informações do documento
-        'numero' => $numeroDocumento,
-        'tipo_documento' => $this->tipoDocumento,
-        'natureza' => $this->natureza,
-        'data_emissao' => now()->format('Y-m-d'),
-        'data_vencimento' => now()->addDays(30)->format('Y-m-d'), // 30 dias após emissão
-        'moeda' => 'AKZ',
-        'condicao_pagamento' => 'Pronto Pagamento',
-        
-        // Dados da empresa
-        'empresa' => [
-            'nome' => $empresa->name ?? '',
-            'nif' => $empresa->nif ?? '',
-            'telefone' => $empresa->telefone ?? '',
-            'email' => $empresa->email ?? '',
-            'website' => $empresa->website ?? '',
-            'rua' => $empresa->rua ?? '',
-            'edificio' => $empresa->edificio ?? '',
-            'cidade' => $empresa->cidade ?? '',
-            'municipio' => $empresa->municipio ?? '',
-            'localizacao' => $empresa->localizacao ?? '',
-            'regime' => $empresa->regime ?? '',
-            'banco' => $empresa->nomeDoBanco ?? '',
-            'iban' => $empresa->iban ?? '',
-        ],
-        
-        // Dados do cliente
-        'cliente' => [
-            'id' => $cliente->id,
-            'nome' => $cliente->nome,
-            'nif' => $cliente->nif,
-            'telefone' => $cliente->telefone ?? '',
-            'provincia' => $cliente->provincia ?? '',
-            'cidade' => $cliente->cidade ?? '',
-            'localizacao' => $cliente->localizacao ?? '',
-        ],
-        
-        // Produtos
-        'produtos' => $produtosDetalhados,
-        
-        // Resumo financeiro
-        'financeiro' => [
-            'subtotal' => $this->subtotal,
-            'incidencia' => $this->incidencia,
-            'iva' => $this->iva,
-            'desconto' => $this->desconto,
-            'total' => $this->total,
-            'total_recebido' => $this->totalRecebido,
-            'troco' => $this->troco,
-        ],
-    ];
-
-    // Grava na sessão
-    session()->put('dados_fatura', $dados_fatura);
-    session()->save();
-
-    return redirect()->route('admin.fatura.download');
-}
     public function render()
     {
         return view('livewire.pov');

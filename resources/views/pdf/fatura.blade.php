@@ -20,13 +20,13 @@
       line-height: 1.4;
     }
 
-   .invoice {
+    .invoice {
       width: 90%;
       margin: 0 auto;
       padding: 12mm 10mm;
       background: #fff;
       position: relative;
-      }
+    }
 
     .page-number {
       position: absolute;
@@ -324,7 +324,7 @@
 
 <body>
   <div class="invoice">
-    
+
     <!-- HEADER -->
     <div class="header clearfix">
       <div class="header-left">
@@ -422,28 +422,42 @@
       <table class="summary-table">
         <tr>
           <td class="summary-left">
-            <div class="tax-summary">
-              <h3>Quadro Resumo de Impostos</h3>
-              <table class="tax-table">
-                <thead>
-                  <tr>
-                    <th>Taxa/Valor</th>
-                    <th class="text-right">Incid./Qtd.</th>
-                    <th class="text-right">Total</th>
-                    <th>Motivo Isenção</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>IVA (14%)</td>
-                    <td class="text-right">{{ number_format($dados['financeiro']['incidencia'], 2, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($dados['financeiro']['iva'], 2, ',', '.') }}</td>
-                    <td>{{ $dados['empresa']['regime'] }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+           <!-- RESUMO DE IMPOSTOS -->
+          <div class="tax-summary">
+            <h3>Quadro Resumo de Impostos</h3>
+          
+            <table class="tax-table">
+              <thead>
+                <tr>
+                  <th>Descrição</th>
+                  <th class="text-right">Taxa %</th>
+                  <th class="text-right">Incidência</th>
+                  <th class="text-right">Valor Imposto</th>
+                  <th>Motivo Isenção</th>
+                </tr>
+              </thead>
+              <tbody>
+                @foreach ($dados['resumo_impostos'] as $imposto)
+                <tr>
+                  <td>{{ $imposto['descricao'] }}</td>
+                  <td class="text-right">{{ number_format($imposto['taxa'], 2, ',', '.') }}</td>
+                  <td class="text-right">{{ number_format($imposto['incidencia'], 2, ',', '.') }}</td>
+                  <td class="text-right">{{ number_format($imposto['valor_imposto'], 2, ',', '.') }}</td>
+                  <td>
+                    @if($imposto['taxa'] === 0 && $imposto['motivo_isencao'])
+                    {{ $imposto['motivo_isencao'] }}
+                    @else
+                    -
+                    @endif
+                  </td>
+                </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
           </td>
+
+          {{-- quadro direito com os totais --}}
           <td class="summary-right">
             <div class="totals-box">
               <div class="total-line clearfix">
@@ -485,3 +499,6 @@
 </body>
 
 </html>
+
+{{-- analisar os dados retornados --}}
+{{--   {{ dd($dados) }} --}}

@@ -45,6 +45,6 @@ class Produto extends Model
 
     public function motivoIsencao()
     {
-        return $this->belongsTo(MotivoIsencao::class);
+        return $this->belongsTo(MotivoIsencao::class,'motivo_isencaos_id');
     }
 }

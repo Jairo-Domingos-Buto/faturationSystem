@@ -4,10 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class FaturaItem extends Model
+class ReciboItem extends Model
 {
     protected $fillable = [
-        'fatura_id',
+        'recibo_id',
         'produto_id',
         'descricao',
         'codigo_barras',
@@ -30,9 +30,9 @@ class FaturaItem extends Model
         'total' => 'decimal:2',
     ];
 
-    public function fatura()
+    public function recibo()
     {
-        return $this->belongsTo(Fatura::class);
+        return $this->belongsTo(Recibo::class);
     }
 
     public function produto()

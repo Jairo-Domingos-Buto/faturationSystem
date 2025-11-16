@@ -180,7 +180,13 @@
                             <div data-i18n="Analytics">Impostos</div>
                         </a>
                     </li>
-                
+                {{-- Nota de Crédito --}}
+                <li class="menu-item">
+                    <a href="{{ route('admin.notas-credito') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-receipt"></i>
+                        <div data-i18n="Analytics">Nota de Crédito</div>
+                    </a>
+                </li>
                     <!-- Motivos de Isenção -->
                     <li class="menu-item">
                         <a href="{{ route('admin.isencao') }}" class="menu-link">

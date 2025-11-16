@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ImpressaoController;
+use App\Http\Controllers\NotaCreditoController;
 use App\Http\Controllers\pdfController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -61,14 +62,30 @@ Route::middleware(['type:admin'])
         Route::view('/servicos', 'Admin.servicos')->name('servicos');
         Route::view('/impostos', 'Admin.impostos')->name('impostos');
         Route::view('/isencao', 'Admin.isencao')->name('isencao');
+        Route::view('/notas-credito', 'Admin.nota-credito')->name('notas-credito');
         Route::view('/categoria', 'Admin.categoria')->name('categoria');
         Route::view('/faturas', 'Admin.fatura')->name('faturas');
         Route::view('/faturas-recibo', 'Admin.fatura-recibo')->name('faturas.recibo');
         Route::view('/recibos', 'Admin.recibo')->name('recibos');
         Route::view('/pov', 'Admin.pov')->name('pov');
         Route::view('/configuracoes', 'Admin.configuracoes')->name('configuracoes');
-        
+
         Route::get('/impressao/servicos', [ImpressaoController::class, 'servicos'])->name('impressao.servicos');
         Route::get('/impressao/produtos', [ImpressaoController::class, 'produtos'])->name('impressao.produtos');
+        /* impressao apartir do ponto de venda */
         Route::get('/fatura/download', [pdfController::class, 'downloadFatura'])->name('fatura.download');
+
+        Route::get('/recibo/download', [pdfController::class, 'downloadRecibo'])->name('recibo.download');
+
+        // Visualizar Nota de Crédito de Fatura
+        Route::get('/notas-credito/fatura/{id}', [NotaCreditoController::class, 'visualizarFatura'])
+            ->name('notas-credito.fatura');
+
+        // Visualizar Nota de Crédito de Recibo
+        Route::get('/notas-credito/recibo/{id}', [NotaCreditoController::class, 'visualizarRecibo'])
+            ->name('notas-credito.recibo');
+
+        // Gerar PDF da Nota de Crédito
+        Route::get('/notas-credito/pdf/{tipo}/{id}', [NotaCreditoController::class, 'gerarPDF'])
+            ->name('notas-credito.pdf');
     });

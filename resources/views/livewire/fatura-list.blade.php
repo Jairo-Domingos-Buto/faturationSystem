@@ -1,4 +1,7 @@
 <div class="bg-white p-6 min-h-screen">
+   {{-- ✅ INCLUIR MODAL DE ANULAÇÃO --}}
+    <x-modal-anulacao />
+
     {{-- Alerta se empresa não estiver configurada --}}
     @if(!$empresa)
     <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
@@ -322,5 +325,23 @@
             {{ $faturas->links() }}
         </div>
     </div>
-
+    
 </div>
+
+
+@push('scripts')
+<script>
+    console.log('Script JS faturas carregado - início'); // Debug: remova depois
+
+    // Listener DIRETO (sem 'livewire:initialized' – evita conflito no init)
+    Livewire.on('abrirModalAnulacao', (event) => {
+        console.log('Evento recebido no JS faturas!', event); // Debug
+        window.dispatchEvent(new CustomEvent('abrir-modal-anulacao', { 
+            detail: event 
+        }));
+        console.log('Custom event despachado para Alpine'); // Debug
+    });
+
+    console.log('Script JS faturas carregado - fim'); // Debug
+</script>
+@endpush

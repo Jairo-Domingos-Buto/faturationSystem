@@ -1,7 +1,7 @@
 {{-- resources/views/components/modal-anulacao.blade.php --}}
 
 <div x-data="modalAnulacao()" x-show="isOpen" x-cloak @abrir-modal-anulacao.window="abrirModal($event.detail)"
-    class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
+    class="fixed  inset-0 z-50 overflow-y-auto" style="display: none;">
 
     {{-- Overlay --}}
     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
@@ -20,7 +20,7 @@
             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200"
             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+            class="inline-block align-center bg-white rounded-lg px-4 pt-5 pb-5 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
 
             <form :action="formAction" method="POST" @submit="submitForm($event)">
                 @csrf

@@ -229,6 +229,13 @@
                         </a>
                     </li>
                 
+                    {{-- export saft --}}
+                    <li class="menu-item">
+                            <a href="{{ route('admin.exportar-saft') }}" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-cog"></i>
+                                <div data-i18n="Analytics">Exportar Saft</div>
+                            </a>
+                        </li>
                     <!-- Configurações -->
                     <li class="menu-item">
                         <a href="{{ route('admin.configuracoes') }}" class="menu-link">
@@ -339,7 +346,7 @@
                                     <li>
                                         <div class="dropdown-divider my-1"></div>
                                     </li>
-                                    <li> 
+                                    <li class="p-2"> 
                                       <form method="POST" action="{{ route('logout') }}">
                                         @csrf
                                        <a href="#" onclick="event.preventDefault(); this.closest('form').submit();">Sair</a>

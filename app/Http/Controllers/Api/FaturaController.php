@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\Fatura;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-
+use Livewire\Livewire; // Para dispatch de eventos Livewire
 
 class FaturaController extends Controller
 {
@@ -141,6 +141,13 @@ class FaturaController extends Controller
      *         required=true,
      *         @OA\Schema(type="integer")
      *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"motivo"},
+     *             @OA\Property(property="motivo", type="string", example="Cliente cancelou a compra", description="Motivo da anulação (mínimo 10 caracteres)")
+     *         )
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Fatura anulada com sucesso"
@@ -148,6 +155,10 @@ class FaturaController extends Controller
      *     @OA\Response(
      *         response=404,
      *         description="Fatura não encontrada"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Erro de validação"
      *     )
      * )
      *
@@ -232,11 +243,39 @@ class FaturaController extends Controller
         return response()->json(['message' => 'Fatura emitida com sucesso!']);
     }
 
-    public function anular(Fatura $fatura)
+    public function anular(Request $request, Fatura $fatura)
     {
-        $fatura->update(['status' => 'anulada']);
+        $request->validate([
+            'motivo' => 'required|string|min:10|max:500',
+        ]);
 
-        return response()->json(['message' => 'Fatura anulada com sucesso!']);
+        try {
+            // Validação de negócio (se não puder anular)
+            if (!$fatura->pode_ser_anulada) {
+                return response()->json(['error' => 'Esta fatura não pode ser anulada.'], 422);
+            }
+
+            // Atualiza como anulada (use o método do model se existir)
+            $fatura->marcarComoAnulada($request->motivo);  // Assumindo método similar ao Recibo
+
+            // ✅ DEVOLVE ESTOQUE (se aplicável)
+            $fatura->devolverEstoque();  // Implemente no model Fatura se não tiver
+
+            // ✅ GERA NOTA DE CRÉDITO (opcional: crie uma nova fatura de crédito)
+            // Ex: $notaCredito = Fatura::create([...]);  // Lógica custom
+
+            // ✅ DISPATCH DO EVENTO PARA REFRESH DO LIVWIRE (se em contexto web/API misto)
+            // Nota: Em API pura, isso pode não triggerar; use se integrado com Livewire
+            event(new \App\Events\FaturaAnulada($fatura));  // Ou use Livewire::dispatch se SPA
+
+            return response()->json([
+                'message' => 'Fatura anulada com sucesso! Nota de crédito gerada.',
+                'data' => $fatura->fresh()
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erro ao anular fatura: ' . $e->getMessage()], 500);
+        }
     }
 
     public function gerarPdf(Fatura $fatura)

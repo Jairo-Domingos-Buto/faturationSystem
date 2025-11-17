@@ -69,6 +69,7 @@ Route::middleware(['type:admin'])
         Route::view('/faturas-recibo', 'Admin.fatura-recibo')->name('faturas.recibo');
         Route::view('/recibos', 'Admin.recibo')->name('recibos');
         Route::view('/pov', 'Admin.pov')->name('pov');
+        Route::view('/exportar-saft', 'Admin.Saft')->name('exportar-saft');
         Route::view('/configuracoes', 'Admin.configuracoes')->name('configuracoes');
 
         Route::get('/impressao/servicos', [ImpressaoController::class, 'servicos'])->name('impressao.servicos');

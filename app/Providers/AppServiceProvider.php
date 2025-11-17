@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Blade;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -17,8 +18,9 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(): void
+      public function boot(): void
     {
-        //
+        // Registrar componente modal-anulacao
+        Blade::component('components.modal-anulacao', 'modal-anulacao');
     }
 }

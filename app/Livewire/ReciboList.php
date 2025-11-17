@@ -13,15 +13,20 @@ class ReciboList extends Component
 
     public $start_date;
     public $end_date;
+    public $empresa;
 
     protected $paginationTheme = 'tailwind';
     protected $queryString = ['start_date', 'end_date', 'page'];
+
+    // ✅ Listener para recarregar após anulação
+    protected $listeners = ['reciboAnulado' => '$refresh'];
 
     public function mount()
     {
         $this->end_date = $this->end_date ?? now()->format('Y-m-d');
         $this->start_date = $this->start_date ?? now()->subMonth()->format('Y-m-d');
         $this->normalizeDates();
+        $this->empresa = DadosEmpresa::first();
     }
 
     public function updatedStartDate()
@@ -46,15 +51,40 @@ class ReciboList extends Component
             $this->end_date = now()->format('Y-m-d');
         }
 
-        // Se start_date for maior que end_date, troca-os
         if (strtotime($this->start_date) > strtotime($this->end_date)) {
             [$this->start_date, $this->end_date] = [$this->end_date, $this->start_date];
         }
     }
 
-    public function delete($id)
+    /**
+     * ✅ MÉTODO ATUALIZADO: Abre modal via JavaScript
+     */
+    public function delete($reciboId)
     {
-        $recibo = Recibo::find($id);
+        try {
+            $recibo = Recibo::findOrFail($reciboId);
+            
+            if (!$recibo->pode_ser_anulado) {
+                session()->flash('error', 'Este recibo não pode ser anulado.');
+                return;
+            }
+            
+
+            // ✅ Dispara evento JavaScript para abrir modal
+            $this->dispatch('abrirModalAnulacao',
+                tipo: 'recibo',
+                id: $reciboId,
+                numero: $recibo->numero
+            );
+
+        } catch (\Exception $e) {
+            session()->flash('error', 'Erro: ' . $e->getMessage());
+        }
+    }
+
+    public function eliminar($reciboId)
+    {
+        $recibo = Recibo::find($reciboId);
 
         if ($recibo) {
             $recibo->delete();
@@ -64,59 +94,30 @@ class ReciboList extends Component
 
     public function render()
     {
-        $query = Recibo::query();
+        // ✅ MOSTRA APENAS RECIBOS ATIVOS (não retificados, não anulados)
+        $query = Recibo::query()
+            ->where('retificado', false)
+            ->where('anulado', false);
 
-        // Aplica filtro de datas
         if ($this->start_date && $this->end_date) {
-            $start = $this->start_date . ' 00:00:00';
-            $end = $this->end_date . ' 23:59:59';
+            $start = $this->start_date.' 00:00:00';
+            $end = $this->end_date.' 23:59:59';
             $query->whereBetween('created_at', [$start, $end]);
-        } else {
-            if ($this->start_date) {
-                $query->whereDate('created_at', '>=', $this->start_date);
-            }
-            if ($this->end_date) {
-                $query->whereDate('created_at', '<=', $this->end_date);
-            }
         }
 
-        // Carrega relações e pagina
         $recibos = $query
             ->with(['fatura', 'cliente', 'user'])
             ->orderByDesc('created_at')
             ->paginate(15);
 
-        // Calcula estatísticas
         $totalRecibos = $recibos->total();
-        $somaValores = $query->sum('valor');
-        
-        // Conta por método de pagamento
-        $recibosDinheiro = Recibo::query()
-            ->when($this->start_date && $this->end_date, function($q) {
-                $q->whereBetween('created_at', [
-                    $this->start_date . ' 00:00:00',
-                    $this->end_date . ' 23:59:59'
-                ]);
-            })
-            ->where('metodo_pagamento', 'dinheiro')
-            ->count();
-
-        $recibosMulticaixa = Recibo::query()
-            ->when($this->start_date && $this->end_date, function($q) {
-                $q->whereBetween('created_at', [
-                    $this->start_date . ' 00:00:00',
-                    $this->end_date . ' 23:59:59'
-                ]);
-            })
-            ->where('metodo_pagamento', 'multicaixa')
-            ->count();
-
-        // Busca dados da empresa
-        $empresa = DadosEmpresa::first();
+        $somaValores = $query->clone()->sum('valor');
+        $recibosDinheiro = $query->clone()->where('metodo_pagamento', 'dinheiro')->count();
+        $recibosMulticaixa = $query->clone()->where('metodo_pagamento', 'multicaixa')->count();
 
         return view('livewire.recibo-list', [
             'recibos' => $recibos,
-            'empresa' => $empresa,
+            'empresa' => $this->empresa,
             'totalRecibos' => $totalRecibos,
             'somaValores' => $somaValores,
             'recibosDinheiro' => $recibosDinheiro,

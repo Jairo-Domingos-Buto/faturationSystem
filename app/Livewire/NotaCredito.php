@@ -8,98 +8,85 @@ use Livewire\Component;
 
 class NotaCredito extends Component
 {
-    public $faturas = [];
-    public $recibos = [];
-    public $dados = [];
     public $start_date;
     public $end_date;
 
     public function mount()
     {
-        $this->start_date = now()->subMonth()->format('Y-m-d');
-        $this->end_date = now()->format('Y-m-d');
-        $this->carregarDados();
+        $this->end_date = $this->end_date ?? now()->format('Y-m-d');
+        $this->start_date = $this->start_date ?? now()->subMonth()->format('Y-m-d');
+        $this->normalizeDates();
     }
 
     public function updatedStartDate()
     {
-        $this->carregarDados();
+        $this->normalizeDates();
     }
 
     public function updatedEndDate()
     {
-        $this->carregarDados();
+        $this->normalizeDates();
     }
 
-    public function carregarDados()
+    protected function normalizeDates()
     {
-        // Buscar documentos retificados
-        $this->faturas = Fatura::retificadas()
-            ->with(['cliente', 'user', 'faturaOriginal'])
-            ->when($this->start_date && $this->end_date, function($query) {
-                $query->whereBetween('data_retificacao', [
-                    $this->start_date . ' 00:00:00',
-                    $this->end_date . ' 23:59:59'
-                ]);
-            })
-            ->latest('data_retificacao')
-            ->get();
-
-        $this->recibos = Recibo::retificados()
-            ->with(['cliente', 'user', 'reciboOriginal'])
-            ->when($this->start_date && $this->end_date, function($query) {
-                $query->whereBetween('data_retificacao', [
-                    $this->start_date . ' 00:00:00',
-                    $this->end_date . ' 23:59:59'
-                ]);
-            })
-            ->latest('data_retificacao')
-            ->get();
-
-        $this->dados = (object)[
-            "faturas" => $this->faturas,
-            "recibos" => $this->recibos,
-        ];
-    }
-
-    public function retificar($faturaId)
-    {
-        session()->put('fatura_retificar_id', $faturaId);
-        return redirect()->route('admin.pov');
-    }
-
-    public function retificarRecibo($reciboId)
-    {
-        session()->put('recibo_retificar_id', $reciboId);
-        return redirect()->route('admin.pov');
-    }
-
-    public function visualizarDocumento($tipo, $id)
-    {
-        if ($tipo === 'fatura') {
-            return redirect()->route('admin.fatura.download', ['fatura' => $id]);
-        } else {
-            return redirect()->route('admin.recibo.download', ['recibo' => $id]);
+        if (!$this->start_date) {
+            $this->start_date = now()->subMonth()->format('Y-m-d');
         }
-    }
 
-    public function verDetalhes($tipo, $id)
-    {
-        // Implementar modal ou página de detalhes
-        if ($tipo === 'fatura') {
-            $documento = Fatura::with(['cliente', 'user', 'faturaOriginal', 'items.produto'])->find($id);
-        } else {
-            $documento = Recibo::with(['cliente', 'user', 'reciboOriginal', 'items.produto'])->find($id);
+        if (!$this->end_date) {
+            $this->end_date = now()->format('Y-m-d');
         }
-        
-        // Aqui você pode abrir um modal ou redirecionar para página de detalhes
-        $this->dispatch('abrirModalDetalhes', documento: $documento, tipo: $tipo);
+
+        if (strtotime($this->start_date) > strtotime($this->end_date)) {
+            [$this->start_date, $this->end_date] = [$this->end_date, $this->start_date];
+        }
     }
 
     public function render()
     {
+        $start = $this->start_date . ' 00:00:00';
+        $end = $this->end_date . ' 23:59:59';
+
+        // ✅ BUSCAR FATURAS RETIFICADAS
+        $faturasRetificadas = Fatura::query()
+            ->where('retificada', true)
+            ->whereBetween('data_retificacao', [$start, $end])
+            ->with(['cliente', 'user', 'faturaRetificacao'])
+            ->orderByDesc('data_retificacao')
+            ->get();
+
+        // ✅ BUSCAR FATURAS ANULADAS
+        $faturasAnuladas = Fatura::query()
+            ->where('anulada', true)
+            ->whereBetween('data_anulacao', [$start, $end])
+            ->with(['cliente', 'anuladaPor'])
+            ->orderByDesc('data_anulacao')
+            ->get();
+
+        // ✅ BUSCAR RECIBOS RETIFICADOS
+        $recibosRetificados = Recibo::query()
+            ->where('retificado', true)
+            ->whereBetween('data_retificacao', [$start, $end])
+            ->with(['cliente', 'user', 'reciboRetificacao'])
+            ->orderByDesc('data_retificacao')
+            ->get();
+
+        // ✅ BUSCAR RECIBOS ANULADOS
+        $recibosAnulados = Recibo::query()
+            ->where('anulado', true)
+            ->whereBetween('data_anulacao', [$start, $end])
+            ->with(['cliente', 'anuladoPor'])
+            ->orderByDesc('data_anulacao')
+            ->get();
+
         return view('livewire.nota-credito', [
-            'dados' => $this->dados
+            'dados' => (object) [
+                'faturas_retificadas' => $faturasRetificadas,
+                'faturas_anuladas' => $faturasAnuladas,
+                'recibos_retificados' => $recibosRetificados,
+                'recibos_anulados' => $recibosAnulados,
+            ]
         ]);
     }
 }

@@ -23,18 +23,23 @@ class Fatura extends Model
         'fatura_retificacao_id',
         'data_retificacao',
         'motivo_retificacao',
+        'anulada',              // ✅ NOVO
+        'data_anulacao',        // ✅ NOVO
+        'motivo_anulacao',      // ✅ NOVO
+        'anulada_por_user_id',  // ✅ NOVO
     ];
 
     protected $casts = [
-        'data_emissao' => 'date',
+        'data_emissao' => 'datetime',
         'data_retificacao' => 'datetime',
+        'data_anulacao' => 'datetime',  // ✅ NOVO
         'retificada' => 'boolean',
+        'anulada' => 'boolean',          // ✅ NOVO
         'subtotal' => 'decimal:2',
         'total_impostos' => 'decimal:2',
         'total' => 'decimal:2',
     ];
-
-    // Relacionamentos
+    // Relacionamentos existentes
     public function cliente()
     {
         return $this->belongsTo(Cliente::class);
@@ -50,7 +55,6 @@ class Fatura extends Model
         return $this->hasMany(FaturaItem::class);
     }
 
-    // Relações de retificação
     public function faturaOriginal()
     {
         return $this->belongsTo(Fatura::class, 'fatura_original_id');
@@ -61,10 +65,17 @@ class Fatura extends Model
         return $this->belongsTo(Fatura::class, 'fatura_retificacao_id');
     }
 
-    // Scopes
+    // ✅ NOVO: Relacionamento com usuário que anulou
+    public function anuladaPor()
+    {
+        return $this->belongsTo(User::class, 'anulada_por_user_id');
+    }
+
+    // Scopes existentes
     public function scopeAtivas($query)
     {
-        return $query->where('retificada', false);
+        return $query->where('retificada', false)
+            ->where('anulada', false);  // ✅ NOVO
     }
 
     public function scopeRetificadas($query)
@@ -72,15 +83,51 @@ class Fatura extends Model
         return $query->where('retificada', true);
     }
 
-    // Accessors
+    // ✅ NOVO: Scope para anuladas
+    public function scopeAnuladas($query)
+    {
+        return $query->where('anulada', true);
+    }
+
+    // ✅ NOVO: Scope para Notas de Crédito (retificadas + anuladas)
+    public function scopeNotasCredito($query)
+    {
+        return $query->where(function ($q) {
+            $q->where('retificada', true)
+                ->orWhere('anulada', true);
+        });
+    }
+
+    // Accessors existentes
     public function getPodeSerRetificadaAttribute()
     {
-        return !$this->retificada && $this->estado !== 'cancelada';
+        return ! $this->retificada
+            && ! $this->anulada  // ✅ NOVO: Não pode retificar se anulada
+            && $this->estado !== 'cancelada';
     }
 
     public function getIsRetificacaoAttribute()
     {
-        return !is_null($this->fatura_original_id);
+        return ! is_null($this->fatura_original_id);
+    }
+
+    // ✅ NOVO: Accessor - Pode ser anulada?
+    public function getPodeSerAnuladaAttribute()
+    {
+        return ! $this->anulada && ! $this->retificada;
+    }
+
+    // ✅ NOVO: Accessor - Status da fatura
+    public function getStatusAttribute()
+    {
+        if ($this->anulada) {
+            return 'ANULADA';
+        }
+        if ($this->retificada) {
+            return 'RETIFICADA';
+        }
+
+        return strtoupper($this->estado);
     }
 
     public function getEmissaoAttribute()
@@ -88,7 +135,7 @@ class Fatura extends Model
         return $this->data_emissao ? $this->data_emissao->format('d/m/Y') : '-';
     }
 
-    // Métodos
+    // Métodos existentes
     public function marcarComoRetificada($novaFaturaId, $motivo = null)
     {
         $this->update([
@@ -97,5 +144,28 @@ class Fatura extends Model
             'data_retificacao' => now(),
             'motivo_retificacao' => $motivo,
         ]);
+    }
+
+    // ✅ NOVO: Método para marcar como anulada
+    public function marcarComoAnulada($motivo = null)
+    {
+        $this->update([
+            'anulada' => true,
+            'data_anulacao' => now(),
+            'motivo_anulacao' => $motivo,
+            'anulada_por_user_id' => auth()->id(),
+            'estado' => 'anulada',
+        ]);
+    }
+
+    // ✅ NOVO: Método para devolver estoque
+    public function devolverEstoque()
+    {
+        foreach ($this->items as $item) {
+            $produto = Produto::find($item->produto_id);
+            if ($produto) {
+                $produto->increment('estoque', $item->quantidade);
+            }
+        }
     }
 }

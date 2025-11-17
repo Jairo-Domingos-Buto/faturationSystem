@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AnulacaoController;
 use App\Http\Controllers\ImpressaoController;
 use App\Http\Controllers\NotaCreditoController;
 use App\Http\Controllers\pdfController;
@@ -88,4 +89,21 @@ Route::middleware(['type:admin'])
         // Gerar PDF da Nota de Crédito
         Route::get('/notas-credito/pdf/{tipo}/{id}', [NotaCreditoController::class, 'gerarPDF'])
             ->name('notas-credito.pdf');
+        // anulacao de fatura
+        // Anular Fatura
+        Route::post('/faturas/{id}/anular', [AnulacaoController::class, 'anularFatura'])
+            ->name('faturas.anular');
+
+        // Anular Recibo
+        Route::post('/recibos/{id}/anular', [AnulacaoController::class, 'anularRecibo'])
+            ->name('recibos.anular');
+
+        // Visualizar Nota de Crédito de Anulação
+        Route::get('/notas-credito/anulacao/{tipo}/{id}', [AnulacaoController::class, 'visualizarNotaCreditoAnulacao'])
+            ->name('notas-credito.anulacao');
+
+        // PDF Nota de Crédito de Anulação
+        Route::get('/notas-credito/anulacao/{tipo}/{id}/pdf', [AnulacaoController::class, 'gerarPDFAnulacao'])
+            ->name('notas-credito.anulacao.pdf');
     });
+    

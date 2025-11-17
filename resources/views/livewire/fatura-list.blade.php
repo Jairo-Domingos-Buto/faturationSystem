@@ -165,154 +165,155 @@
                         </th>
                     </tr>
                 </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                @forelse($faturas as $fatura)
-                <tr class="hover:bg-gray-50 transition {{ $fatura->retificada ? 'opacity-60' : '' }}">
-                    <!-- Data Emissão -->
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ $fatura->data_emissao->format('d/m/Y') }}
-                    </td>
-            
-                    <!-- Número -->
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900 {{ $fatura->retificada ? 'line-through' : '' }}">
-                            {{ $fatura->numero }}
-                        </div>
-                        @if($fatura->retificada && $fatura->faturaRetificacao)
-                        <div class="text-xs text-green-600 mt-1">
-                            → {{ $fatura->faturaRetificacao->numero }}
-                        </div>
-                        @endif
-                    </td>
-            
-                    <!-- Cliente -->
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ $fatura->cliente->nome ?? 'N/A' }}
-                    </td>
-            
-                    <!-- Usuário -->
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ $fatura->user?->name ?? 'N/A' }}
-                    </td>
-            
-                    <!-- Subtotal -->
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-700 {{ $fatura->retificada ? 'line-through text-red-600' : '' }}">
-                            {{ number_format($fatura->subtotal, 2, ',', '.') }} KZ
-                        </div>
-                        @if($fatura->retificada && $fatura->faturaRetificacao)
-                        <div class="text-xs text-green-600 font-medium mt-1">
-                            {{ number_format($fatura->faturaRetificacao->subtotal, 2, ',', '.') }} KZ
-                        </div>
-                        @endif
-                    </td>
-            
-                    <!-- IVA -->
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-700 {{ $fatura->retificada ? 'line-through text-red-600' : '' }}">
-                            {{ number_format($fatura->total_impostos, 2, ',', '.') }} KZ
-                        </div>
-                        @if($fatura->retificada && $fatura->faturaRetificacao)
-                        <div class="text-xs text-green-600 font-medium mt-1">
-                            {{ number_format($fatura->faturaRetificacao->total_impostos, 2, ',', '.') }} KZ
-                        </div>
-                        @endif
-                    </td>
-            
-                    <!-- Total -->
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div
-                            class="text-sm font-semibold text-gray-900 {{ $fatura->retificada ? 'line-through text-red-600' : '' }}">
-                            {{ number_format($fatura->total, 2, ',', '.') }} KZ
-                        </div>
-                        @if($fatura->retificada && $fatura->faturaRetificacao)
-                        <div class="text-xs text-green-600 font-medium mt-1">
-                            {{ number_format($fatura->faturaRetificacao->total, 2, ',', '.') }} KZ
-                        </div>
-                        @endif
-                    </td>
-            
-                    <!-- Status -->
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        @if($fatura->retificada)
-                        <span class="px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
-                            RETIFICADA
-                        </span>
-                        @else
-                        <span
-                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                {{ $fatura->estado === 'emitida' ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800' }}">
-                            {{ ucfirst($fatura->estado) }}
-                        </span>
-                        @endif
-                    </td>
-            
-                    <!-- Ações -->
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div class="flex space-x-2">
-                            <!-- Botão Ver -->
-                            <a href="#"
-                                class="flex items-center justify-center w-8 h-8 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition-colors duration-200"
-                                title="Ver Fatura">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                            </a>
-            
-                            <!-- ✅ Botão Retificar (só aparece se PODE ser retificada E NÃO foi retificada) -->
-                            @if($fatura->pode_ser_retificada && !$fatura->retificada)
-                            <a href="{{ route('admin.pov') }}?retificar_id={{ $fatura->id }}&tipo=fatura"
-                                class="flex items-center justify-center w-8 h-8 bg-orange-100 hover:bg-orange-200 text-orange-600 rounded-lg transition-colors duration-200"
-                                title="Retificar Fatura">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                </svg>
-                            </a>
-                            @endif
-            
-                            <!-- ✅ Botão Ver Nova Versão (só aparece se FOI retificada) -->
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @forelse($faturas as $fatura)
+                    <tr class="hover:bg-gray-50 transition {{ $fatura->retificada ? 'opacity-60' : '' }}">
+                        <!-- Data Emissão -->
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ $fatura->data_emissao->format('d/m/Y') }}
+                        </td>
+
+                        <!-- Número -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div
+                                class="text-sm font-medium text-gray-900 {{ $fatura->retificada ? 'line-through' : '' }}">
+                                {{ $fatura->numero }}
+                            </div>
                             @if($fatura->retificada && $fatura->faturaRetificacao)
-                            <a href="#"
-                                class="flex items-center justify-center w-8 h-8 bg-green-100 hover:bg-green-200 text-green-600 rounded-lg transition-colors duration-200"
-                                title="Ver Nova Versão">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </a>
+                            <div class="text-xs text-green-600 mt-1">
+                                → {{ $fatura->faturaRetificacao->numero }}
+                            </div>
                             @endif
-            
-                            <!-- Botão Anular (só se NÃO foi retificada) -->
-                            @if(!$fatura->retificada)
-                            <button wire:click="delete({{ $fatura->id }})" wire:confirm="Tem certeza que deseja anular esta fatura?"
-                                class="flex items-center justify-center w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors duration-200"
-                                title="Anular Fatura">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                            </button>
+                        </td>
+
+                        <!-- Cliente -->
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ $fatura->cliente->nome ?? 'N/A' }}
+                        </td>
+
+                        <!-- Usuário -->
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ $fatura->user?->name ?? 'N/A' }}
+                        </td>
+
+                        <!-- Subtotal -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div
+                                class="text-sm text-gray-700 {{ $fatura->retificada ? 'line-through text-red-600' : '' }}">
+                                {{ number_format($fatura->subtotal, 2, ',', '.') }} KZ
+                            </div>
+                            @if($fatura->retificada && $fatura->faturaRetificacao)
+                            <div class="text-xs text-green-600 font-medium mt-1">
+                                {{ number_format($fatura->faturaRetificacao->subtotal, 2, ',', '.') }} KZ
+                            </div>
                             @endif
-                        </div>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="9" class="px-6 py-12 text-center text-gray-500">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        <p class="mt-2 text-sm font-medium">Nenhuma fatura encontrada no período selecionado</p>
-                        <p class="text-xs text-gray-400 mt-1">Faturas retificadas aparecem em "Notas de Crédito"</p>
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
+                        </td>
+
+                        <!-- IVA -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div
+                                class="text-sm text-gray-700 {{ $fatura->retificada ? 'line-through text-red-600' : '' }}">
+                                {{ number_format($fatura->total_impostos, 2, ',', '.') }} KZ
+                            </div>
+                            @if($fatura->retificada && $fatura->faturaRetificacao)
+                            <div class="text-xs text-green-600 font-medium mt-1">
+                                {{ number_format($fatura->faturaRetificacao->total_impostos, 2, ',', '.') }} KZ
+                            </div>
+                            @endif
+                        </td>
+
+                        <!-- Total -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div
+                                class="text-sm font-semibold text-gray-900 {{ $fatura->retificada ? 'line-through text-red-600' : '' }}">
+                                {{ number_format($fatura->total, 2, ',', '.') }} KZ
+                            </div>
+                            @if($fatura->retificada && $fatura->faturaRetificacao)
+                            <div class="text-xs text-green-600 font-medium mt-1">
+                                {{ number_format($fatura->faturaRetificacao->total, 2, ',', '.') }} KZ
+                            </div>
+                            @endif
+                        </td>
+
+                        <!-- Status -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if($fatura->retificada)
+                            <span class="px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
+                                RETIFICADA
+                            </span>
+                            @else
+                            <span
+                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {{ $fatura->estado === 'emitida' ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800' }}">
+                                {{ ucfirst($fatura->estado) }}
+                            </span>
+                            @endif
+                        </td>
+
+                        <!-- Ações -->
+                        <!-- resources/views/admin/faturas/index.blade.php -->
+
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <!-- Botão Ver -->
+                                <a href="{{ route('admin.fatura.download', $fatura->id) }}"
+                                    class="flex items-center justify-center w-8 h-8 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition-colors duration-200"
+                                    title="Ver Fatura">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </a>
+
+                                <!-- ✅ Botão Retificar -->
+                                @if($fatura->pode_ser_retificada)
+                                <a href="{{ route('admin.pov') }}?retificar_id={{ $fatura->id }}&tipo=fatura"
+                                    class="flex items-center justify-center w-8 h-8 bg-orange-100 hover:bg-orange-200 text-orange-600 rounded-lg transition-colors duration-200"
+                                    title="Retificar Fatura">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                </a>
+                                @endif
+
+                                <!-- ✅ Botão Anular -->
+                                @if($fatura->pode_ser_anulada)
+                                <button wire:click="delete({{ $fatura->id }})"
+                                    class="flex items-center justify-center w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors duration-200"
+                                    title="Anular Fatura">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                                @endif
+
+                                <!-- ✅ Badge se foi ANULADA -->
+                                @if($fatura->anulada)
+                                <span class="px-2 py-1 text-xs font-semibold text-white bg-gray-700 rounded">
+                                    ANULADA
+                                </span>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="9" class="px-6 py-12 text-center text-gray-500">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <p class="mt-2 text-sm font-medium">Nenhuma fatura encontrada no período selecionado</p>
+                            <p class="text-xs text-gray-400 mt-1">Faturas retificadas aparecem em "Notas de Crédito"</p>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
             </table>
         </div>
 
@@ -321,4 +322,5 @@
             {{ $faturas->links() }}
         </div>
     </div>
+
 </div>

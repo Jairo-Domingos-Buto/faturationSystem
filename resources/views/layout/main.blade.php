@@ -13,8 +13,6 @@
     <meta name="description" content="" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <script src="//unpkg.com/alpinejs" defer></script>
-
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="../assets/img/favicon/favicon.ico" />
     <link rel="stylesheet" href="../../assets//vendor/fonts/iconify-icons.css" />
@@ -50,6 +48,10 @@
 
     {{-- livewire --}}
        @livewireStyles
+
+       {{-- alpiines --}}
+       <!-- No layout principal (antes de </head>) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 
 <body>
@@ -391,6 +393,7 @@
     <!-- Place this tag in your head or just before your close body tag. -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
       @livewireScripts
+      @stack('scripts')
 </body>
 
 

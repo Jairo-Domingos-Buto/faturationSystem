@@ -1,5 +1,9 @@
+{{-- resources/views/livewire/recibo-list.blade.php --}}
+
 <div class="bg-white p-6 min-h-screen">
-    {{-- Alerta se empresa não estiver configurada --}}
+    {{-- ✅ INCLUIR MODAL DE ANULAÇÃO --}}
+    <x-modal-anulacao />
+
     @if(!$empresa)
     <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
         <div class="flex">
@@ -13,25 +17,32 @@
             <div class="ml-3">
                 <p class="text-sm text-yellow-700">
                     <strong>Atenção:</strong> Os dados da empresa não foram configurados.
-                    <a href="{{ route('admin.configuracoes') }}" class="font-medium underline">
-                        Configure aqui
-                    </a>
+                    <a href="{{ route('admin.configuracoes') }}" class="font-medium underline">Configure aqui</a>
                 </p>
             </div>
         </div>
     </div>
     @endif
 
-    {{-- Cabeçalho --}}
+    @if(session()->has('success'))
+    <div class="bg-green-50 border-l-4 border-green-400 p-4 mb-4">
+        <p class="text-green-700">{{ session('success') }}</p>
+    </div>
+    @endif
+
+    @if(session()->has('error'))
+    <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
+        <p class="text-red-700">{{ session('error') }}</p>
+    </div>
+    @endif
+
     <div class="mb-6">
         <h2 class="text-2xl font-bold text-gray-800">Gestão de Recibos</h2>
-        <p class="text-sm text-gray-600 mt-1">Recibos ativos - Retificados aparecem em Notas de Crédito</p>
+        <p class="text-sm text-gray-600 mt-1">Recibos ativos - Retificados e Anulados aparecem em Notas de Crédito</p>
     </div>
 
-    {{-- Filtros de Data e Ações --}}
     <div class="bg-gray-50 rounded-lg border p-4 mb-6">
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-            {{-- Filtro de Datas --}}
             <div class="flex items-center gap-2">
                 <input type="date" wire:model.live="start_date"
                     class="text-black border border-gray-400 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
@@ -39,10 +50,7 @@
                 <input type="date" wire:model.live="end_date"
                     class="text-black border border-gray-400 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             </div>
-
-            {{-- Botões de Ação --}}
             <div class="flex gap-2">
-                <!-- Botão Notas de Crédito -->
                 <a href="{{ route('admin.notas-credito') }}"
                     class="flex justify-center items-center px-4 bg-orange-500 text-white rounded p-2 hover:bg-orange-600 transition">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -51,8 +59,6 @@
                     </svg>
                     <span>Notas de Crédito</span>
                 </a>
-
-                <!-- Botão Criar Novo Recibo -->
                 <a href="{{ route('admin.pov') }}"
                     class="flex justify-center items-center px-4 bg-blue-500 text-white rounded p-2 hover:bg-blue-600 transition">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -70,14 +76,6 @@
         </div>
     </div>
 
-    {{-- Mensagem de Sucesso --}}
-    @if(session()->has('message'))
-    <div class="bg-green-50 border-l-4 border-green-400 p-4 mb-4">
-        <p class="text-green-700">{{ session('message') }}</p>
-    </div>
-    @endif
-
-    {{-- Estatísticas --}}
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200 shadow-sm">
             <div class="flex items-center justify-between">
@@ -140,96 +138,58 @@
         </div>
     </div>
 
-    {{-- Tabela de Recibos --}}
     <div class="bg-white rounded-lg shadow overflow-hidden border">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Emissão
+                            Emissão</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Número</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Cliente</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Usuário</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Método Pagamento</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Número
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Cliente
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Usuário
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Método Pagamento
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Valor
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Ações
+                            Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações
                         </th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse ($recibos as $recibo)
-                    <tr class="hover:bg-gray-50 transition {{ $recibo->retificado ? 'opacity-60' : '' }}">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ $recibo->data_emissao->format('d/m/Y') }}
-                        </td>
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{
+                            $recibo->data_emissao->format('d/m/Y') }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div
-                                class="text-sm font-medium text-gray-900 {{ $recibo->retificado ? 'line-through' : '' }}">
-                                {{ $recibo->numero }}
-                            </div>
-                            @if($recibo->retificado && $recibo->reciboRetificacao)
-                            <div class="text-xs text-green-600 mt-1">
-                                → {{ $recibo->reciboRetificacao->numero }}
-                            </div>
-                            @endif
+                            <div class="text-sm font-medium text-gray-900">{{ $recibo->numero }}</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ $recibo->cliente?->nome ?? 'Sem nome' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ $recibo->user?->name ?? 'N/A' }}
-                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $recibo->cliente?->nome ?? 'Sem
+                            nome' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $recibo->user?->name ?? 'N/A'
+                            }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span
-                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                {{ $recibo->metodo_pagamento === 'dinheiro' ? 'bg-purple-100 text-purple-800' : 'bg-orange-100 text-orange-800' }}">
+                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $recibo->metodo_pagamento === 'dinheiro' ? 'bg-purple-100 text-purple-800' : 'bg-orange-100 text-orange-800' }}">
                                 {{ ucfirst($recibo->metodo_pagamento) }}
                             </span>
                         </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{{
+                            number_format($recibo->valor, 2, ',', '.') }} KZ</td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div
-                                class="text-sm font-semibold text-gray-900 {{ $recibo->retificado ? 'line-through text-red-600' : '' }}">
-                                {{ number_format($recibo->valor, 2, ',', '.') }} KZ
-                            </div>
-                            @if($recibo->retificado && $recibo->reciboRetificacao)
-                            <div class="text-xs text-green-600 font-medium mt-1">
-                                {{ number_format($recibo->reciboRetificacao->valor, 2, ',', '.') }} KZ
-                            </div>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            @if($recibo->retificado)
-                            <span class="px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
-                                RETIFICADO
-                            </span>
-                            @else
-                            <span class="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
-                                ATIVO
-                            </span>
-                            @endif
+                            <span
+                                class="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">ATIVO</span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex space-x-2">
-                                <!-- Botão Ver -->
-                                <a href="#"
+                                <a href="{{ route('admin.recibo.download', $recibo->id) }}"
                                     class="flex items-center justify-center w-8 h-8 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition-colors duration-200"
-                                    title="Ver Recibo">
+                                    title="Ver recibo">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -238,11 +198,10 @@
                                     </svg>
                                 </a>
 
-                                <!-- ✅ Botão Retificar (só aparece se PODE ser retificado E NÃO foi retificado) -->
-                                @if($recibo->pode_ser_retificado && !$recibo->retificado)
+                                @if($recibo->pode_ser_retificado)
                                 <a href="{{ route('admin.pov') }}?retificar_id={{ $recibo->id }}&tipo=recibo"
                                     class="flex items-center justify-center w-8 h-8 bg-orange-100 hover:bg-orange-200 text-orange-600 rounded-lg transition-colors duration-200"
-                                    title="Retificar Recibo">
+                                    title="Retificar recibo">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -250,24 +209,10 @@
                                 </a>
                                 @endif
 
-                                <!-- ✅ Botão Ver Nova Versão (só aparece se FOI retificado) -->
-                                @if($recibo->retificado && $recibo->reciboRetificacao)
-                                <a href="#"
-                                    class="flex items-center justify-center w-8 h-8 bg-green-100 hover:bg-green-200 text-green-600 rounded-lg transition-colors duration-200"
-                                    title="Ver Nova Versão">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                </a>
-                                @endif
-
-                                <!-- Botão Anular (só se NÃO foi retificado) -->
-                                @if(!$recibo->retificado)
+                                @if($recibo->pode_ser_anulado)
                                 <button wire:click="delete({{ $recibo->id }})"
-                                    wire:confirm="Tem certeza que deseja anular este recibo?"
                                     class="flex items-center justify-center w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors duration-200"
-                                    title="Anular Recibo">
+                                    title="Anular recibo">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -286,7 +231,8 @@
                                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             <p class="mt-2 text-sm font-medium">Nenhum recibo encontrado no período selecionado</p>
-                            <p class="text-xs text-gray-400 mt-1">Recibos retificados aparecem em "Notas de Crédito"</p>
+                            <p class="text-xs text-gray-400 mt-1">Recibos retificados e anulados aparecem em "Notas de
+                                Crédito"</p>
                         </td>
                     </tr>
                     @endforelse
@@ -294,9 +240,20 @@
             </table>
         </div>
 
-        {{-- Paginação --}}
         <div class="bg-white px-4 py-3 border-t border-gray-200">
             {{ $recibos->links() }}
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+    document.addEventListener('livewire:initialized', () => {
+        Livewire.on('abrirModalAnulacao', (event) => {
+            window.dispatchEvent(new CustomEvent('abrir-modal-anulacao', { 
+                detail: event 
+            }));
+        });
+    });
+</script>
+@endpush

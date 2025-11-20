@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en" class="light-style layout-menu-fixed" dir="ltr" data-theme="theme-default" data-assets-path="../assets/"
     data-template="vertical-menu-template-free">
 
@@ -16,6 +15,8 @@
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="../assets/img/favicon/favicon.ico" />
     <link rel="stylesheet" href="../../assets//vendor/fonts/iconify-icons.css" />
+    <!-- CDN Lucide -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -24,7 +25,6 @@
         rel="stylesheet" />
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
 
     <!-- Icons. Uncomment required icon fonts -->
     <link rel="stylesheet" href="../assets/vendor/fonts/boxicons.css" />
@@ -47,11 +47,35 @@
     <script src="../assets/js/config.js"></script>
 
     {{-- livewire --}}
-       @livewireStyles
+    @livewireStyles
 
-       {{-- alpiines --}}
-       <!-- No layout principal (antes de </head>) -->
+    {{-- alpiines --}}
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        .menu-icon.tf-icons {
+            width: 18px;
+            height: 18px;
+            stroke-width: 1.5;
+        }
+
+        .menu-link:hover .menu-icon.tf-icons {
+            stroke-width: 2;
+        }
+
+        .menu-sub .menu-link {
+            padding-left: 3rem;
+        }
+
+        .menu-header {
+            padding: 0.75rem 1rem 0.5rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            color: #a1a5b7;
+        }
+    </style>
 </head>
 
 <body>
@@ -59,7 +83,6 @@
     <div class="layout-wrapper layout-content-navbar">
         <div class="layout-container">
             <!-- Menu -->
-
             <aside id="layout-menu" class="layout-menu menu-vertical border menu bg-menu-theme">
                 <div class="app-brand demo">
                     <a href="/" class="app-brand-link">
@@ -122,131 +145,165 @@
                     <!-- Dashboard -->
                     <li class="menu-item">
                         <a href="{{ route('admin.dashboard') }}" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-grid-alt"></i>
+                            <i data-lucide="layout-dashboard" class="menu-icon tf-icons"></i>
                             <div data-i18n="Analytics">Dashboard</div>
                         </a>
                     </li>
-                
-                    <!-- Clientes -->
-                    <li class="menu-item">
-                        <a href="{{ route('admin.clientes') }}" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-user"></i>
-                            <div data-i18n="Analytics">Clientes</div>
-                        </a>
+
+                    <!-- Cadastros -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text">Cadastros</span>
                     </li>
-                
-                    <!-- Fornecedores -->
+
+                    <!-- Pessoas -->
                     <li class="menu-item">
-                        <a href="{{ route('admin.fornecedores') }}" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-store"></i>
-                            <div data-i18n="Analytics">Fornecedores</div>
+                        <a href="javascript:void(0);" class="menu-link menu-toggle">
+                            <i data-lucide="users" class="menu-icon tf-icons"></i>
+                            <div data-i18n="Pessoas">Pessoas</div>
                         </a>
+                        <ul class="menu-sub">
+                            <li class="menu-item">
+                                <a href="{{ route('admin.clientes') }}" class="menu-link">
+                                    <div data-i18n="Clientes">Clientes</div>
+                                </a>
+                            </li>
+                            <li class="menu-item">
+                                <a href="{{ route('admin.fornecedores') }}" class="menu-link">
+                                    <div data-i18n="Fornecedores">Fornecedores</div>
+                                </a>
+                            </li>
+                            <li class="menu-item">
+                                <a href="{{ route('admin.usuarios') }}" class="menu-link">
+                                    <div data-i18n="Usuários">Usuários</div>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
-                
-                    <!-- Usuários -->
+
+                    <!-- Produtos & Serviços -->
                     <li class="menu-item">
-                        <a href="{{ route('admin.usuarios') }}" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-group"></i>
-                            <div data-i18n="Analytics">Usuários</div>
+                        <a href="javascript:void(0);" class="menu-link menu-toggle">
+                            <i data-lucide="package" class="menu-icon tf-icons"></i>
+                            <div data-i18n="Produtos & Serviços">Produtos & Serviços</div>
                         </a>
+                        <ul class="menu-sub">
+                            <li class="menu-item">
+                                <a href="{{ route('admin.categoria') }}" class="menu-link">
+                                    <div data-i18n="Categorias">Categorias</div>
+                                </a>
+                            </li>
+                            <li class="menu-item">
+                                <a href="{{ route('admin.produtos') }}" class="menu-link">
+                                    <div data-i18n="Produtos">Produtos</div>
+                                </a>
+                            </li>
+                            <li class="menu-item">
+                                <a href="{{ route('admin.servicos') }}" class="menu-link">
+                                    <div data-i18n="Serviços">Serviços</div>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
-                
-                    <!-- Categoria -->
+
+                    <!-- Fiscal -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text">Fiscal</span>
+                    </li>
+
+                    <!-- Tributação -->
                     <li class="menu-item">
-                        <a href="{{ route('admin.categoria') }}" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-category"></i>
-                            <div data-i18n="Analytics">Categoria</div>
+                        <a href="javascript:void(0);" class="menu-link menu-toggle">
+                            <i data-lucide="receipt" class="menu-icon tf-icons"></i>
+                            <div data-i18n="Tributação">Tributação</div>
                         </a>
+                        <ul class="menu-sub">
+                            <li class="menu-item">
+                                <a href="{{ route('admin.impostos') }}" class="menu-link">
+                                    <div data-i18n="Impostos">Impostos</div>
+                                </a>
+                            </li>
+                            <li class="menu-item">
+                                <a href="{{ route('admin.isencao') }}" class="menu-link">
+                                    <div data-i18n="Motivos Isenção">Motivos de Isenção</div>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
-                
-                    <!-- Produtos -->
+
+                    <!-- Documentos -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text">Documentos</span>
+                    </li>
+
+                    <!-- Faturação -->
                     <li class="menu-item">
-                        <a href="{{ route('admin.produtos') }}" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-package"></i>
-                            <div data-i18n="Analytics">Produtos</div>
+                        <a href="javascript:void(0);" class="menu-link menu-toggle">
+                            <i data-lucide="file-text" class="menu-icon tf-icons"></i>
+                            <div data-i18n="Faturação">Faturação</div>
                         </a>
+                        <ul class="menu-sub">
+                            <li class="menu-item">
+                                <a href="{{ route('admin.faturas') }}" class="menu-link">
+                                    <div data-i18n="Faturas">Faturas</div>
+                                </a>
+                            </li>
+                            <li class="menu-item">
+                                <a href="{{ route('admin.recibos') }}" class="menu-link">
+                                    <div data-i18n="Recibos">Recibos</div>
+                                </a>
+                            </li>
+                            <li class="menu-item">
+                                <a href="{{ route('admin.faturas.recibo') }}" class="menu-link">
+                                    <div data-i18n="Faturas-Recibo">Faturas-Recibo</div>
+                                </a>
+                            </li>
+                            <li class="menu-item">
+                                <a href="{{ route('admin.notas-credito') }}" class="menu-link">
+                                    <div data-i18n="Notas Crédito">Notas de Crédito</div>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
-                
-                    <!-- Serviços -->
-                    <li class="menu-item">
-                        <a href="{{ route('admin.servicos') }}" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-cog"></i>
-                            <div data-i18n="Analytics">Serviços</div>
-                        </a>
+
+                    <!-- Vendas -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text">Vendas</span>
                     </li>
-                
-                    <!-- Impostos -->
-                    <li class="menu-item">
-                        <a href="{{ route('admin.impostos') }}" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-receipt"></i>
-                            <div data-i18n="Analytics">Impostos</div>
-                        </a>
-                    </li>
-                {{-- Nota de Crédito --}}
-                <li class="menu-item">
-                    <a href="{{ route('admin.notas-credito') }}" class="menu-link">
-                        <i class="menu-icon tf-icons bx bx-receipt"></i>
-                        <div data-i18n="Analytics">Nota de Crédito</div>
-                    </a>
-                </li>
-                    <!-- Motivos de Isenção -->
-                    <li class="menu-item">
-                        <a href="{{ route('admin.isencao') }}" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-shield"></i>
-                            <div data-i18n="Analytics">Motivos de Isenção</div>
-                        </a>
-                    </li>
-                
-                    <!-- Faturas -->
-                    <li class="menu-item">
-                        <a href="{{ route('admin.faturas') }}" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-receipt"></i>
-                            <div data-i18n="Analytics">Faturas</div>
-                        </a>
-                    </li>
-                
-                    <!-- Recibos -->
-                    <li class="menu-item">
-                        <a href="{{ route('admin.recibos') }}" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-shield"></i>
-                            <div data-i18n="Analytics">Recibos</div>
-                        </a>
-                    </li>
-                
-                    <!-- Faturas Recibos -->
-                    <li class="menu-item">
-                        <a href="{{ route('admin.faturas.recibo') }}" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-shield"></i>
-                            <div data-i18n="Analytics">Faturas-Recibo</div>
-                        </a>
-                    </li>
-                
-                    <!-- Ponto de Venda -->
+
                     <li class="menu-item">
                         <a href="{{ route('admin.pov') }}" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-shield"></i>
-                            <div data-i18n="Analytics">Ponto de Venda</div>
+                            <i data-lucide="shopping-cart" class="menu-icon tf-icons"></i>
+                            <div data-i18n="Ponto de Venda">Ponto de Venda</div>
                         </a>
                     </li>
-                
-                    {{-- export saft --}}
+
+                    <!-- Relatórios -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text">Relatórios & Exportação</span>
+                    </li>
+
                     <li class="menu-item">
-                            <a href="{{ route('admin.exportar-saft') }}" class="menu-link">
-                                <i class="menu-icon tf-icons bx bx-cog"></i>
-                                <div data-i18n="Analytics">Exportar Saft</div>
-                            </a>
-                        </li>
-                    <!-- Configurações -->
+                        <a href="{{ route('admin.exportar-saft') }}" class="menu-link">
+                            <i data-lucide="download" class="menu-icon tf-icons"></i>
+                            <div data-i18n="Exportar SAFT">Exportar SAFT</div>
+                        </a>
+                    </li>
+
+                    <!-- Sistema -->
+                    <li class="menu-header small text-uppercase">
+                        <span class="menu-header-text">Sistema</span>
+                    </li>
+
                     <li class="menu-item">
                         <a href="{{ route('admin.configuracoes') }}" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-cog"></i>
-                            <div data-i18n="Analytics">Configurações</div>
+                            <i data-lucide="settings" class="menu-icon tf-icons"></i>
+                            <div data-i18n="Configurações">Configurações</div>
                         </a>
                     </li>
                 </ul>
-
             </aside>
             <!-- / Menu -->
+
             <div class="menu-mobile-toggler d-xl-none rounded-1">
                 <a href="javascript:void(0);"
                     class="layout-menu-toggle menu-link text-large text-bg-secondary p-2 rounded-1">
@@ -254,12 +311,10 @@
                     <i class="bx bx-chevron-right icon-base"></i>
                 </a>
             </div>
-            <!-- / Menu -->
 
             <!-- Layout container -->
             <div class="layout-page">
                 <!-- Navbar -->
-
                 <nav class="layout-navbar navbar navbar-expand-xl align-items-center border px-4" id="layout-navbar"
                     style="width: 100%; margin-top: 0;">
 
@@ -324,7 +379,8 @@
                                                 </div>
                                                 <div class="flex-grow-1">
                                                     <h6 class="mb-0">{{ auth()->user()->name }}</h6>
-                                                    <small class="text-body-secondary">{{ auth()->user()->typeUser->value }}</small>
+                                                    <small class="text-body-secondary">{{
+                                                        auth()->user()->typeUser->value }}</small>
                                                 </div>
                                             </div>
                                         </a>
@@ -342,15 +398,15 @@
                                             <i class="icon-base bx bx-cog icon-md me-3"></i><span>Configurações</span>
                                         </a>
                                     </li>
-                               
                                     <li>
                                         <div class="dropdown-divider my-1"></div>
                                     </li>
-                                    <li class="p-2"> 
-                                      <form method="POST" action="{{ route('logout') }}">
-                                        @csrf
-                                       <a href="#" onclick="event.preventDefault(); this.closest('form').submit();">Sair</a>
-                                    </form>
+                                    <li class="p-2">
+                                        <form method="POST" action="{{ route('logout') }}">
+                                            @csrf
+                                            <a href="#"
+                                                onclick="event.preventDefault(); this.closest('form').submit();">Sair</a>
+                                        </form>
                                     </li>
                                 </ul>
                             </li>
@@ -378,15 +434,11 @@
     </div>
     <!-- / Layout wrapper -->
 
-
-
     <!-- Core JS -->
-    <!-- build:js assets/vendor/js/core.js -->
     <script src="../assets/vendor/libs/jquery/jquery.js"></script>
     <script src="../assets/vendor/libs/popper/popper.js"></script>
     <script src="../assets/vendor/js/bootstrap.js"></script>
     <script src="../assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
-
     <script src="../assets/vendor/js/menu.js"></script>
     <!-- endbuild -->
 
@@ -399,9 +451,17 @@
 
     <!-- Place this tag in your head or just before your close body tag. -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
-      @livewireScripts
-      @stack('scripts')
-</body>
 
+    @livewireScripts
+    @stack('scripts')
+
+    <!-- Scripts no final do body -->
+    <script>
+        // Inicializar ícones Lucide quando o DOM estiver pronto
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+        });
+    </script>
+</body>
 
 </html>

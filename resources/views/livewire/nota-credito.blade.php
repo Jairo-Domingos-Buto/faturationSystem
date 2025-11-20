@@ -121,7 +121,7 @@
                                 $item->data_retificacao->format('d/m/Y H:i') : '-' }}</div>
                             <div class="text-xs text-gray-500">Por: {{ $item->user?->name ?? 'N/A' }}</div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 truncate py-4">
                             <div class="text-sm text-gray-700 max-w-xs" title="{{ $item->motivo_retificacao }}">
                                 {{ Str::limit($item->motivo_retificacao ?? 'Sem motivo informado', 50) }}
                             </div>

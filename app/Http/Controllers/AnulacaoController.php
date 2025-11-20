@@ -39,7 +39,7 @@ class AnulacaoController extends Controller
 
             DB::commit();
 
-            return redirect()->route('faturas.index')
+            return redirect()->route('admin.faturas')
                 ->with('success', "Fatura {$fatura->numero} anulada com sucesso. Estoque devolvido e Nota de Crédito gerada.");
 
         } catch (\Exception $e) {
@@ -75,7 +75,7 @@ class AnulacaoController extends Controller
 
             DB::commit();
 
-            return redirect()->route('recibos.index')
+            return redirect()->route('admin.recibos')
                 ->with('success', "Recibo {$recibo->numero} anulado com sucesso. Estoque devolvido e Nota de Crédito gerada.");
 
         } catch (\Exception $e) {

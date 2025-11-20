@@ -127,6 +127,7 @@ class NotaCreditoController extends Controller
             'fatura_original' => [
                 'numero' => $faturaOriginal->numero,
                 'data_emissao' => $faturaOriginal->data_emissao->format('d/m/Y'),
+                'motivo_anulacao'=> $faturaOriginal->motivo_anulacao ?? 'Não informado',
                 'estado' => 'RETIFICADA',
                 'subtotal' => (float) $faturaOriginal->subtotal,
                 'total_impostos' => (float) $faturaOriginal->total_impostos,
@@ -339,50 +340,130 @@ class NotaCreditoController extends Controller
     private function montarDadosNotaCreditoRecibo($reciboOriginal, $empresa)
     {
         $reciboRetificacao = $reciboOriginal->reciboRetificacao;
+        // montar produtos e resumos
+        $produtos_original = $this->formatarProdutos($reciboOriginal->items);
+        $resumo_impostos_original = $this->calcularResumoImpostos($reciboOriginal->items);
+
+        $produtos_retificacao = $reciboRetificacao ? $this->formatarProdutos($reciboRetificacao->items) : [];
+        $resumo_impostos_retificacao = $reciboRetificacao ? $this->calcularResumoImpostos($reciboRetificacao->items) : [];
+
+        // análise de diferenças entre produtos
+        $analise = $reciboRetificacao ? $this->analisarDiferencaProdutos($reciboOriginal->items, $reciboRetificacao->items) : ['produtos_removidos'=>[], 'produtos_adicionados'=>[], 'produtos_alterados'=>[]];
+
+        // estoque devolvido (baseado em produtos removidos)
+        $estoque_devolvido_items = [];
+        $estoque_total_qtd = 0;
+        $estoque_total_valor = 0.0;
+        foreach($analise['produtos_removidos'] as $p) {
+            $estoque_devolvido_items[] = [
+                'produto' => $p['descricao'] ?? '-',
+                'quantidade' => $p['quantidade'] ?? 0,
+                'valor_unitario' => isset($p['quantidade']) && $p['quantidade'] != 0 ? round(($p['total'] ?? 0) / $p['quantidade'], 2) : 0,
+                'valor_total' => $p['total'] ?? 0,
+            ];
+            $estoque_total_qtd += $p['quantidade'] ?? 0;
+            $estoque_total_valor += (float) ($p['total'] ?? 0);
+        }
+
+        // valores devolvidos: diferença entre original e retificação (quando existir)
+        if ($reciboRetificacao) {
+            $subtotal_orig = (float) ($reciboOriginal->subtotal ?? 0);
+            $subtotal_ret = (float) ($reciboRetificacao->subtotal ?? 0);
+            $impostos_orig = (float) ($reciboOriginal->total_impostos ?? 0);
+            $impostos_ret = (float) ($reciboRetificacao->total_impostos ?? 0);
+            $valor_orig = (float) ($reciboOriginal->valor ?? 0);
+            $valor_ret = (float) ($reciboRetificacao->valor ?? 0);
+
+            $valores_devolvidos = [
+                'subtotal' => max(0, $subtotal_orig - $subtotal_ret),
+                'impostos' => max(0, $impostos_orig - $impostos_ret),
+                'total' => max(0, $valor_orig - $valor_ret),
+            ];
+        } else {
+            $valores_devolvidos = ['subtotal' => 0, 'impostos' => 0, 'total' => 0];
+        }
 
         return [
             'tipo_documento' => 'nota_credito_recibo',
             'numero_nota_credito' => 'NC-' . $reciboOriginal->numero,
             'data_emissao_nota' => now()->format('Y-m-d'),
+
+            // empresa mais completa
             'empresa' => [
                 'nome' => $empresa->name ?? '',
                 'nif' => $empresa->nif ?? '',
-                // ... outros dados
+                'telefone' => $empresa->telefone ?? '',
+                'email' => $empresa->email ?? '',
+                'website' => $empresa->website ?? null,
+                'endereco' => $empresa->rua ?? null,
+                'cidade' => $empresa->cidade ?? null,
+                'provincia' => $empresa->municipio ?? null,
+                'logo' => $empresa->logo ?? null,
+                'banco' => $empresa->banco ?? null,
+                'iban' => $empresa->iban ?? null,
             ],
+
+            // cliente
             'cliente' => [
-                'nome' => $reciboOriginal->cliente->nome,
-                'nif' => $reciboOriginal->cliente->nif,
-                // ... outros dados
+                'id' => $reciboOriginal->cliente->id ?? null,
+                'nome' => $reciboOriginal->cliente->nome ?? '',
+                'nif' => $reciboOriginal->cliente->nif ?? '',
+                'telefone' => $reciboOriginal->cliente->telefone ?? '',
+                'endereco' => $reciboOriginal->cliente->localizacao ?? '',
+                'cidade' => $reciboOriginal->cliente->cidade ?? '',
+                'provincia' => $reciboOriginal->cliente->provincia ?? '',
             ],
+
+            // retificação / anulação meta
             'retificacao' => [
-                'data' => $reciboOriginal->data_retificacao->format('d/m/Y H:i'),
-                'motivo' => $reciboOriginal->motivo_retificacao ?? 'Não informado',
+                'data' => $reciboOriginal->data_retificacao ? $reciboOriginal->data_retificacao->format('d/m/Y H:i') : null,
+                'motivo' => $reciboOriginal->motivo_retificacao ?? $reciboOriginal->motivo_anulacao ?? 'Não informado',
                 'usuario' => $reciboOriginal->user->name ?? 'Sistema',
             ],
-            'recibo_original' => [
+
+            // documento anulado (recibo original)
+            'documento_anulado' => [
                 'numero' => $reciboOriginal->numero,
-                'data_emissao' => $reciboOriginal->data_emissao->format('d/m/Y'),
-                'valor' => (float) $reciboOriginal->valor,
-                'metodo_pagamento' => $reciboOriginal->metodo_pagamento,
-                'produtos' => $this->formatarProdutos($reciboOriginal->items),
+                'data_emissao' => $reciboOriginal->data_emissao ? $reciboOriginal->data_emissao->format('d/m/Y') : null,
+                'motivo_anulacao' => $reciboOriginal->motivo_anulacao ?? $reciboOriginal->motivo_retificacao ?? 'Não informado',
+                'valor' => (float) ($reciboOriginal->valor ?? 0),
+                'subtotal' => (float) ($reciboOriginal->subtotal ?? 0),
+                'total_impostos' => (float) ($reciboOriginal->total_impostos ?? 0),
+                'produtos' => $produtos_original,
+                'resumo_impostos' => $resumo_impostos_original,
             ],
-            'recibo_retificacao' => $reciboRetificacao ? [
+
+            // documento de retificação (novo recibo válido)
+            'documento_retificacao' => $reciboRetificacao ? [
                 'numero' => $reciboRetificacao->numero,
-                'data_emissao' => $reciboRetificacao->data_emissao->format('d/m/Y'),
-                'valor' => (float) $reciboRetificacao->valor,
-                'metodo_pagamento' => $reciboRetificacao->metodo_pagamento,
-                'produtos' => $this->formatarProdutos($reciboRetificacao->items),
+                'data_emissao' => $reciboRetificacao->data_emissao ? $reciboRetificacao->data_emissao->format('d/m/Y') : null,
+                'valor' => (float) ($reciboRetificacao->valor ?? 0),
+                'subtotal' => (float) ($reciboRetificacao->subtotal ?? 0),
+                'total_impostos' => (float) ($reciboRetificacao->total_impostos ?? 0),
+                'produtos' => $produtos_retificacao,
+                'resumo_impostos' => $resumo_impostos_retificacao,
             ] : null,
+
+            // comparativo e analis
             'comparativo' => $reciboRetificacao ? [
-                'diferenca_total' => (float) $reciboRetificacao->valor - (float) $reciboOriginal->valor,
+                'diferenca_total' => (float) $reciboOriginal->valor - (float) $reciboRetificacao->valor,
                 'percentual_variacao' => $this->calcularPercentualVariacao(
-                    $reciboOriginal->valor,
-                    $reciboRetificacao->valor
+                    $reciboOriginal->valor ?? 0,
+                    $reciboRetificacao->valor ?? 0
                 ),
             ] : null,
-            'analise_produtos' => $reciboRetificacao ?
-                $this->analisarDiferencaProdutos($reciboOriginal->items, $reciboRetificacao->items)
-                : null,
+
+            'analise_produtos' => $analise,
+
+            // estoque devolvido
+            'estoque_devolvido' => [
+                'items' => $estoque_devolvido_items,
+                'total_quantidade' => $estoque_total_qtd,
+                'total_valor' => $estoque_total_valor,
+            ],
+
+            // valores devolvidos
+            'valores_devolvidos' => $valores_devolvidos,
         ];
     }
 

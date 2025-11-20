@@ -1,5 +1,5 @@
 <div class="bg-white p-6 min-h-screen">
-   {{-- ✅ INCLUIR MODAL DE ANULAÇÃO --}}
+    {{-- ✅ INCLUIR MODAL DE ANULAÇÃO --}}
     <x-modal-anulacao />
 
     {{-- Alerta se empresa não estiver configurada --}}
@@ -259,7 +259,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex space-x-2">
                                 <!-- Botão Ver -->
-                                <a href="{{ route('admin.fatura.download', $fatura->id) }}"
+                                <a href="{{ route('admin.faturas.show', $fatura->id) }}"
                                     class="flex items-center justify-center w-8 h-8 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition-colors duration-200"
                                     title="Ver Fatura">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -325,7 +325,7 @@
             {{ $faturas->links() }}
         </div>
     </div>
-    
+
 </div>
 
 

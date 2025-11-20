@@ -16,47 +16,68 @@ class Pov extends Component
 {
     // Propriedades do documento
     public $tipoDocumento = 'fatura';
+
     public $natureza = 'produto';
-    
+
+    public $metodoPagamento;
+
     // ✅ NOVO: Modo retificação
     public $modoRetificacao = false;
+
     public $documentoOriginalId = null;
+
     public $documentoOriginalNumero = null;
+
     public $motivoRetificacao = '';
 
     // Cliente
     public $clientes = [];
+
     public $clienteSelecionado = null;
+
     public $clienteNome = 'Nenhum cliente selecionado';
+
     public $clienteLocalizacao = '';
+
     public $showModal = false;
+
     public $searchClienteTerm = '';
 
     // Produtos
     public $produtos = [];
+
     public $produtosCarrinho = [];
+
     public $searchProdutoTerm = '';
 
     // Financeiro
     public $subtotal = 0;
+
     public $incidencia = 0;
+
     public $iva = 0;
+
     public $total = 0;
+
     public $totalRecebido = 0;
+
     public $desconto = 0;
+
     public $totalImpostos = 0;
+
     public $troco = 0;
+
     public $resumoImpostos = [];
 
     public function mount()
     {
         $this->carregarClientes();
         $this->carregarProdutos();
-        
+
         // ✅ Verificar se veio ID para retificar
         $retificar_id = request()->get('retificar_id');
         $tipo = request()->get('tipo');
-        
+
         if ($retificar_id && $tipo) {
             $this->carregarDocumentoParaRetificacao($retificar_id, $tipo);
         } else {
@@ -72,25 +93,28 @@ class Pov extends Component
         try {
             if ($tipo === 'fatura') {
                 $documento = Fatura::with(['cliente', 'items.produto'])->findOrFail($id);
-                
-                if (!$documento->pode_ser_retificada) {
+
+                if (! $documento->pode_ser_retificada) {
                     session()->flash('error', 'Esta fatura não pode ser retificada.');
+
                     return redirect()->route('admin.notas-credito');
                 }
-                
+
                 $this->tipoDocumento = 'fatura';
-                
+
             } elseif ($tipo === 'recibo') {
                 $documento = Recibo::with(['cliente', 'items.produto'])->findOrFail($id);
-                
-                if (!$documento->pode_ser_retificado) {
+
+                if (! $documento->pode_ser_retificado) {
                     session()->flash('error', 'Este recibo não pode ser retificado.');
+
                     return redirect()->route('admin.notas-credito');
                 }
-                
+
                 $this->tipoDocumento = 'recibo';
             } else {
                 session()->flash('error', 'Tipo de documento inválido.');
+
                 return redirect()->back();
             }
 
@@ -105,7 +129,7 @@ class Pov extends Component
             // Carrega produtos no carrinho
             foreach ($documento->items as $item) {
                 $produto = $item->produto;
-                
+
                 $this->produtosCarrinho[] = [
                     'id' => $produto->id,
                     'descricao' => $produto->descricao,
@@ -117,11 +141,12 @@ class Pov extends Component
             }
 
             $this->calcularTotais();
-            
+
             session()->flash('info', "Modo Retificação: {$documento->numero}");
 
         } catch (\Exception $e) {
-            session()->flash('error', 'Erro ao carregar documento: ' . $e->getMessage());
+            session()->flash('error', 'Erro ao carregar documento: '.$e->getMessage());
+
             return redirect()->back();
         }
     }
@@ -140,10 +165,10 @@ class Pov extends Component
             'clienteSelecionado',
             'clienteNome',
         ]);
-        
+
         $this->clienteNome = 'Nenhum cliente selecionado';
         $this->calcularTotais();
-        
+
         session()->flash('info', 'Retificação cancelada.');
     }
 
@@ -196,8 +221,9 @@ class Pov extends Component
     {
         $produto = Produto::find($produtoId);
 
-        if (!$produto) {
+        if (! $produto) {
             session()->flash('error', 'Produto não encontrado.');
+
             return;
         }
 
@@ -208,11 +234,12 @@ class Pov extends Component
         if ($index !== false) {
             $quantidadeAtual = $this->produtosCarrinho[$index]['quantidade'];
             $estoqueDisponivel = $this->produtosCarrinho[$index]['estoque_disponivel'];
-            
+
             if ($quantidadeAtual < $estoqueDisponivel) {
                 $this->produtosCarrinho[$index]['quantidade']++;
             } else {
                 session()->flash('error', 'Estoque insuficiente para este produto.');
+
                 return;
             }
         } else {
@@ -231,7 +258,7 @@ class Pov extends Component
 
     public function alterarQuantidade($index, $valor)
     {
-        if (!isset($this->produtosCarrinho[$index])) {
+        if (! isset($this->produtosCarrinho[$index])) {
             return;
         }
 
@@ -283,9 +310,9 @@ class Pov extends Component
                 $codigoMotivo = null;
             }
 
-            $chaveResumo = $taxa . '|' . $descricaoImposto;
+            $chaveResumo = $taxa.'|'.$descricaoImposto;
 
-            if (!isset($this->resumoImpostos[$chaveResumo])) {
+            if (! isset($this->resumoImpostos[$chaveResumo])) {
                 $this->resumoImpostos[$chaveResumo] = [
                     'taxa' => $taxa,
                     'descricao' => $descricaoImposto,
@@ -337,18 +364,21 @@ class Pov extends Component
      */
     public function finalizarVenda()
     {
-        if (!$this->clienteSelecionado) {
+        if (! $this->clienteSelecionado) {
             session()->flash('error', 'Por favor, selecione um cliente antes de finalizar.');
+
             return;
         }
 
         if (count($this->produtosCarrinho) == 0) {
             session()->flash('error', 'Adicione pelo menos um produto ao carrinho.');
+
             return;
         }
 
         if ($this->modoRetificacao && empty($this->motivoRetificacao)) {
             session()->flash('error', 'Por favor, informe o motivo da retificação.');
+
             return;
         }
 
@@ -362,10 +392,10 @@ class Pov extends Component
             }
 
             DB::commit();
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'Erro ao finalizar: ' . $e->getMessage());
+            session()->flash('error', 'Erro ao finalizar: '.$e->getMessage());
         }
     }
 
@@ -392,7 +422,7 @@ class Pov extends Component
 
             $this->salvarItens($documento, FaturaItem::class, 'fatura_id');
             $mensagem = "Fatura nº {$documento->numero} gerada com sucesso!";
-            
+
         } else {
             $documento = Recibo::create(array_merge($dadosComuns, [
                 'numero' => 'RC-'.date('Ymd').'-'.str_pad(Recibo::count() + 1, 4, '0', STR_PAD_LEFT),
@@ -417,7 +447,7 @@ class Pov extends Component
     {
         if ($this->tipoDocumento === 'fatura') {
             $documentoOriginal = Fatura::with('items')->findOrFail($this->documentoOriginalId);
-            
+
             // Devolve estoque da fatura original
             foreach ($documentoOriginal->items as $item) {
                 $produto = Produto::find($item->produto_id);
@@ -441,10 +471,10 @@ class Pov extends Component
             $documentoOriginal->marcarComoRetificada($novoDocumento->id, $this->motivoRetificacao);
 
             $mensagem = "Fatura {$documentoOriginal->numero} retificada! Nova fatura: {$novoDocumento->numero}";
-            
+
         } else {
             $documentoOriginal = Recibo::with('items')->findOrFail($this->documentoOriginalId);
-            
+
             foreach ($documentoOriginal->items as $item) {
                 $produto = Produto::find($item->produto_id);
                 $produto->increment('estoque', $item->quantidade);
@@ -479,7 +509,7 @@ class Pov extends Component
     {
         foreach ($this->produtosCarrinho as $item) {
             $produto = Produto::with(['imposto', 'motivoIsencao'])->find($item['id']);
-            
+
             if ($produto->motivoIsencao) {
                 $taxaIva = 0;
                 $impostoId = null;
@@ -521,7 +551,7 @@ class Pov extends Component
     {
         foreach ($this->produtosCarrinho as $item) {
             $produto = Produto::find($item['id']);
-            
+
             if ($acao === 'decrementar') {
                 $produto->decrement('estoque', $item['quantidade']);
             } else {
@@ -554,8 +584,9 @@ class Pov extends Component
 
     public function exportarDadosFatura()
     {
-        if (!$this->clienteSelecionado || empty($this->produtosCarrinho)) {
+        if (! $this->clienteSelecionado || empty($this->produtosCarrinho)) {
             session()->flash('error', 'Selecione um cliente e adicione produtos antes de exportar.');
+
             return;
         }
 

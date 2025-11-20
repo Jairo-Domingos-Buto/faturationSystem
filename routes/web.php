@@ -3,8 +3,8 @@
 use App\Http\Controllers\AnulacaoController;
 use App\Http\Controllers\ImpressaoController;
 use App\Http\Controllers\NotaCreditoController;
-use App\Http\Controllers\pdfController;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\pdfFaturaController;
+use App\Http\Controllers\pdfReciboController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,15 +21,6 @@ Route::middleware('guest')->group(function () {
     Route::view('/resetPassword', 'auth.reset-password')->name('resetPassword');
     Route::view('/confirmPassword', 'auth.confirm-password')->name('confirmPassword');
 });
-
-// LOGOUT
-Route::post('/logout', function () {
-    Auth::logout();
-    request()->session()->invalidate();
-    request()->session()->regenerateToken();
-
-    return redirect('/login');
-})->name('logout');
 
 /*
 |--------------------------------------------------------------------------
@@ -74,10 +65,13 @@ Route::middleware(['type:admin'])
 
         Route::get('/impressao/servicos', [ImpressaoController::class, 'servicos'])->name('impressao.servicos');
         Route::get('/impressao/produtos', [ImpressaoController::class, 'produtos'])->name('impressao.produtos');
-        /* impressao apartir do ponto de venda */
-        Route::get('/fatura/download', [pdfController::class, 'downloadFatura'])->name('fatura.download');
 
-        Route::get('/recibo/download', [pdfController::class, 'downloadRecibo'])->name('recibo.download');
+        /* impressao apartir do ponto de venda */
+        Route::get('/fatura/download', [pdfFaturaController::class, 'downloadFatura'])->name('fatura.download');
+
+        Route::get('/recibo/download', [pdfReciboController::class, 'downloadRecibo'])->name('recibo.download');
+        Route::get('/faturas/{id}', [pdfFaturaController::class, 'gerarPdf'])->name('faturas.show');
+        Route::get('/recibos/{id}', [pdfReciboController::class, 'gerarPdf'])->name('recibo.show');
 
         // Visualizar Nota de Crédito de Fatura
         Route::get('/notas-credito/fatura/{id}', [NotaCreditoController::class, 'visualizarFatura'])
@@ -107,4 +101,3 @@ Route::middleware(['type:admin'])
         Route::get('/notas-credito/anulacao/{tipo}/{id}/pdf', [AnulacaoController::class, 'gerarPDFAnulacao'])
             ->name('notas-credito.anulacao.pdf');
     });
-    

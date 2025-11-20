@@ -126,7 +126,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-600 font-medium">Por Multicaixa</p>
-                    <p class="text-2xl font-bold text-orange-700">{{ $recibosMulticaixa }}</p>
+                    <p class="text-2xl font-bold text-orange-700">{{ $recibos }}</p>
                 </div>
                 <div class="bg-orange-500 p-3 rounded-full">
                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -187,7 +187,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex space-x-2">
-                                <a href="{{ route('admin.recibo.download', $recibo->id) }}"
+                                <a href="{{ route('admin.recibo.show', $recibo->id) }}"
                                     class="flex items-center justify-center w-8 h-8 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition-colors duration-200"
                                     title="Ver recibo">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

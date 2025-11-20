@@ -113,7 +113,7 @@ class ReciboList extends Component
         $totalRecibos = $recibos->total();
         $somaValores = $query->clone()->sum('valor');
         $recibosDinheiro = $query->clone()->where('metodo_pagamento', 'dinheiro')->count();
-        $recibosMulticaixa = $query->clone()->where('metodo_pagamento', 'multicaixa')->count();
+        $recibosMulticaixa = $query->where('metodo_pagamento', 'cartao')->count();
 
         return view('livewire.recibo-list', [
             'recibos' => $recibos,

@@ -126,7 +126,12 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm text-gray-600 font-medium">Por Multicaixa</p>
-                    <p class="text-2xl font-bold text-orange-700">{{ $recibos }}</p>
+                    <p class="text-2xl font-bold text-orange-700">
+                        {{-- @if ()
+
+                        @endif --}}
+                        {{ $recibosMulticaixa }}
+                    </p>
                 </div>
                 <div class="bg-orange-500 p-3 rounded-full">
                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

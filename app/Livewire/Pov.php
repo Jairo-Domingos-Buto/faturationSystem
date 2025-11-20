@@ -427,7 +427,7 @@ class Pov extends Component
             $documento = Recibo::create(array_merge($dadosComuns, [
                 'numero' => 'RC-'.date('Ymd').'-'.str_pad(Recibo::count() + 1, 4, '0', STR_PAD_LEFT),
                 'valor' => $this->total,
-                'metodo_pagamento' => 'dinheiro',
+                'metodo_pagamento' => $this->metodoPagamento,
             ]));
 
             $this->salvarItens($documento, ReciboItem::class, 'recibo_id');
@@ -486,7 +486,7 @@ class Pov extends Component
                 'user_id' => auth()->id(),
                 'data_emissao' => now(),
                 'valor' => $this->total,
-                'metodo_pagamento' => 'dinheiro',
+                'metodo_pagamento' => $this->metodoPagamento,
                 'recibo_original_id' => $this->documentoOriginalId,
             ]);
 

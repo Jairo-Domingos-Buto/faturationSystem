@@ -729,12 +729,35 @@
                         }
                     }
                 ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "motivo"
+                                ],
+                                "properties": {
+                                    "motivo": {
+                                        "description": "Motivo da anulação (mínimo 10 caracteres)",
+                                        "type": "string",
+                                        "example": "Cliente cancelou a compra"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "Fatura anulada com sucesso"
                     },
                     "404": {
                         "description": "Fatura não encontrada"
+                    },
+                    "422": {
+                        "description": "Erro de validação"
                     }
                 }
             }

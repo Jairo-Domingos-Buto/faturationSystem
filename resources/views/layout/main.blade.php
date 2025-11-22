@@ -53,28 +53,28 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <style>
-        .menu-icon.tf-icons {
-            width: 18px;
-            height: 18px;
-            stroke-width: 1.5;
-        }
+    .menu-icon.tf-icons {
+        width: 18px;
+        height: 18px;
+        stroke-width: 1.5;
+    }
 
-        .menu-link:hover .menu-icon.tf-icons {
-            stroke-width: 2;
-        }
+    .menu-link:hover .menu-icon.tf-icons {
+        stroke-width: 2;
+    }
 
-        .menu-sub .menu-link {
-            padding-left: 3rem;
-        }
+    .menu-sub .menu-link {
+        padding-left: 3rem;
+    }
 
-        .menu-header {
-            padding: 0.75rem 1rem 0.5rem;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 600;
-            color: #a1a5b7;
-        }
+    .menu-header {
+        padding: 0.75rem 1rem 0.5rem;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        color: #a1a5b7;
+    }
     </style>
 </head>
 
@@ -389,10 +389,12 @@
                                         <div class="dropdown-divider my-1"></div>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="#">
-                                            <i class="icon-base bx bx-user icon-md me-3"></i><span>Meu Perfil</span>
+                                        <a class="dropdown-item" href="{{ route('Admin.perfil') }}">
+                                            <i class="icon-base bx bx-user icon-md me-3"></i>
+                                            <span>Meu Perfil</span>
                                         </a>
                                     </li>
+
                                     <li>
                                         <a class="dropdown-item" href="#">
                                             <i class="icon-base bx bx-cog icon-md me-3"></i><span>Configurações</span>
@@ -457,10 +459,10 @@
 
     <!-- Scripts no final do body -->
     <script>
-        // Inicializar ícones Lucide quando o DOM estiver pronto
-        document.addEventListener('DOMContentLoaded', function() {
-            lucide.createIcons();
-        });
+    // Inicializar ícones Lucide quando o DOM estiver pronto
+    document.addEventListener('DOMContentLoaded', function() {
+        lucide.createIcons();
+    });
     </script>
 </body>
 

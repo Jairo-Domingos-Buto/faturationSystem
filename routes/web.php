@@ -4,8 +4,10 @@ use App\Http\Controllers\AnulacaoController;
 use App\Http\Controllers\ImpressaoController;
 use App\Http\Controllers\NotaCreditoController;
 use App\Http\Controllers\pdfFaturaController;
+use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\pdfReciboController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Password;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,6 +22,7 @@ Route::middleware('guest')->group(function () {
     Route::view('/forgetPassword', 'auth.forgetPassword')->name('forgetPassword');
     Route::view('/resetPassword', 'auth.reset-password')->name('resetPassword');
     Route::view('/confirmPassword', 'auth.confirm-password')->name('confirmPassword');
+   
 });
 
 /*
@@ -101,3 +104,19 @@ Route::middleware(['type:admin'])
         Route::get('/notas-credito/anulacao/{tipo}/{id}/pdf', [AnulacaoController::class, 'gerarPDFAnulacao'])
             ->name('notas-credito.anulacao.pdf');
     });
+
+    Route::post('/recuperar-senha-email', function (\Illuminate\Http\Request $request) {
+
+    $request->validate(['email' => 'required|email']);
+
+    $status = Password::sendResetLink($request->only('email'));
+
+    return response()->json([
+        "status" => $status === Password::RESET_LINK_SENT ? "ok" : "erro",
+        "message" => __($status)
+    ]);
+
+})->name('password.email');
+
+  Route::get('/meu-perfil', [PerfilController::class, 'index'])->name('Admin.perfil');
+Route::post('/meu-perfil/update', [PerfilController::class, 'update'])->name('Admin.update');

@@ -66,4 +66,8 @@ class User extends Authenticatable
             'typeUser' => UserType::class,
         ];
     }
+    public function perfil()
+{
+    return $this->hasOne(Perfil::class);
+}
 }

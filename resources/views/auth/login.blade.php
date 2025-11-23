@@ -120,11 +120,6 @@
 
                             <button class="btn btn-primary d-grid w-100" type="submit">Entrar</button>
                         </form>
-
-                        <p class="text-center mt-3">
-                            <span>Não tem uma conta?</span>
-                            <a href="{{ route('register') }}">Crie agora</a>
-                        </p>
                     </div>
                 </div>
 

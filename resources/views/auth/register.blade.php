@@ -6,7 +6,7 @@
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
-    <title>Register Basic - Pages | Sneat - Bootstrap 5 HTML Admin Template - Pro</title>
+    <title>Cadastrar | MindSeat</title>
 
     <meta name="description" content="" />
 
@@ -103,27 +103,24 @@
                                         </g>
                                     </svg>
                                 </span>
-                                <span class="app-brand-text demo text-body fw-bolder">Sneat</span>
+                                <span class="app-brand-text demo text-body fw-bolder">MINDSEAT</span>
                             </a>
                         </div>
                         <!-- /Logo -->
-                        <h4 class="mb-2">Adventure starts here 🚀</h4>
-                        <p class="mb-4">Make your app management easy and fun!</p>
-
                         <form id="formAuthentication" class="mb-3" method="POST" action="{{ route('register') }}">
                             @csrf
                             <div class="mb-3">
-                                <label for="username" class="form-label">Username</label>
+                                <label for="username" class="form-label">Nome</label>
                                 <input id="name" type="text" class="form-control" name="name" value="{{ old('name') }}"
-                                    required autofocus autocomplete="name" placeholder="Enter your username" />
+                                    required autofocus autocomplete="name" placeholder="Digite seu nome" />
                             </div>
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email</label>
                                 <input type="text" class="form-control" id="email" name="email"
-                                    value="{{ old('email') }}" placeholder="Enter your email" required />
+                                    value="{{ old('email') }}" placeholder="Digite seu email" required />
                             </div>
                             <div class="mb-3 form-password-toggle">
-                                <label class="form-label" for="password">Password</label>
+                                <label class="form-label" for="password">Senha</label>
                                 <div class="input-group input-group-merge">
                                     <input type="password" id="password" class="form-control" name="password"
                                         placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
@@ -137,18 +134,18 @@
                                     <input class="form-check-input" type="checkbox" id="terms-conditions"
                                         name="terms" />
                                     <label class="form-check-label" for="terms-conditions">
-                                        I agree to
-                                        <a href="javascript:void(0);">privacy policy & terms</a>
+                                        Eu concordo com
+                                        <a href="javascript:void(0);">termos & politica</a>
                                     </label>
                                 </div>
                             </div>
-                            <button class="btn btn-primary d-grid w-100">Sign up</button>
+                            <button class="btn btn-primary d-grid w-100">Cadastrar</button>
                         </form>
 
                         <p class="text-center">
-                            <span>Already have an account?</span>
+                            <span>Já tenho conta?</span>
                             <a href="/login">
-                                <span>Sign in instead</span>
+                                <span>Login</span>
                             </a>
                         </p>
                     </div>

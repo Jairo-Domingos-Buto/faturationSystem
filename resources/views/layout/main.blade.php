@@ -394,6 +394,12 @@
                                             <span>Meu Perfil</span>
                                         </a>
                                     </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('Admin.perfil') }}">
+                                            <i class="icon-base bx bx-user icon-md me-3"></i>
+                                            <span>Criar Usuario</span>
+                                        </a>
+                                    </li>
 
                                     <li>
                                         <a class="dropdown-item" href="#">

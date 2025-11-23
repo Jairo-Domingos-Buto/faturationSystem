@@ -13,13 +13,17 @@
 }
 
 .profile-photo-big {
-    width: 90px;
-    height: 90px;
+    width: 190px;
+    height: 160px;
     border-radius: 50%;
     border: 4px solid white;
     object-fit: cover;
     margin-bottom: 15px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.20);
+}
+
+img {
+    width: 100%;
 }
 
 .info-card {
@@ -44,16 +48,6 @@ h2 {
     <!-- ================= HEADER CORPORATIVO ================= -->
     <div class="profile-header">
 
-        {{-- FOTO DO PERFIL (se existe; senão ícone padrão) --}}
-        @if($user->foto)
-        <img src="{{ asset('storage/'.$user->foto) }}" class="profile-photo-big">
-        @else
-        <div class="bg-light text-primary rounded-circle d-flex justify-content-center align-items-center mx-auto profile-photo-big"
-            style="font-size: 65px;">
-            <i class="bx bx-user"></i>
-        </div>
-        @endif
-
         <h2 class="fw-bold mb-0">{{ $user->name }}</h2>
         <p class="text-light mb-2" style="opacity: 0.9;">
             {{ $user->funcao ?? 'Usuário da Plataforma' }}
@@ -77,11 +71,11 @@ h2 {
                 </p>
 
                 <p><i class="bx bx-phone me-2 text-primary"></i>
-                    <strong>Telefone: </strong> {{ $profile->telefone ?? '-' }}
+                    <strong>Telefone: </strong> {{ $profile->telefone}}
                 </p>
 
                 <p><i class="bx bx-id-card me-2 text-primary"></i>
-                    <strong>Bilhete de Identidade: </strong> {{ $profile->bi ?? '-' }}
+                    <strong>Bilhete de Identidade: </strong> {{ $profile->bi}}
                 </p>
 
                 <p><i class="bx bx-calendar me-2 text-primary"></i>
@@ -90,11 +84,11 @@ h2 {
                 </p>
 
                 <p><i class="bx bx-user-pin me-2 text-primary"></i>
-                    <strong>Gênero:</strong> {{ $profile->genero ?? '-' }}
+                    <strong>Gênero:</strong> {{ $profile->genero}}
                 </p>
 
                 <p><i class="bx bx-home me-2 text-primary"></i>
-                    <strong>Endereço:</strong> {{ $profile->endereco ?? '-' }}
+                    <strong>Endereço:</strong> {{ $profile->endereco}}
                 </p>
             </div>
         </div>
@@ -114,88 +108,116 @@ h2 {
 
     <!-- ========== MODAL ATUALIZAR PERFIL ========= -->
     <div class="modal fade" id="editarPerfilModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0 rounded-3">
 
                 <form action="{{ route('Admin.update') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
-                    <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title">Atualizar Perfil</h5>
+                    {{-- HEADER --}}
+                    <div class="modal-header bg-primary text-white py-3">
+                        <h4 class="modal-title" style="color: white;">
+                            <i class="bx bx-user-circle me-2"></i> Atualizar Perfil
+                        </h4>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
 
-                    <div class="modal-body">
-                        {{-- FOTO --}}
-                        <div class="text-center mb-3">
-                            @if($profile && $profile->foto)
-                            <img src="{{ asset('storage/'.$profile->foto) }}" class="rounded-circle mb-2" width="100"
-                                height="100">
-                            @else
-                            <div class="bg-light text-primary rounded-circle d-flex justify-content-center align-items-center mx-auto mb-2"
-                                style="width:100px; height:100px; font-size:45px;">
-                                <i class="bx bx-user"></i>
+                    {{-- BODY --}}
+                    <div class="modal-body py-4">
+
+                        <div class="row">
+                            {{-- FOTO --}}
+                            <div class="col-md-4 text-center border-end">
+                                @if($profile && $profile->foto)
+                                <img src="{{ asset('storage/'.$profile->foto) }}" class="profile-photo-big
+                                    rounded-circle mb-3 shadow" width="150" height="150">
+                                @else
+                                <div class="bg-light text-primary rounded-circle d-flex justify-content-center align-items-center mx-auto mb-3 shadow"
+                                    style="width:150px; height:150px; font-size:65px;">
+                                    <i class="bx bx-user"></i>
+                                </div>
+                                @endif
+
+                                <label class="form-label fw-bold">Foto de Perfil</label>
+                                <input type="file" name="foto" class="form-control">
+                                <small class="text-muted d-block mt-1">Formatos: JPG, PNG, WEBP</small>
+
+                                <hr>
+
+                                <p class="text-muted small">
+                                    Mantenha seus dados atualizados para melhor identificação no sistema.
+                                </p>
                             </div>
-                            @endif
-                            <label class="form-label fw-bold">Foto de Perfil</label>
-                            <input type="file" name="foto" class="form-control">
-                            <small class="text-muted">Formatos: jpg, png, webp</small>
-                        </div>
 
-                        {{-- TELEFONE --}}
-                        <div class="mb-3">
-                            <label class="form-label">Telefone</label>
-                            <input type="text" name="telefone" class="form-control"
-                                value="{{ $profile->telefone ?? '' }}">
-                        </div>
+                            {{-- CAMPOS --}}
+                            <div class="col-md-8">
 
-                        {{-- BI --}}
-                        <div class="mb-3">
-                            <label class="form-label">Bilhete de Identidade</label>
-                            <input type="text" name="bi" class="form-control" value="{{ $profile->bi ?? '' }}">
-                        </div>
+                                <div class="row">
+                                    {{-- TELEFONE --}}
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-semibold">Telefone</label>
+                                        <input type="text" name="telefone" class="form-control"
+                                            value="{{ $profile->telefone ?? '' }}">
+                                    </div>
 
-                        {{-- DATA DE NASCIMENTO --}}
-                        <div class="mb-3">
-                            <label class="form-label">Data de Nascimento</label>
-                            <input type="date" name="data_nascimento" class="form-control"
-                                value="{{ $profile->data_nascimento ?? '' }}">
-                        </div>
+                                    {{-- BI --}}
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-semibold">Bilhete de Identidade</label>
+                                        <input type="text" name="bi" class="form-control"
+                                            value="{{ $profile->bi ?? '' }}">
+                                    </div>
 
-                        {{-- GÊNERO --}}
-                        <div class="mb-3">
-                            <label class="form-label">Gênero</label>
-                            <select name="genero" class="form-control">
-                                <option value="">Selecione</option>
-                                <option value="Masculino" @if(($profile->genero ?? '')=='Masculino') selected
-                                    @endif>Masculino</option>
-                                <option value="Feminino" @if(($profile->genero ?? '')=='Feminino') selected
-                                    @endif>Feminino
-                                </option>
-                                <option value="Outro" @if(($profile->genero ?? '')=='Outro') selected @endif>Outro
-                                </option>
-                            </select>
-                        </div>
+                                    {{-- DATA DE NASCIMENTO --}}
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-semibold">Data de Nascimento</label>
+                                        <input type="date" name="data_nascimento" class="form-control"
+                                            value="{{ $profile->data_nascimento ?? '' }}">
+                                    </div>
 
-                        {{-- ENDEREÇO --}}
-                        <div class="mb-3">
-                            <label class="form-label">Endereço</label>
-                            <input type="text" name="endereco" class="form-control"
-                                value="{{ $profile->endereco ?? '' }}">
-                        </div>
+                                    {{-- GÊNERO --}}
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-semibold">Gênero</label>
+                                        <select name="genero" class="form-select">
+                                            <option value="">Selecione</option>
+                                            <option value="Masculino" @selected(($profile->genero ??
+                                                '')=='Masculino')>Masculino</option>
+                                            <option value="Feminino" @selected(($profile->genero ??
+                                                '')=='Feminino')>Feminino</option>
+                                            <option value="Outro" @selected(($profile->genero ?? '')=='Outro')>Outro
+                                            </option>
+                                        </select>
+                                    </div>
 
-                        {{-- DESCRIÇÃO --}}
-                        <div class="mb-3">
-                            <label class="form-label">Descrição Profissional</label>
-                            <textarea class="form-control" name="descricao"
-                                rows="3">{{ $profile->descricao ?? '' }}</textarea>
+                                    {{-- ENDEREÇO --}}
+                                    <div class="col-md-12 mb-3">
+                                        <label class="form-label fw-semibold">Endereço</label>
+                                        <input type="text" name="endereco" class="form-control"
+                                            value="{{ $profile->endereco ?? '' }}">
+                                    </div>
+
+                                    {{-- DESCRIÇÃO --}}
+                                    <div class="col-md-12 mb-3">
+                                        <label class="form-label fw-semibold">Descrição Profissional</label>
+                                        <textarea class="form-control" name="descricao" rows="4"
+                                            placeholder="Ex: Técnico de Informática, Programador, Professor...">
+                                        {{ $profile->descricao ?? '' }}
+                                    </textarea>
+                                    </div>
+                                </div>
+
+                            </div>
                         </div>
 
                     </div>
 
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                    {{-- FOOTER --}}
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bx bx-x-circle me-1"></i> Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bx bx-save me-1"></i> Salvar Alterações
+                        </button>
                     </div>
 
                 </form>

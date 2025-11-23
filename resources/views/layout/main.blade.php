@@ -394,24 +394,27 @@
                                             <span>Meu Perfil</span>
                                         </a>
                                     </li>
-                                    <li>
-                                        <a class="dropdown-item" href="{{ route('Admin.perfil') }}">
-                                            <i class="icon-base bx bx-user icon-md me-3"></i>
-                                            <span>Criar Usuario</span>
+                                    @auth
+                                    @if(auth()->user()->typeUser->value === 'admin') <li>
+                                        <a class="dropdown-item" href="{{ route('Admin.cadastrar') }}">
+                                            <i class="bx bx-user-plus icon-md me-3"></i>
+                                            <span>Criar Usuário</span>
                                         </a>
                                     </li>
-
-                                    <li>
-                                        <a class="dropdown-item" href="#">
+                                    @endif
+                                    @endauth
+                                    <!-- <li>
+                                        <a class="dropdown-item" href="{{ route('Admin.lista') }}">
                                             <i class="icon-base bx bx-cog icon-md me-3"></i><span>Configurações</span>
                                         </a>
-                                    </li>
+                                    </li> -->
                                     <li>
                                         <div class="dropdown-divider my-1"></div>
                                     </li>
                                     <li class="p-2">
                                         <form method="POST" action="{{ route('logout') }}">
                                             @csrf
+                                            <i class="bx bx-power-off me-3"></i>
                                             <a href="#"
                                                 onclick="event.preventDefault(); this.closest('form').submit();">Sair</a>
                                         </form>

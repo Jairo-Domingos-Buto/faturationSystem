@@ -7,13 +7,15 @@ use App\Http\Controllers\pdfFaturaController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\pdfReciboController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CadastraController;
 use Illuminate\Support\Facades\Password;
-
+use Illuminate\Http\Request;
 /*
 |--------------------------------------------------------------------------
 | Rotas Públicas
 |--------------------------------------------------------------------------
 */
+
 Route::redirect('/', '/login');
 
 Route::middleware('guest')->group(function () {
@@ -22,7 +24,6 @@ Route::middleware('guest')->group(function () {
     Route::view('/forgetPassword', 'auth.forgetPassword')->name('forgetPassword');
     Route::view('/resetPassword', 'auth.reset-password')->name('resetPassword');
     Route::view('/confirmPassword', 'auth.confirm-password')->name('confirmPassword');
-   
 });
 
 /*
@@ -38,14 +39,14 @@ Route::get('/dashboard', function () {
 
     return match ($tipo) {
         'admin' => redirect()->route('admin.dashboard'),
-        'atendente' => redirect('/atendente/home'),
-        'balconista' => redirect('/balcao/home'),
+        'atendente' => redirect()->route('admin.dashboard'),
+        'balconista' => redirect()->route('admin.dashboard'),
         default => view('User.dashboard'),
     };
 })->name('dashboard');
 
 // Grupo apenas para administradores
-Route::middleware(['type:admin'])
+Route::middleware(['auth'])
     ->prefix('admin')
     ->name('admin.')  // ✅ ADICIONE O PONTO AQUI
     ->group(function () {
@@ -105,18 +106,24 @@ Route::middleware(['type:admin'])
             ->name('notas-credito.anulacao.pdf');
     });
 
-    Route::post('/recuperar-senha-email', function (\Illuminate\Http\Request $request) {
 
+Route::get('/cadastrar', [CadastraController::class, 'index'])->name('Admin.cadastrar');
+Route::post('/cadastrar', [CadastraController::class, 'store'])->name('admin.cadastrar.store');
+Route::get('/lista', [CadastraController::class, 'list'])->name('Admin.lista');
+Route::get('/meu-perfil', [PerfilController::class, 'index'])->name('Admin.perfil');
+Route::post('/meu-perfil/update', [PerfilController::class, 'update'])->name('Admin.update');
+Route::post('/forgetPassword', function (Request $request) {
     $request->validate(['email' => 'required|email']);
 
-    $status = Password::sendResetLink($request->only('email'));
+    $status = Password::sendResetLink(
+        $request->only('email')
+    );
 
-    return response()->json([
-        "status" => $status === Password::RESET_LINK_SENT ? "ok" : "erro",
-        "message" => __($status)
-    ]);
-
-})->name('password.email');
-
-  Route::get('/meu-perfil', [PerfilController::class, 'index'])->name('Admin.perfil');
-Route::post('/meu-perfil/update', [PerfilController::class, 'update'])->name('Admin.update');
+    return $status === Password::RESET_LINK_SENT
+        ? back()->with('status', __($status))
+        : back()->withErrors(['email' => __($status)]);
+})->middleware('guest')->name('password.email');
+// Rota que recebe o token e abre o formulário de redefinição
+Route::get('/reset-password/{token}', function ($token) {
+    return view('auth.reset-password', ['token' => $token]);
+})->middleware('guest')->name('password.reset');

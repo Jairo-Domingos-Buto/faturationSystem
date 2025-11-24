@@ -13,8 +13,8 @@
 }
 
 .profile-photo-big {
-    width: 190px;
-    height: 160px;
+    width: 90px;
+    height: 80px;
     border-radius: 50%;
     border: 4px solid white;
     object-fit: cover;
@@ -47,8 +47,9 @@ h2 {
 
     <!-- ================= HEADER CORPORATIVO ================= -->
     <div class="profile-header">
-
-        <h2 class="fw-bold mb-0">{{ $user->name }}</h2>
+        <img src=" {{ asset($profile->foto ?? 'assets/img/avatars/default.png') }}" alt="Foto do perfil"
+            class="profile-photo-big rounded-circle mb-3 shadow d-flex flex-column align-items-center justify-content-center">
+        <h2 class=" fw-bold mb-0">{{ $user->name }}</h2>
         <p class="text-light mb-2" style="opacity: 0.9;">
             {{ $user->funcao ?? 'Usuário da Plataforma' }}
         </p>
@@ -60,7 +61,6 @@ h2 {
 
     <!-- ================= INFORMAÇÕES ================= -->
     <div class="row g-4 mt-3">
-
         <!-- CARD INFO PESSOAL -->
         <div class="col-md-6">
             <div class="card info-card p-3">
@@ -129,11 +129,13 @@ h2 {
                             {{-- FOTO --}}
                             <div class="col-md-4 text-center border-end">
                                 @if($profile && $profile->foto)
-                                <img src="{{ asset('storage/'.$profile->foto) }}" class="profile-photo-big
-                                    rounded-circle mb-3 shadow" width="150" height="150">
+                                <img src="{{ asset($profile->foto ?? 'assets/img/avatars/default.png') }}"
+                                    alt="Foto do perfil" class="profile-photo-big
+                                    rounded-circle mb-3 shadow" width="100" height="100">
+
                                 @else
                                 <div class="bg-light text-primary rounded-circle d-flex justify-content-center align-items-center mx-auto mb-3 shadow"
-                                    style="width:150px; height:150px; font-size:65px;">
+                                    style="width:100px; height:100px; font-size:65px;">
                                     <i class="bx bx-user"></i>
                                 </div>
                                 @endif

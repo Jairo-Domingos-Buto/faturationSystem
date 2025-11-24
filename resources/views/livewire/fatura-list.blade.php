@@ -261,7 +261,7 @@
                                 <!-- Botão Ver -->
                                 <a href="{{ route('admin.faturas.show', $fatura->id) }}"
                                     class="flex items-center justify-center w-8 h-8 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition-colors duration-200"
-                                    title="Ver Fatura">
+                                    title="Ver Fatura" target="_blank">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -331,17 +331,17 @@
 
 @push('scripts')
 <script>
-    console.log('Script JS faturas carregado - início'); // Debug: remova depois
+console.log('Script JS faturas carregado - início'); // Debug: remova depois
 
-    // Listener DIRETO (sem 'livewire:initialized' – evita conflito no init)
-    Livewire.on('abrirModalAnulacao', (event) => {
-        console.log('Evento recebido no JS faturas!', event); // Debug
-        window.dispatchEvent(new CustomEvent('abrir-modal-anulacao', { 
-            detail: event 
-        }));
-        console.log('Custom event despachado para Alpine'); // Debug
-    });
+// Listener DIRETO (sem 'livewire:initialized' – evita conflito no init)
+Livewire.on('abrirModalAnulacao', (event) => {
+    console.log('Evento recebido no JS faturas!', event); // Debug
+    window.dispatchEvent(new CustomEvent('abrir-modal-anulacao', {
+        detail: event
+    }));
+    console.log('Custom event despachado para Alpine'); // Debug
+});
 
-    console.log('Script JS faturas carregado - fim'); // Debug
+console.log('Script JS faturas carregado - fim'); // Debug
 </script>
 @endpush

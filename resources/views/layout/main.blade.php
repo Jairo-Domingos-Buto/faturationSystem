@@ -364,7 +364,11 @@
                                 <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);"
                                     data-bs-toggle="dropdown">
                                     <div class="avatar avatar-online">
-                                        <img src="../../assets/img/avatars/1.png" alt class="rounded-circle" />
+                                        <img src=" {{ asset($profile->foto ?? 'assets/img/avatars/default.png') }}"
+                                            alt="Foto do perfil"
+                                            class="profile-photo-big rounded-circle mb-3 shadow d-flex flex-column align-items-center justify-content-center"
+                                            width="
+            90" height="90">
                                     </div>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
@@ -373,8 +377,11 @@
                                             <div class="d-flex">
                                                 <div class="flex-shrink-0 me-3">
                                                     <div class="avatar avatar-online">
-                                                        <img src="../../assets/img/avatars/1.png" alt
-                                                            class="w-px-40 h-auto rounded-circle" />
+                                                        <img src=" {{ asset($profile->foto ?? 'assets/img/avatars/default.png') }}"
+                                                            alt="Foto do perfil"
+                                                            class="profile-photo-big rounded-circle mb-3 shadow d-flex flex-column align-items-center justify-content-center"
+                                                            width="
+            90" height="90">
                                                     </div>
                                                 </div>
                                                 <div class="flex-grow-1">

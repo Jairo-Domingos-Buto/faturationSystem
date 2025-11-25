@@ -3,44 +3,44 @@
 @section('content')
 
 <style>
-.profile-header {
-    background: linear-gradient(135deg, #0d6efd, #3b82f6);
-    padding: 50px 20px;
-    border-radius: 12px;
-    color: white;
-    text-align: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
+    .profile-header {
+        background: linear-gradient(135deg, #0d6efd, #3b82f6);
+        padding: 50px 20px;
+        border-radius: 12px;
+        color: white;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
 
-.profile-photo-big {
-    width: 90px;
-    height: 80px;
-    border-radius: 50%;
-    border: 4px solid white;
-    object-fit: cover;
-    margin-bottom: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.20);
-}
+    .profile-photo-big {
+        width: 90px;
+        height: 80px;
+        border-radius: 50%;
+        border: 4px solid white;
+        object-fit: cover;
+        margin-bottom: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.20);
+    }
 
-img {
-    width: 100%;
-}
+    img {
+        width: 100%;
+    }
 
-.info-card {
-    border-radius: 12px;
-    border: none;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.07);
-}
+    .info-card {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.07);
+    }
 
-.info-title {
-    font-weight: 600;
-    color: #555;
-}
+    .info-title {
+        font-weight: 600;
+        color: #555;
+    }
 
-h2 {
-    color: white;
-    text-transform: uppercase;
-}
+    h2 {
+        color: white;
+        text-transform: uppercase;
+    }
 </style>
 
 <div class="container mt-4">
@@ -80,7 +80,8 @@ h2 {
 
                 <p><i class="bx bx-calendar me-2 text-primary"></i>
                     <strong>Data de Nascimento:</strong>
-                    {{ $profile?->data_nascimento ? \Carbon\Carbon::parse($profile->data_nascimento)->format('d/m/Y') : '-' }}
+                    {{ $profile?->data_nascimento ? \Carbon\Carbon::parse($profile->data_nascimento)->format('d/m/Y') :
+                    '-' }}
                 </p>
 
                 <p><i class="bx bx-user-pin me-2 text-primary"></i>
@@ -129,8 +130,8 @@ h2 {
                             {{-- FOTO --}}
                             <div class="col-md-4 text-center border-end">
                                 @if($profile && $profile->foto)
-                                <img src="{{ asset($profile->foto ?? 'assets/img/avatars/default.png') }}"
-                                    alt="Foto do perfil" class="profile-photo-big
+                                <img src="{{ asset($profile->foto ?? 'assets/img/avatars/default.png') }}" alt="FT"
+                                    class="profile-photo-big
                                     rounded-circle mb-3 shadow" width="100" height="100">
 
                                 @else

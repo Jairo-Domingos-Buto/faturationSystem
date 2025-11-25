@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -26,7 +25,7 @@ class ResetPasswordNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('Redefinição de Senha - MindSeat')
+            ->subject('Redefinição de Senha - OmiFinance')
             ->line('Você solicitou redefinir sua senha.')
             ->action(
                 'Redefinir Senha',

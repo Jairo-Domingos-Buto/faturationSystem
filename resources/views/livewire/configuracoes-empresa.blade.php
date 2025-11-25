@@ -3,7 +3,7 @@
     <div class="card mb-4">
         <div class="card-header d-flex align-items-center justify-content-between">
             <h5 class="mb-0">Informações da Empresa</h5>
-            
+
         </div>
         <div class="card-body">
             <form wire:submit="save">
@@ -15,7 +15,7 @@
                             <span id="basic-icon-default-name2" class="input-group-text"><i
                                     class="bx bx-user"></i></span>
                             <input type="text" wire:model="name" class="form-control" id="basic-icon-default-name"
-                                placeholder="MindSeat" aria-label="MindSeat"
+                                placeholder="OmiFinance" aria-label="OmiFinance"
                                 aria-describedby="basic-icon-default-name2" />
                         </div>
                         @error('name') <span class="text-danger text-sm">{{ $message }}</span> @enderror

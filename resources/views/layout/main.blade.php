@@ -53,28 +53,28 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <style>
-    .menu-icon.tf-icons {
-        width: 18px;
-        height: 18px;
-        stroke-width: 1.5;
-    }
+        .menu-icon.tf-icons {
+            width: 18px;
+            height: 18px;
+            stroke-width: 1.5;
+        }
 
-    .menu-link:hover .menu-icon.tf-icons {
-        stroke-width: 2;
-    }
+        .menu-link:hover .menu-icon.tf-icons {
+            stroke-width: 2;
+        }
 
-    .menu-sub .menu-link {
-        padding-left: 3rem;
-    }
+        .menu-sub .menu-link {
+            padding-left: 3rem;
+        }
 
-    .menu-header {
-        padding: 0.75rem 1rem 0.5rem;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-weight: 600;
-        color: #a1a5b7;
-    }
+        .menu-header {
+            padding: 0.75rem 1rem 0.5rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            color: #a1a5b7;
+        }
     </style>
 </head>
 
@@ -131,7 +131,7 @@
                             </svg>
                         </span>
                         <span class="app-brand-text demo menu-text ms-2"
-                            style="text-transform: uppercase; font-weight: 700; font-size: 25px;">Mindseat</span>
+                            style="text-transform: uppercase; font-weight: 700; font-size: 25px;">OmiFinance</span>
                     </a>
 
                     <a href="javascript:void(0);"
@@ -365,7 +365,7 @@
                                     data-bs-toggle="dropdown">
                                     <div class="avatar avatar-online">
                                         <img src=" {{ asset($profile->foto ?? 'assets/img/avatars/default.png') }}"
-                                            alt="Foto do perfil"
+                                            alt="FP"
                                             class="profile-photo-big rounded-circle mb-3 shadow d-flex flex-column align-items-center justify-content-center"
                                             width="
             90" height="90">
@@ -378,7 +378,7 @@
                                                 <div class="flex-shrink-0 me-3">
                                                     <div class="avatar avatar-online">
                                                         <img src=" {{ asset($profile->foto ?? 'assets/img/avatars/default.png') }}"
-                                                            alt="Foto do perfil"
+                                                            alt="FP"
                                                             class="profile-photo-big rounded-circle mb-3 shadow d-flex flex-column align-items-center justify-content-center"
                                                             width="
             90" height="90">
@@ -475,7 +475,7 @@
 
     <!-- Scripts no final do body -->
     <script>
-    // Inicializar ícones Lucide quando o DOM estiver pronto
+        // Inicializar ícones Lucide quando o DOM estiver pronto
     document.addEventListener('DOMContentLoaded', function() {
         lucide.createIcons();
     });

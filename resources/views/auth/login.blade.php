@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Login | MindSeat</title>
+    <title>Login | OmiFinance</title>
 
     <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -17,31 +17,31 @@
     <script src="{{ asset('assets/js/config.js') }}"></script>
 
     <style>
-    body {
-        background: linear-gradient(135deg, #f8f9ff, #e9edff);
-        font-family: 'Public Sans', sans-serif;
-    }
+        body {
+            background: linear-gradient(135deg, #f8f9ff, #e9edff);
+            font-family: 'Public Sans', sans-serif;
+        }
 
-    .card {
-        border-radius: 1rem;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    }
+        .card {
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
 
-    .btn-primary {
-        background: #696cff;
-        border: none;
-        transition: 0.3s;
-    }
+        .btn-primary {
+            background: #696cff;
+            border: none;
+            transition: 0.3s;
+        }
 
-    .btn-primary:hover {
-        background: #5b5fe0;
-    }
+        .btn-primary:hover {
+            background: #5b5fe0;
+        }
 
-    .app-brand-text {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #444;
-    }
+        .app-brand-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #444;
+        }
     </style>
 </head>
 
@@ -57,7 +57,7 @@
                         <div class="app-brand justify-content-center mb-4">
                             <span class="app-brand-link gap-2 align-items-center">
 
-                                <span class="app-brand-text">MindSeat</span>
+                                <span class="app-brand-text">OmiFinance</span>
                             </span>
                         </div>
 
@@ -166,7 +166,7 @@
     <script src="{{ asset('assets/vendor/libs/jquery/jquery.js') }}"></script>
     <script src="{{ asset('assets/vendor/js/bootstrap.js') }}"></script>
     <script>
-    const togglePassword = document.querySelector('#togglePassword i');
+        const togglePassword = document.querySelector('#togglePassword i');
     const password = document.querySelector('#password');
     document.querySelector('#togglePassword').addEventListener('click', () => {
         const type = password.type === 'password' ? 'text' : 'password';

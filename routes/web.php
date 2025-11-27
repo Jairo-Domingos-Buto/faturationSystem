@@ -49,8 +49,9 @@ Route::get('/dashboard', function () {
 // Grupo apenas para administradores
 Route::middleware(['auth'])
     ->prefix('admin')
-    ->name('admin.')  // ✅ ADICIONE O PONTO AQUI
+    ->name('admin.')
     ->group(function () {
+        // Rotas de Views
         Route::view('/dashboard', 'Admin.dashboard')->name('dashboard');
         Route::view('/clientes', 'Admin.clientes')->name('clientes');
         Route::view('/fornecedores', 'Admin.fornecedores')->name('fornecedores');
@@ -68,28 +69,40 @@ Route::middleware(['auth'])
         Route::view('/exportar-saft', 'Admin.Saft')->name('exportar-saft');
         Route::view('/configuracoes', 'Admin.configuracoes')->name('configuracoes');
 
+        // Rotas de Impressão
         Route::get('/impressao/servicos', [ImpressaoController::class, 'servicos'])->name('impressao.servicos');
         Route::get('/impressao/produtos', [ImpressaoController::class, 'produtos'])->name('impressao.produtos');
 
-        /* impressao apartir do ponto de venda */
+        // Rotas de PDF - Faturas e Recibos
         Route::get('/fatura/download', [pdfFaturaController::class, 'downloadFatura'])->name('fatura.download');
-
         Route::get('/recibo/download', [pdfReciboController::class, 'downloadRecibo'])->name('recibo.download');
         Route::get('/faturas/{id}', [pdfFaturaController::class, 'gerarPdf'])->name('faturas.show');
         Route::get('/recibos/{id}', [pdfReciboController::class, 'gerarPdf'])->name('recibo.show');
 
-        // Visualizar Nota de Crédito de Fatura
-        Route::get('/notas-credito/fatura/{id}', [NotaCreditoController::class, 'visualizarFatura'])
-            ->name('notas-credito.fatura');
+        /*
+        |--------------------------------------------------------------------------
+        | ROTAS PARA NOTAS DE CRÉDITO - RETIFICAÇÃO
+        |--------------------------------------------------------------------------
+        */
 
-        // Visualizar Nota de Crédito de Recibo
-        Route::get('/notas-credito/recibo/{id}', [NotaCreditoController::class, 'visualizarRecibo'])
-            ->name('notas-credito.recibo');
+        // Rotas para Fatura Retificada (Nota de Crédito)
+        Route::get('/nota-credito/fatura/{id}/visualizar', [NotaCreditoController::class, 'visualizarFatura'])
+            ->name('nota-credito.fatura.view');
+        Route::get('/nota-credito/fatura/{id}/download', [NotaCreditoController::class, 'downloadFatura'])
+            ->name('nota-credito.fatura.download');
 
-        // Gerar PDF da Nota de Crédito
-        Route::get('/notas-credito/pdf/{tipo}/{id}', [NotaCreditoController::class, 'gerarPDF'])
-            ->name('notas-credito.pdf');
-        // anulacao de fatura
+        // Rotas para Recibo Retificado (Nota de Crédito)
+        Route::get('/nota-credito/recibo/{id}/visualizar', [NotaCreditoController::class, 'visualizarRecibo'])
+            ->name('nota-credito.recibo.view');
+        Route::get('/nota-credito/recibo/{id}/download', [NotaCreditoController::class, 'downloadRecibo'])
+            ->name('nota-credito.recibo.download');
+
+        /*
+        |--------------------------------------------------------------------------
+        | ROTAS PARA NOTAS DE CRÉDITO - ANULAÇÃO
+        |--------------------------------------------------------------------------
+        */
+
         // Anular Fatura
         Route::post('/faturas/{id}/anular', [AnulacaoController::class, 'anularFatura'])
             ->name('faturas.anular');
@@ -107,11 +120,14 @@ Route::middleware(['auth'])
             ->name('notas-credito.anulacao.pdf');
     });
 
+// Rotas de Cadastro e Perfil (fora do grupo admin)
 Route::get('/cadastrar', [CadastraController::class, 'index'])->name('Admin.cadastrar');
 Route::post('/cadastrar', [CadastraController::class, 'store'])->name('admin.cadastrar.store');
 Route::get('/lista', [CadastraController::class, 'list'])->name('Admin.lista');
 Route::get('/meu-perfil', [PerfilController::class, 'index'])->name('Admin.perfil');
 Route::post('/meu-perfil/update', [PerfilController::class, 'update'])->name('Admin.update');
+
+// Rotas de Password Reset
 Route::post('/forgetPassword', function (Request $request) {
     $request->validate(['email' => 'required|email']);
 
@@ -123,6 +139,7 @@ Route::post('/forgetPassword', function (Request $request) {
         ? back()->with('status', __($status))
         : back()->withErrors(['email' => __($status)]);
 })->middleware('guest')->name('password.email');
+
 // Rota que recebe o token e abre o formulário de redefinição
 Route::get('/reset-password/{token}', function ($token) {
     return view('auth.reset-password', ['token' => $token]);

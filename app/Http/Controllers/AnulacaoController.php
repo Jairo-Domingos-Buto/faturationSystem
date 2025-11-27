@@ -12,310 +12,299 @@ use Illuminate\Support\Facades\DB;
 class AnulacaoController extends Controller
 {
     /**
-     * ✅ ANULAR FATURA
+     * ✅ ANULAR FATURA (Lógica de Negócio)
      */
     public function anularFatura(Request $request, $id)
     {
-        $request->validate([
-            'motivo' => 'required|string|min:10|max:500',
-        ]);
+        $request->validate(['motivo' => 'required|string|min:10|max:500']);
 
         try {
             DB::beginTransaction();
+            $fatura = Fatura::with(['items.produto'])->findOrFail($id);
 
-            // Buscar fatura com items
-            $fatura = Fatura::with(['items.produto', 'cliente'])->findOrFail($id);
-
-            // Validar se pode ser anulada
             if (! $fatura->pode_ser_anulada) {
                 return redirect()->back()->with('error', 'Esta fatura não pode ser anulada.');
             }
 
-            // Devolver estoque
             $fatura->devolverEstoque();
-
-            // Marcar como anulada
             $fatura->marcarComoAnulada($request->motivo);
 
             DB::commit();
 
-            return redirect()->route('admin.faturas')
-                ->with('success', "Fatura {$fatura->numero} anulada com sucesso. Estoque devolvido e Nota de Crédito gerada.");
+            return redirect()->route('admin.faturas')->with('success', "Fatura {$fatura->numero} anulada. Nota de Crédito gerada.");
 
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with('error', 'Erro ao anular fatura: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Erro: '.$e->getMessage());
         }
     }
 
     /**
-     * ✅ ANULAR RECIBO
+     * ✅ ANULAR RECIBO (Lógica de Negócio)
      */
     public function anularRecibo(Request $request, $id)
     {
-        $request->validate([
-            'motivo' => 'required|string|min:10|max:500',
-        ]);
+        $request->validate(['motivo' => 'required|string|min:10|max:500']);
 
         try {
             DB::beginTransaction();
-
-            $recibo = Recibo::with(['items.produto', 'cliente'])->findOrFail($id);
+            $recibo = Recibo::with(['items.produto'])->findOrFail($id);
 
             if (! $recibo->pode_ser_anulado) {
                 return redirect()->back()->with('error', 'Este recibo não pode ser anulado.');
             }
 
-            // Devolver estoque
             $recibo->devolverEstoque();
-
-            // Marcar como anulado
             $recibo->marcarComoAnulado($request->motivo);
 
             DB::commit();
 
-            return redirect()->route('admin.recibos')
-                ->with('success', "Recibo {$recibo->numero} anulado com sucesso. Estoque devolvido e Nota de Crédito gerada.");
+            return redirect()->route('admin.recibos')->with('success', "Recibo {$recibo->numero} anulado. Nota de Crédito gerada.");
 
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with('error', 'Erro ao anular recibo: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Erro: '.$e->getMessage());
         }
     }
 
+    // =========================================================================
+    // VISUALIZAÇÃO E DOWNLOAD (PADRONIZADOS COM A VIEW PDF)
+    // =========================================================================
+
     /**
-     * ✅ VISUALIZAR NOTA DE CRÉDITO DE ANULAÇÃO
+     * ✅ VISUALIZAR (Stream no Navegador)
      */
     public function visualizarNotaCreditoAnulacao($tipo, $id)
     {
+        try {
+            $dados = $this->prepararDadosParaPdf($tipo, $id);
+
+            // Reutiliza a MESMA view padronizada
+            $pdf = Pdf::loadView('pdf.notaCredito', ['dados' => $dados])
+                ->setPaper('a4', 'portrait')
+                ->setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true]);
+
+            return $pdf->stream('NC-Anulacao-'.$dados['numero_nota_credito'].'.pdf');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Erro ao gerar PDF: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * ✅ DOWNLOAD (Baixar Arquivo)
+     */
+    public function downloadNotaCreditoAnulacao($tipo, $id)
+    {
+        try {
+            $dados = $this->prepararDadosParaPdf($tipo, $id);
+
+            $pdf = Pdf::loadView('pdf.notaCredito', ['dados' => $dados])
+                ->setPaper('a4', 'portrait')
+                ->setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true]);
+
+            return $pdf->download('NC-Anulacao-'.$dados['numero_nota_credito'].'.pdf');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Erro ao baixar PDF: '.$e->getMessage());
+        }
+    }
+
+    // =========================================================================
+    // MÉTODOS DE MONTAGEM DE DADOS (PADRONIZADO)
+    // =========================================================================
+
+    private function prepararDadosParaPdf($tipo, $id)
+    {
+        $empresa = DadosEmpresa::first();
+
         if ($tipo === 'fatura') {
             $documento = Fatura::with([
-                'cliente',
-                'user',
-                'anuladaPor',
-                'items.produto.categoria',
-                'items.imposto',
-                'items.motivoIsencao',
+                'cliente', 'user', 'anuladaPor',
+                'items.produto.categoria', 'items.imposto', 'items.motivoIsencao',
             ])->findOrFail($id);
 
             if (! $documento->anulada) {
-                return redirect()->back()->with('error', 'Esta fatura não está anulada.');
+                throw new \Exception('Fatura não está anulada.');
             }
+
+            return $this->montarDadosAnulacaoFatura($documento, $empresa);
 
         } elseif ($tipo === 'recibo') {
             $documento = Recibo::with([
-                'cliente',
-                'user',
-                'anuladoPor',
-                'items.produto.categoria',
-                'items.imposto',
-                'items.motivoIsencao',
+                'cliente', 'user', 'anuladoPor',
+                'items.produto.categoria', 'items.imposto', 'items.motivoIsencao',
             ])->findOrFail($id);
 
             if (! $documento->anulado) {
-                return redirect()->back()->with('error', 'Este recibo não está anulado.');
+                throw new \Exception('Recibo não está anulado.');
             }
+
+            return $this->montarDadosAnulacaoRecibo($documento, $empresa);
         } else {
-            return redirect()->back()->with('error', 'Tipo de documento inválido.');
+            throw new \Exception('Tipo inválido.');
         }
-
-        $empresa = DadosEmpresa::first();
-        $dadosNotaCredito = $this->montarDadosNotaCreditoAnulacao($documento, $tipo, $empresa);
-
-        return view('pdf.nota-credito-anulacao', [
-            'dados' => $dadosNotaCredito,
-        ]);
     }
 
-    /**
-     * ✅ MONTAR DADOS DA NOTA DE CRÉDITO DE ANULAÇÃO
-     */
-    private function montarDadosNotaCreditoAnulacao($documento, $tipo, $empresa)
+    private function montarDadosAnulacaoFatura($fatura, $empresa)
     {
-        $isRecibo = $tipo === 'recibo';
+        $produtos = $this->formatarProdutos($fatura->items);
+        $resumoImpostos = $this->calcularResumoImpostos($fatura->items);
 
         return [
-            // ========== TIPO DE NOTA ==========
-            'tipo_nota' => 'ANULACAO',
-            'tipo_documento' => $tipo,
-            'numero_nota_credito' => 'NC-ANULACAO-'.$documento->numero,
+            // Controle da View
+            'tipo_label' => 'NOTA DE CRÉDITO - ANULAÇÃO FATURA',
+            'numero_nota_credito' => 'NC-'.$fatura->numero,
             'data_emissao_nota' => now()->format('Y-m-d'),
 
-            // ========== EMPRESA ==========
-            'empresa' => [
-                'nome' => $empresa->name ?? '',
-                'nif' => $empresa->nif ?? '',
-                'telefone' => $empresa->telefone ?? '',
-                'email' => $empresa->email ?? '',
-                'endereco' => $empresa->rua ?? '',
-                'cidade' => $empresa->cidade ?? '',
-                'logo' => $empresa->logo ?? null,
+            // Entidades Padronizadas
+            'empresa' => $this->formatarEmpresa($empresa),
+            'cliente' => $this->formatarCliente($fatura->cliente),
+
+            // Onde a View busca o motivo (usamos 'retificacao' como chave genérica de evento)
+            'retificacao' => [
+                'motivo' => $fatura->motivo_anulacao ?? 'Anulação Total do Documento',
+                'usuario' => $fatura->anuladaPor->name ?? 'Sistema',
+                'data' => $fatura->data_anulacao ? $fatura->data_anulacao->format('d/m/Y H:i') : now()->format('d/m/Y'),
             ],
 
-            // ========== CLIENTE ==========
-            'cliente' => [
-                'nome' => $documento->cliente->nome,
-                'nif' => $documento->cliente->nif,
-                'telefone' => $documento->cliente->telefone ?? '',
-                'endereco' => $documento->cliente->localizacao ?? '',
-                'cidade' => $documento->cliente->cidade ?? '',
-            ],
-
-            // ========== DADOS DA ANULAÇÃO ==========
-            'anulacao' => [
-                'data' => ($isRecibo ? $documento->data_anulacao : $documento->data_anulacao)->format('d/m/Y H:i'),
-                'motivo' => $isRecibo ? $documento->motivo_anulacao : $documento->motivo_anulacao,
-                'usuario' => $isRecibo
-                    ? ($documento->anuladoPor->name ?? 'Sistema')
-                    : ($documento->anuladaPor->name ?? 'Sistema'),
-            ],
-
-            // ========== DOCUMENTO ANULADO ==========
+            // O Documento Original (Dados financeiros)
             'documento_anulado' => [
-                'numero' => $documento->numero,
-                'data_emissao' => $documento->data_emissao->format('d/m/Y'),
-                'subtotal' => $isRecibo ? (float) $documento->valor : (float) $documento->subtotal,
-                'total_impostos' => $isRecibo ? 0 : (float) $documento->total_impostos,
-                'total' => $isRecibo ? (float) $documento->valor : (float) $documento->total,
-                'produtos' => $this->formatarProdutosAnulacao($documento->items),
-                'resumo_impostos' => $isRecibo ? [] : $this->calcularResumoImpostos($documento->items),
+                'tipo' => 'Fatura Original',
+                'numero' => $fatura->numero,
+                'data_emissao' => $fatura->data_emissao->format('d/m/Y'),
+                'subtotal' => (float) $fatura->subtotal,
+                'total_impostos' => (float) $fatura->total_impostos,
+                'total' => (float) $fatura->total,
+                'produtos' => $produtos,
+                'resumo_impostos' => $resumoImpostos,
             ],
 
-            // ========== ESTOQUE DEVOLVIDO ==========
-            'estoque_devolvido' => $this->calcularEstoqueDevolvido($documento->items),
-
-            // ========== VALORES DEVOLVIDOS À EMPRESA ==========
-            'valores_devolvidos' => [
-                'subtotal' => $isRecibo ? (float) $documento->valor : (float) $documento->subtotal,
-                'impostos' => $isRecibo ? 0 : (float) $documento->total_impostos,
-                'total' => $isRecibo ? (float) $documento->valor : (float) $documento->total,
-            ],
+            // Como é anulação total, não existe documento novo
+            'documento_retificacao' => null,
         ];
     }
 
-    /**
-     * ✅ FORMATAR PRODUTOS PARA NOTA DE ANULAÇÃO
-     */
-    private function formatarProdutosAnulacao($items)
+    private function montarDadosAnulacaoRecibo($recibo, $empresa)
+    {
+        $produtos = $this->formatarProdutos($recibo->items);
+        $resumoImpostos = $this->calcularResumoImpostos($recibo->items);
+
+        return [
+            // Controle da View
+            'tipo_label' => 'NOTA DE CRÉDITO - ANULAÇÃO RECIBO',
+            'numero_nota_credito' => 'NC-'.$recibo->numero,
+            'data_emissao_nota' => now()->format('Y-m-d'),
+
+            // Entidades
+            'empresa' => $this->formatarEmpresa($empresa),
+            'cliente' => $this->formatarCliente($recibo->cliente),
+
+            // Motivo
+            'retificacao' => [
+                'motivo' => $recibo->motivo_anulacao ?? 'Anulação Total do Documento',
+                'usuario' => $recibo->anuladoPor->name ?? 'Sistema',
+                'data' => $recibo->data_anulacao ? $recibo->data_anulacao->format('d/m/Y H:i') : now()->format('d/m/Y'),
+            ],
+
+            // Documento Original
+            'documento_anulado' => [
+                'tipo' => 'Recibo Original',
+                'numero' => $recibo->numero,
+                'data_emissao' => $recibo->data_emissao ? $recibo->data_emissao->format('d/m/Y') : null,
+                'subtotal' => (float) ($recibo->subtotal ?? $recibo->valor), // Fallback se subtotal nulo
+                'total_impostos' => (float) ($recibo->total_impostos ?? 0),
+                'total' => (float) $recibo->valor,
+                'produtos' => $produtos,
+                'resumo_impostos' => $resumoImpostos,
+            ],
+
+            'documento_retificacao' => null,
+        ];
+    }
+
+    // =========================================================================
+    // HELPERS (IDÊNTICOS AO NOTACREDITOCONTROLLER)
+    // =========================================================================
+
+    private function formatarEmpresa($empresa)
+    {
+        return [
+            'nome' => $empresa->name ?? '',
+            'nif' => $empresa->nif ?? '',
+            'telefone' => $empresa->telefone ?? '',
+            'email' => $empresa->email ?? '',
+            'endereco' => $empresa->rua ?? '',
+            'edificio' => $empresa->edificio ?? '',
+            'cidade' => $empresa->cidade ?? '',
+            'banco' => $empresa->nomeDoBanco ?? $empresa->banco ?? '',
+            'iban' => $empresa->iban ?? '',
+        ];
+    }
+
+    private function formatarCliente($cliente)
+    {
+        if (! $cliente) {
+            return [];
+        }
+
+        return [
+            'nome' => $cliente->nome,
+            'nif' => $cliente->nif,
+            'telefone' => $cliente->telefone ?? '',
+            'localizacao' => $cliente->localizacao ?? $cliente->endereco ?? '',
+            'cidade' => $cliente->cidade ?? '',
+            'provincia' => $cliente->provincia ?? '',
+        ];
+    }
+
+    private function formatarProdutos($items)
     {
         $produtos = [];
-
         foreach ($items as $item) {
             $produto = $item->produto;
 
+            if ($item->motivo_isencaos_id) {
+                $taxa = 0;
+            } elseif ($item->imposto_id) {
+                $taxa = (float) $item->taxa_iva;
+            } else {
+                $taxa = 14; // Fallback
+            }
+
             $produtos[] = [
-                'codigo' => $item->codigo_barras,
-                'descricao' => $item->descricao,
-                'categoria' => $produto->categoria->nome ?? 'Sem categoria',
+                'codigo' => $item->codigo_barras ?? $produto->codigo_barras,
+                'descricao' => $item->descricao ?? $produto->descricao,
                 'quantidade' => $item->quantidade,
-                'quantidade_devolvida' => $item->quantidade,
                 'preco_unitario' => (float) $item->preco_unitario,
-                'subtotal' => (float) $item->subtotal,
-                'taxa_iva' => (float) $item->taxa_iva,
-                'valor_iva' => (float) $item->valor_iva,
-                'total' => (float) $item->total,
-                'valor_devolvido' => (float) $item->total,
+                'taxa_iva' => $taxa,
+                'total' => (float) $item->total ?? ($item->subtotal + $item->valor_iva),
             ];
         }
 
         return $produtos;
     }
 
-    /**
-     * ✅ CALCULAR RESUMO DE IMPOSTOS
-     */
     private function calcularResumoImpostos($items)
     {
         $resumo = [];
-
         foreach ($items as $item) {
             $taxa = (float) $item->taxa_iva;
-
-            if ($item->motivo_isencaos_id) {
-                $descricao = 'Isento';
-                $motivoIsencao = $item->motivoIsencao->descricao ?? 'N/A';
-            } elseif ($item->imposto_id) {
-                $descricao = $item->imposto->descricao ?? 'IVA';
-                $motivoIsencao = null;
-            } else {
-                $descricao = 'IVA';
-                $motivoIsencao = null;
-            }
-
-            $chave = $taxa.'|'.$descricao;
+            $chave = (string) $taxa;
 
             if (! isset($resumo[$chave])) {
                 $resumo[$chave] = [
-                    'taxa' => $taxa,
-                    'descricao' => $descricao,
-                    'motivo_isencao' => $motivoIsencao,
+                    'descricao' => $taxa == 0 ? 'Isento' : 'IVA '.number_format($taxa, 0).'%',
                     'incidencia' => 0,
                     'valor_imposto' => 0,
                 ];
             }
-
             $resumo[$chave]['incidencia'] += (float) $item->subtotal;
             $resumo[$chave]['valor_imposto'] += (float) $item->valor_iva;
         }
 
         return array_values($resumo);
-    }
-
-    /**
-     * ✅ CALCULAR ESTOQUE DEVOLVIDO
-     */
-    private function calcularEstoqueDevolvido($items)
-    {
-        $estoque = [];
-        $totalQuantidade = 0;
-        $totalValor = 0;
-
-        foreach ($items as $item) {
-            $estoque[] = [
-                'produto' => $item->descricao,
-                'quantidade' => $item->quantidade,
-                'valor_unitario' => (float) $item->preco_unitario,
-                'valor_total' => (float) $item->subtotal,
-            ];
-
-            $totalQuantidade += $item->quantidade;
-            $totalValor += (float) $item->subtotal;
-        }
-
-        return [
-            'items' => $estoque,
-            'total_quantidade' => $totalQuantidade,
-            'total_valor' => $totalValor,
-        ];
-    }
-
-    /**
-     * ✅ GERAR PDF DA NOTA DE CRÉDITO DE ANULAÇÃO
-     */
-    public function gerarPDFAnulacao($tipo, $id)
-    {
-        if ($tipo === 'fatura') {
-            $documento = Fatura::with(['cliente', 'items.produto.categoria', 'anuladaPor'])->findOrFail($id);
-
-            if (! $documento->anulada) {
-                return redirect()->back()->with('error', 'Esta fatura não está anulada.');
-            }
-        } else {
-            $documento = Recibo::with(['cliente', 'items.produto.categoria', 'anuladoPor'])->findOrFail($id);
-
-            if (! $documento->anulado) {
-                return redirect()->back()->with('error', 'Este recibo não está anulado.');
-            }
-        }
-
-        $empresa = DadosEmpresa::first();
-        $dados = $this->montarDadosNotaCreditoAnulacao($documento, $tipo, $empresa);
-
-        $pdf = PDF::loadView('pdf.nota-credito-anulacao', ['dados' => $dados])
-            ->setPaper('a4', 'portrait');
-
-        return $pdf->download('nota-credito-anulacao-'.$documento->numero.'.pdf');
     }
 }

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>{{ $dados['tipo_label'] ?? 'Fatura' }} {{ $dados['numero'] }}</title>
+    <title>{{ $dados['tipo_label'] }} {{ $dados['numero_nota_credito'] }}</title>
     <style>
         * {
             margin: 0;
@@ -28,18 +28,9 @@
             position: relative;
         }
 
-        .page-number {
-            position: absolute;
-            top: 10mm;
-            right: 10mm;
-            font-size: 8pt;
-            color: #666;
-        }
-
-        /* Header usando float em vez de flex */
+        /* Header */
         .header {
             width: 100%;
-
             padding-bottom: 5mm;
             overflow: hidden;
         }
@@ -109,53 +100,17 @@
             color: #555;
         }
 
-        /* Meta info usando table */
-        .invoice-meta-grid {
+        /* Retificação Box (NOVO) */
+        .rectification-box {
             width: 100%;
-            border-top: 1px solid #e0e0e0;
-            border-bottom: 1px solid #e0e0e0;
-            padding: 6mm 0;
+            background-color: #fcf8e3;
+            /* Amarelo suave */
+            border: 1px solid #faebcc;
+            color: #8a6d3b;
+            padding: 8px 10px;
             margin-bottom: 5mm;
-        }
-
-        .meta-table {
-            width: 100%;
-            border-collapse: collapse;
             font-size: 8pt;
-        }
-
-        .meta-table td {
-            padding: 2px 0;
-            vertical-align: top;
-        }
-
-        .meta-left {
-            width: 45%;
-            padding-right: 10px;
-            margin-right: 10px;
-        }
-
-        .meta-right {
-            width: 45%;
-            padding-left: 10px;
-        }
-
-        .meta-item {
-            margin-bottom: 3px;
-            overflow: hidden;
-        }
-
-        .meta-label {
-            color: #555;
-            float: left;
-            width: 60%;
-        }
-
-        .meta-value {
-            font-weight: 600;
-            float: right;
-            text-align: right;
-            width: 40%;
+            border-radius: 4px;
         }
 
         /* Items Table */
@@ -163,17 +118,15 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 5mm;
-            min-height: 470px;
+            min-height: 300px;
+            /* Reduzi um pouco para caber assinaturas */
             font-size: 8pt;
             border-top: 2px solid #333;
             border-bottom: 1px solid #333;
         }
 
-        .items-table thead {
-            background: #f3f4f6;
-        }
-
         .items-table th {
+            background: #f3f4f6;
             text-transform: uppercase;
             font-size: 7pt;
             font-weight: 700;
@@ -188,28 +141,13 @@
             vertical-align: top;
         }
 
-        .items-table tbody tr:last-child td {
-            border-bottom: 2px solid #333;
-        }
-
         .text-right {
             text-align: right;
         }
 
-        .text-center {
-            text-align: center;
-        }
-
-        .item-code {
-            color: #777;
-            font-size: 7pt;
-            display: block;
-            margin-top: 2px;
-        }
-
-        /* Summary usando table */
+        /* Summary */
         .summary-section {
-            margin-top: 10mm;
+            margin-top: 5mm;
             border-top: 1px solid #e0e0e0;
             padding-top: 5mm;
         }
@@ -234,6 +172,7 @@
             padding-left: 10px;
         }
 
+        /* Tax Table */
         .tax-summary h3 {
             font-size: 9pt;
             font-weight: 700;
@@ -257,6 +196,7 @@
             font-weight: 600;
         }
 
+        /* Totals */
         .totals-box {
             background: #f8f9fa;
             border: 1px solid #e0e0e0;
@@ -289,42 +229,39 @@
             padding-top: 6px;
         }
 
-        /* Bank info */
-        .bank-info {
-            margin-top: 10mm;
-            background: #f8f9fa;
-            border-left: 3px solid #00a8cc;
-            padding: 10px 12px;
-            font-size: 8.5pt;
-            line-height: 1.6;
+        /* Assinaturas (NOVO) */
+        .signatures {
+            margin-top: 15mm;
+            width: 100%;
+            overflow: hidden;
         }
 
-        .bank-info strong {
-            font-weight: 700;
-            color: #000;
+        .sig-box {
+            float: left;
+            width: 45%;
+            text-align: center;
         }
 
-        .page-break {
-            page-break-after: always;
+        .sig-box.right {
+            float: right;
         }
 
-        .items-table thead {
-            display: table-header-group;
+        .sig-line {
+            border-top: 1px solid #333;
+            margin-bottom: 5px;
+            width: 80%;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        .items-table tfoot {
-            display: table-footer-group;
+        .sig-label {
+            font-size: 8pt;
+            color: #555;
         }
-
-        @page {
-            margin: 10mm;
-        }
-
-
 
         /* Footer */
         .footer {
-            margin-top: 6mm;
+            margin-top: 8mm;
             padding-top: 3mm;
             border-top: 1px solid #e0e0e0;
             font-size: 6.5pt;
@@ -332,7 +269,14 @@
             text-align: center;
         }
 
-        /* Clear floats */
+        .bank-info {
+            margin-top: 5mm;
+            background: #f8f9fa;
+            border-left: 3px solid #00a8cc;
+            padding: 8px 12px;
+            font-size: 8pt;
+        }
+
         .clearfix::after {
             content: "";
             display: table;
@@ -344,14 +288,14 @@
 <body>
     <div class="invoice">
 
-        <!-- HEADER -->
+        <!-- HEADER (Idêntico à Fatura) -->
         <div class="header clearfix">
             <div class="header-left">
                 <div class="logo-text">OMINIFINANCE</div>
                 <div class="company-info">
                     <div class="company-name">{{ $dados['empresa']['nome'] }}</div>
-                    <div>Contribuinte N.º: {{ $dados['empresa']['nif'] }}</div>
-                    <div>{{ $dados['empresa']['rua'] }}, {{ $dados['empresa']['edificio'] }}</div>
+                    <div>NIF: {{ $dados['empresa']['nif'] }}</div>
+                    <div>{{ $dados['empresa']['endereco'] }} {{ $dados['empresa']['edificio'] }}</div>
                     <div>{{ $dados['empresa']['cidade'] }} | Telef. {{ $dados['empresa']['telefone'] }}</div>
                     <div>{{ $dados['empresa']['email'] }}</div>
                 </div>
@@ -362,7 +306,7 @@
                 <div class="client-name">{{ $dados['cliente']['nome'] }}</div>
                 <div>NIF: {{ $dados['cliente']['nif'] }}</div>
                 <div>{{ $dados['cliente']['localizacao'] }}</div>
-                <div>{{ $dados['cliente']['cidade'] }}, {{ $dados['cliente']['provincia'] }}</div>
+                <div>{{ $dados['cliente']['cidade'] }} {{ $dados['cliente']['provincia'] }}</div>
                 @if($dados['cliente']['telefone'])
                 <div>Tel: {{ $dados['cliente']['telefone'] }}</div>
                 @endif
@@ -371,167 +315,137 @@
 
         <!-- TÍTULO DO DOCUMENTO -->
         <div class="invoice-title">
-            <h1>{{ $dados['tipo_label'] ?? 'FATURA' }} {{ $dados['numero'] }}</h1>
-            <div class="original">Original</div>
+            <h1>{{ $dados['tipo_label'] }} {{ $dados['numero_nota_credito'] }}</h1>
+            <div class="original">Documento de Retificação</div>
         </div>
 
-        <!-- META INFORMAÇÕES -->
-        {{-- <div class="invoice-meta-grid">
-            <table class="meta-table">
+        <!-- INFO DA RETIFICAÇÃO (Estilo Destaque) -->
+        <div class="rectification-box clearfix">
+            <div style="float:left; width: 60%;">
+                <strong>REFERENTE AO DOCUMENTO:</strong> {{ $dados['documento_anulado']['tipo'] }} {{
+                $dados['documento_anulado']['numero'] }}
+                <br>
+                <strong>DATA ORIGINAL:</strong> {{ $dados['documento_anulado']['data_emissao'] }}
+            </div>
+            <div style="float:right; width: 40%; text-align: right;">
+                <strong>MOTIVO:</strong> {{ $dados['retificacao']['motivo'] }}
+            </div>
+        </div>
+
+        <!-- TABELA DE PRODUTOS (Dados do Documento Anulado/Origem) -->
+        <table class="items-table">
+            <thead>
                 <tr>
-                    <td class="meta-left">
-                        <div class="meta-item clearfix">
-                            <span class="meta-label">Moeda</span>
-                            <span class="meta-value">{{ $dados['moeda'] }}</span>
-                        </div>
-                        <div class="meta-item clearfix">
-                            <span class="meta-label">Vencimento</span>
-                            <span class="meta-value">{{ $dados['data_vencimento'] }}</span>
-                        </div>
+                    <th style="width: 15%;">Código</th>
+                    <th style="width: 35%;">Descrição</th>
+                    <th class="text-right" style="width: 10%;">Qtd.</th>
+                    <th class="text-right" style="width: 15%;">Pr. Unit.</th>
+                    <th class="text-right" style="width: 10%;">IVA</th>
+                    <th class="text-right" style="width: 15%;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($dados['documento_anulado']['produtos'] as $produto)
+                <tr>
+                    <td>{{ $produto['codigo'] ?? '-' }}</td>
+                    <td>
+                        {{ $produto['descricao'] }}
+                        @if(isset($produto['taxa_iva']) && $produto['taxa_iva'] == 0)
+                        <br><small style="color:#777; font-size:6pt;">(Isento)</small>
+                        @endif
                     </td>
-                    <td class="meta-right">
-                        <div class="meta-item clearfix">
-                            <span class="meta-label">Data</span>
-                            <span class="meta-value">{{ $dados['data_emissao'] }}</span>
+                    <td class="text-right">{{ number_format($produto['quantidade'], 1, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($produto['preco_unitario'], 2, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($produto['taxa_iva'], 0) }}%</td>
+                    <td class="text-right"><strong>{{ number_format($produto['total'], 2, ',', '.') }}</strong></td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+
+        <!-- RESUMO E TOTAIS -->
+        <div class="summary-section">
+            <table class="summary-table">
+                <tr>
+                    <td class="summary-left">
+                        <!-- QUADRO DE IMPOSTOS -->
+                        <div class="tax-summary">
+                            <h3>Resumo de Impostos (Incidência)</h3>
+                            <table class="tax-table">
+                                <thead>
+                                    <tr>
+                                        <th>Taxa / Descrição</th>
+                                        <th class="text-right">Incidência</th>
+                                        <th class="text-right">Valor Imposto</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($dados['documento_anulado']['resumo_impostos'] as $imposto)
+                                    <tr>
+                                        <td>{{ $imposto['descricao'] }}</td>
+                                        <td class="text-right">{{ number_format($imposto['incidencia'], 2, ',', '.') }}
+                                        </td>
+                                        <td class="text-right">{{ number_format($imposto['valor_imposto'], 2, ',', '.')
+                                            }}</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
-                        <div class="meta-item clearfix">
-                            <span class="meta-label">Condição Pagamento</span>
-                            <span class="meta-value">{{ $dados['condicao_pagamento'] }}</span>
+
+                        <!-- INFO BANCÁRIA -->
+                        @if(!empty($dados['empresa']['banco']) && !empty($dados['empresa']['iban']))
+                        <div class="bank-info">
+                            <strong>{{ strtoupper($dados['empresa']['banco']) }}</strong><br>
+                            IBAN: {{ $dados['empresa']['iban'] }}
+                        </div>
+                        @endif
+                    </td>
+
+                    {{-- TOTAIS --}}
+                    <td class="summary-right">
+                        <div class="totals-box">
+                            <div class="total-line clearfix">
+                                <span class="label">Total Ilíquido</span>
+                                <span class="value">{{ number_format($dados['documento_anulado']['subtotal'], 2, ',',
+                                    '.') }}</span>
+                            </div>
+                            <div class="total-line clearfix">
+                                <span class="label">Total Impostos</span>
+                                <span class="value">{{ number_format($dados['documento_anulado']['total_impostos'], 2,
+                                    ',', '.') }}</span>
+                            </div>
+                            <div class="total-line grand-total clearfix">
+                                <span class="label">TOTAL A CREDITAR</span>
+                                <span class="value">{{ number_format($dados['documento_anulado']['total'], 2, ',', '.')
+                                    }} AOA</span>
+                            </div>
                         </div>
                     </td>
                 </tr>
             </table>
-        </div> --}}
+        </div>
 
-        <!-- TABELA DE PRODUTOS -->
-        <table class="items-table">
-            <thead>
-                <tr>
-                    <th style="width: 10%;">Artigo</th>
-                    <th style="width: 30%;">Descrição</th>
-                    <th class="text-right" style="width: 8%;">Qtd.</th>
-                    <th style="width: 8%;">Un.</th>
-                    <th class="text-right" style="width: 12%;">Pr. Unitário</th>
-                    <th class="text-right" style="width: 10%;">Desc.</th>
-                    <th class="text-right" style="width: 10%;">IVA</th>
-                    <th class="text-right" style="width: 12%;">Valor</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($dados['produtos'] as $pagina => $produtosPagina)
-            <tbody>
-                @foreach ($produtosPagina as $produto)
-                <tr>
-                    <td>
-                        {{ $produto['id'] }}
-                        {{-- codigo de barras do produto --}}
-                        {{-- <span class="item-code">{{ $produto['codigo_barras'] }}</span> --}}
-                    </td>
-                    <td>{{ $produto['descricao'] }}</td>
-                    <td class="text-right">{{ number_format($produto['quantidade'], 0) }}</td>
-                    <td>{{ $produto['unidade'] }}</td>
-                    <td class="text-right">{{ number_format($produto['preco_unitario'], 2, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($produto['desconto'], 2, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($produto['iva_valor'], 2, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($produto['total'], 2, ',', '.') }}</td>
-                </tr>
-                @endforeach
-            </tbody>
+        <!-- ASSINATURAS -->
+        <div class="signatures clearfix">
+            <div class="sig-box">
+                <br><br><br>
+                <div class="sig-line"></div>
+                <div class="sig-label">O Cliente</div>
+            </div>
+            <div class="sig-box right">
+                <br><br><br>
+                <div class="sig-line"></div>
+                <div class="sig-label">A Empresa</div>
+            </div>
+        </div>
 
-            @if($pagina < count($dados['produtos']) - 1) <div class="page-break">
-    </div>
-    @endif
-    @endforeach
-
-    </tbody>
-    </table>
-
-    <!-- RESUMO E TOTAIS -->
-    <div class="summary-section">
-        <table class="summary-table">
-            <tr>
-                <td class="summary-left">
-                    <!-- RESUMO DE IMPOSTOS -->
-                    <div class="tax-summary">
-                        <h3>Quadro Resumo de Impostos</h3>
-
-                        <table class="tax-table">
-                            <thead>
-                                <tr>
-                                    <th>Descrição</th>
-                                    <th class="text-right">Taxa %</th>
-                                    <th class="text-right">Incidência</th>
-                                    <th class="text-right">Valor Imposto</th>
-                                    <th>Motivo Isenção</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($dados['resumo_impostos'] as $imposto)
-                                <tr>
-                                    <td>{{ $imposto['descricao'] }}</td>
-                                    <td class="text-right">{{ number_format($imposto['taxa'], 2, ',', '.') }}</td>
-                                    <td class="text-right">{{ number_format($imposto['incidencia'], 2, ',', '.') }}
-                                    </td>
-                                    <td class="text-right">
-                                        {{ number_format($imposto['valor_imposto'], 2, ',', '.') }}</td>
-                                    <td>
-                                        @if($imposto['taxa'] === 0 && $imposto['motivo_isencao'])
-                                        {{ $imposto['motivo_isencao'] }}
-                                        @else
-                                        -
-                                        @endif
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </td>
-
-                {{-- quadro direito com os totais --}}
-                <td class="summary-right">
-                    <div class="totals-box">
-                        <div class="total-line clearfix">
-                            <span class="label">Mercadoria/Serviços</span>
-                            <span class="value">{{ number_format($dados['financeiro']['subtotal'], 2, ',', '.')
-                                }}</span>
-                        </div>
-                        <div class="total-line clearfix">
-                            <span class="label">IVA</span>
-                            <span class="value">{{ number_format($dados['financeiro']['iva'], 2, ',', '.') }}</span>
-                        </div>
-                        <div class="total-line clearfix">
-                            <span class="label">Descontos Comerciais</span>
-                            <span class="value">{{ number_format($dados['financeiro']['desconto'], 2, ',', '.')
-                                }}</span>
-                        </div>
-                        <div class="total-line grand-total clearfix">
-                            <span class="label">Total ({{ $dados['moeda'] }})</span>
-                            <span class="value">{{ number_format($dados['financeiro']['total'], 2, ',', '.') }}</span>
-                        </div>
-                    </div>
-                </td>
-            </tr>
-        </table>
-    </div>
-
-    <!-- INFORMAÇÕES BANCÁRIAS -->
-    @if($dados['empresa']['banco'] && $dados['empresa']['iban'])
-    <div class="bank-info">
-        <strong>{{ strtoupper($dados['empresa']['banco']) }}</strong><br>
-        <strong>IBAN:</strong> {{ $dados['empresa']['iban'] }}
-    </div>
-    @endif
-
-    <!-- RODAPÉ -->
-    <div class="footer">
-        Processado por programa certificado |
-        Os bens e/ou serviços foram colocados à disposição na data {{ $dados['data_emissao'] }}
-    </div>
+        <!-- RODAPÉ -->
+        <div class="footer">
+            {{ $dados['tipo_label'] }} processado por Computador.<br>
+            Operador: {{ $dados['retificacao']['usuario'] }} | Data de Emissão: {{ date('d/m/Y H:i') }}
+        </div>
     </div>
 </body>
 
 </html>
-
-{{-- analisar os dados retornados --}}
-{{-- {{ dd($dados) }} --}}

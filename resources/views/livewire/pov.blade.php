@@ -91,6 +91,8 @@
                             @if($modoRetificacao) disabled @endif>
                             <option value="fatura">Fatura</option>
                             <option value="recibo">Recibo</option>
+                            <option value="fatura_recibo">Fatura Recibo</option>
+                            <option value="fatura_porForma">Fatura Por Forma</option>
                         </select>
 
                         @if($tipoDocumento === 'recibo')

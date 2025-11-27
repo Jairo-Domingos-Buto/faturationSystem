@@ -131,7 +131,7 @@
                             </svg>
                         </span>
                         <span class="app-brand-text demo menu-text ms-2"
-                            style="text-transform: uppercase; font-weight: 700; font-size: 25px;">OmiFinance</span>
+                            style="text-transform: uppercase; font-weight: 700; font-size: 25px;">OMINIFINANCE</span>
                     </a>
 
                     <a href="javascript:void(0);"

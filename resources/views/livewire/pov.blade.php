@@ -1,386 +1,352 @@
-<div class="min-h-screen bg-slate-100 pb-10 relative font-sans">
-
-    <!-- Toasts -->
-    <div class="fixed top-5 right-5 z-[70] space-y-3 w-full max-w-sm pointer-events-none">
-        @if (session()->has('success'))
-        <div
-            class="pointer-events-auto flex p-4 bg-white rounded-xl shadow-lg border-l-4 border-emerald-500 animate-fade-in-right">
-            <i class='bx bx-check-circle text-2xl text-emerald-500 mr-3'></i>
-            <span class="text-slate-700 font-medium">{{ session('success') }}</span>
-        </div>
-        @endif
-        @if (session()->has('error'))
-        <div
-            class="pointer-events-auto flex p-4 bg-white rounded-xl shadow-lg border-l-4 border-red-500 animate-fade-in-right">
-            <i class='bx bx-error text-2xl text-red-500 mr-3'></i>
-            <span class="text-slate-700 font-medium">{{ session('error') }}</span>
-        </div>
-        @endif
-        @if (session()->has('info'))
-        <div
-            class="pointer-events-auto flex p-4 bg-white rounded-xl shadow-lg border-l-4 border-blue-500 animate-fade-in-right">
-            <i class='bx bx-info-circle text-2xl text-blue-500 mr-3'></i>
-            <span class="text-slate-700 font-medium">{{ session('info') }}</span>
-        </div>
-        @endif
+<div>
+    @if (session()->has('success'))
+    <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+        {{ session('success') }}
     </div>
+    @endif
 
-    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 pt-6 h-[calc(100vh-24px)] flex flex-col">
+    @if (session()->has('error'))
+    <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+        {{ session('error') }}
+    </div>
+    @endif
 
-        <!-- Header Compacto -->
-        <div class="flex items-center justify-between mb-4 shrink-0">
-            <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+    @if (session()->has('info'))
+    <div class="mb-4 p-4 bg-blue-100 border border-blue-400 text-blue-700 rounded-lg">
+        {{ session('info') }}
+    </div>
+    @endif
+
+    <div class="max-w-7xl mx-auto">
+        <!-- ✅ NOVO: Banner de Retificação -->
+        @if($modoRetificacao)
+        <div class="mb-6 p-5 bg-orange-50 border-l-4 border-orange-500 rounded-lg shadow-md">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class='bx bx-refresh text-2xl text-orange-600'></i>
+                        <h3 class="text-xl font-bold text-orange-800">
+                            🔄 Modo Retificação Ativo
+                        </h3>
+                    </div>
+                    <p class="text-sm text-orange-700">
+                        Retificando documento: <strong class="text-orange-900">{{ $documentoOriginalNumero }}</strong>
+                    </p>
+                    <p class="text-xs text-orange-600 mt-1">
+                        Faça as alterações necessárias (adicionar/remover produtos, trocar cliente) e finalize a
+                        retificação
+                    </p>
+                </div>
+                <button wire:click="cancelarRetificacao"
+                    class="px-5 py-2.5 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors duration-200 flex items-center gap-2">
+                    <i class='bx bx-x text-xl'></i>
+                    Cancelar Retificação
+                </button>
+            </div>
+
+            <!-- Campo de motivo -->
+            <div class="mt-4">
+                <label class="block text-sm font-semibold text-orange-800 mb-2">
+                    Motivo da Retificação <span class="text-red-600">*</span>
+                </label>
+                <textarea wire:model="motivoRetificacao" rows="2"
+                    class="w-full border-orange-300 rounded-lg shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200 p-3"
+                    placeholder="Ex: Correção de valores, alteração de produtos, erro no cliente, etc."></textarea>
+                @error('motivoRetificacao')
+                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+        </div>
+        @endif
+
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">
                 @if($modoRetificacao)
-                <span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-lg text-base shadow-sm">
-                    <i class='bx bx-revision'></i> Retificando {{ $documentoOriginalNumero }}
-                </span>
+                Retificação de {{ $tipoDocumento === 'fatura' ? 'Fatura' : 'Recibo' }}
                 @else
-                <span class="text-indigo-700"><i class='bx bxs-store-alt'></i> PDV</span>
+                Ponto de Venda
                 @endif
             </h1>
 
-            <div class="flex gap-3">
-                @if($modoRetificacao)
-                <button wire:click="cancelarRetificacao"
-                    class="px-4 py-2 bg-white text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 font-medium shadow-sm">Cancelar</button>
-                @else
-                <button wire:click="exportarDadosFatura"
-                    class="px-4 py-2 bg-white text-slate-600 border border-slate-300 rounded-lg hover:text-indigo-600 hover:border-indigo-300 font-medium shadow-sm flex items-center gap-2">
-                    <i class='bx bx-printer'></i> Última Venda
-                </button>
-                @endif
-            </div>
-        </div>
+            <button wire:click="exportarDadosFatura"
+                class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-blue-500 hover:text-white transition-colors duration-200">
+                <i class='bx bx-printer mr-2'></i>Imprimir
+            </button>
+        </header>
 
-        @if($modoRetificacao)
-        <div class="mb-4 shrink-0">
-            <textarea wire:model="motivoRetificacao" rows="1"
-                class="w-full px-4 py-2 rounded-lg border-amber-300 bg-amber-50 focus:ring-amber-500 placeholder-amber-400/70 text-sm"
-                placeholder="Descreva o motivo da retificação obrigatório..."></textarea>
-        </div>
-        @endif
-
-        <!-- Grid Principal -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1 overflow-hidden">
-
-            <!-- Coluna Esquerda: Configurações e Ações (4 colunas) -->
-            <div class="lg:col-span-4 flex flex-col gap-4 h-full overflow-y-auto pr-1 custom-scrollbar">
-
-                <!-- Card Cliente -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-                    <div class="flex justify-between items-center mb-3">
-                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Cliente</label>
-                        <button wire:click="abrirModalCliente"
-                            class="text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded hover:bg-indigo-100 font-bold">Alterar</button>
-                    </div>
-                    <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                        <div
-                            class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
-                            <i class='bx bxs-user'></i>
+        <div class="flex gap-6">
+            <!-- Left Section (65%) -->
+            <div class="flex-1 space-y-4">
+                <!-- Top Cards Row -->
+                <div class="grid grid-cols-3 gap-4">
+                    <!-- Documento Card -->
+                    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
+                        <div class="flex items-center gap-2 mb-3">
+                            <i class='bx bx-file-blank text-blue-500 text-xl'></i>
+                            <span class="font-semibold text-gray-700">Documento</span>
                         </div>
-                        <div class="overflow-hidden">
-                            <p class="font-semibold text-slate-800 truncate">{{ $clienteNome }}</p>
-                            <p class="text-xs text-slate-500 truncate">{{ $clienteSelecionado ? 'NIF carregado' :
-                                'Consumidor Final' }}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card Tipo Doc -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-3">Dados do
-                        Documento</label>
-                    <div class="grid grid-cols-2 gap-3 mb-3">
-                        <select wire:model.live="tipoDocumento" @if($modoRetificacao) disabled @endif
-                            class="col-span-2 bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5">
+                        <select wire:model="tipoDocumento"
+                            class="w-full p-2.5 bg-gray-100 border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            @if($modoRetificacao) disabled @endif>
                             <option value="fatura">Fatura</option>
                             <option value="recibo">Recibo</option>
                         </select>
+
+                        @if($tipoDocumento === 'recibo')
+                        <div class="mt-3">
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Método de Pagamento</label>
+                            <select wire:model="metodoPagamento"
+                                class="w-full p-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                                <option value="dinheiro">Dinheiro</option>
+                                <option value="cartao">Cartão</option>
+                                <option value="transferencia">Transferência</option>
+                            </select>
+                        </div>
+                        @endif
                     </div>
 
-                    @if($tipoDocumento === 'recibo')
-                    <div class="grid grid-cols-3 gap-2 animate-fade-in">
-                        @foreach(['dinheiro' => 'Cash', 'cartao' => 'TPA', 'transferencia' => 'Transf'] as $key =>
-                        $label)
-                        <button wire:click="$set('metodoPagamento', '{{$key}}')"
-                            class="py-2 text-xs font-bold rounded-lg border transition-all {{ $metodoPagamento === $key ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50' }}">
-                            {{ $label }}
-                        </button>
-                        @endforeach
+                    <!-- Natureza Card -->
+                    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
+                        <div class="mb-3">
+                            <span class="font-semibold text-gray-700">Natureza</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button wire:click="alterarNatureza('produto')"
+                                class="flex-1 py-2.5 rounded-lg font-medium transition-colors duration-200 {{ $natureza === 'produto' ? 'text-white bg-blue-500' : 'text-gray-700 bg-gray-100 hover:bg-gray-200' }}">
+                                Produto
+                            </button>
+                            <button wire:click="alterarNatureza('servico')"
+                                class="flex-1 py-2.5 rounded-lg font-medium transition-colors duration-200 {{ $natureza === 'servico' ? 'text-white bg-blue-500' : 'text-gray-700 bg-gray-100 hover:bg-gray-200' }}">
+                                Serviço
+                            </button>
+                        </div>
                     </div>
-                    @endif
+
+                    <!-- Cliente Card -->
+                    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
+                        <div class="flex items-center gap-2 mb-3">
+                            <i class='bx bx-user text-blue-500 text-xl'></i>
+                            <span class="font-semibold text-gray-700">Cliente</span>
+                            <button wire:click="abrirModal"
+                                class="ml-auto text-blue-500 hover:text-blue-600 text-sm font-medium">
+                                Selecionar
+                            </button>
+                        </div>
+                        <div class="p-2.5 bg-gray-100 border border-gray-300 rounded-lg text-center text-gray-600">
+                            <span class="text-sm">{{ $clienteNome }}</span>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Botões de Ação Gigantes -->
-                <div class="grid grid-cols-1 gap-3 mt-auto">
-                    <button wire:click="abrirModalItem('produto')"
-                        class="group relative w-full p-5 bg-white rounded-2xl border-2 border-indigo-100 hover:border-indigo-500 hover:shadow-lg transition-all duration-200 text-left overflow-hidden">
-                        <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                            <i class='bx bx-package text-6xl text-indigo-600'></i>
+                <!-- Products Section -->
+                <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
+                    <div class="mb-4">
+                        <div class="relative">
+                            <i
+                                class='bx bx-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl'></i>
+                            <input type="search" wire:model.live.debounce.300ms="searchProdutoTerm"
+                                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                placeholder="Pesquisar produto por descrição ou código de barras">
                         </div>
-                        <div class="relative z-10">
-                            <span class="block text-indigo-600 font-bold text-lg mb-1">Adicionar Produtos</span>
-                            <span class="text-sm text-slate-500">Buscar e inserir itens no carrinho</span>
-                        </div>
-                    </button>
+                    </div>
 
-                    <button wire:click="abrirModalItem('servico')"
-                        class="group relative w-full p-5 bg-white rounded-2xl border-2 border-emerald-100 hover:border-emerald-500 hover:shadow-lg transition-all duration-200 text-left overflow-hidden">
-                        <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                            <i class='bx bx-briefcase-alt-2 text-6xl text-emerald-600'></i>
+                    <!-- Lista de Produtos Disponíveis -->
+                    @if(count($produtos) > 0)
+                    <div class="mb-4 border border-gray-200 rounded-lg p-3 bg-gray-50">
+                        <h3 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                            <i class='bx bx-package text-blue-500'></i>
+                            Produtos Disponíveis
+                        </h3>
+                        <div class="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto">
+                            @foreach($produtos as $produto)
+                            <button wire:click="adicionarProduto({{ $produto->id }})"
+                                class="p-3 bg-white border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors duration-150 text-left">
+                                <div class="font-semibold text-gray-800 text-sm">{{ $produto->descricao }}</div>
+                                <div class="text-xs text-gray-500 mb-1">Cód: {{ $produto->codigo_barras }}</div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm font-bold text-blue-600">{{
+                                        number_format($produto->preco_venda, 2, ',', '.') }} KZ</span>
+                                    <span class="text-xs text-gray-600">
+                                        <i class='bx bx-package'></i> {{ $produto->estoque }}
+                                    </span>
+                                </div>
+                                @if($produto->categoria)
+                                <div class="text-xs text-gray-500 mt-1">{{ $produto->categoria->nome ?? '' }}</div>
+                                @endif
+                            </button>
+                            @endforeach
                         </div>
-                        <div class="relative z-10">
-                            <span class="block text-emerald-600 font-bold text-lg mb-1">Adicionar Serviços</span>
-                            <span class="text-sm text-slate-500">Mão de obra e consultoria</span>
+                    </div>
+                    @endif
+
+                    <!-- Carrinho de Produtos -->
+                    <div class="border border-gray-200 rounded-lg p-3">
+                        <h3 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                            <i class='bx bx-cart text-blue-500'></i>
+                            Carrinho ({{ count($produtosCarrinho) }} {{ count($produtosCarrinho) === 1 ? 'item' :
+                            'itens' }})
+                        </h3>
+
+                        @if(count($produtosCarrinho) > 0)
+                        <ul class="space-y-2">
+                            @foreach($produtosCarrinho as $index => $item)
+                            <li
+                                class="bg-gray-50 border border-gray-200 rounded-lg p-3 hover:bg-gray-100 transition-colors duration-150">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div class="flex flex-col flex-1">
+                                        <span class="font-semibold text-gray-800">{{ $item['descricao'] }}</span>
+                                        <span class="text-xs text-gray-500">Cód: {{ $item['codigo_barras'] }}</span>
+                                        <span class="text-sm text-gray-600">{{ number_format($item['preco_venda'], 2,
+                                            ',', '.') }} KZ/un</span>
+                                    </div>
+                                    <button wire:click="removerProduto({{ $index }})"
+                                        wire:confirm="Deseja remover este produto?"
+                                        class="text-red-500 hover:text-red-700 transition-colors duration-150">
+                                        <i class='bx bx-trash text-xl'></i>
+                                    </button>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center gap-2">
+                                        <button wire:click="alterarQuantidade({{ $index }}, -1)"
+                                            class="w-8 h-8 bg-gray-300 hover:bg-gray-400 rounded-lg flex items-center justify-center transition-colors duration-150">
+                                            <i class='bx bx-minus'></i>
+                                        </button>
+                                        <input type="number" value="{{ $item['quantidade'] }}" readonly
+                                            class="w-16 text-center border border-gray-300 rounded-lg py-1 bg-white font-semibold">
+                                        <button wire:click="alterarQuantidade({{ $index }}, 1)"
+                                            class="w-8 h-8 bg-gray-300 hover:bg-gray-400 rounded-lg flex items-center justify-center transition-colors duration-150">
+                                            <i class='bx bx-plus'></i>
+                                        </button>
+                                        <span class="text-xs text-gray-500 ml-2">
+                                            (Est: {{ $item['estoque_disponivel'] }})
+                                        </span>
+                                    </div>
+                                    <span class="font-bold text-gray-800 text-lg">
+                                        {{ number_format($item['preco_venda'] * $item['quantidade'], 2, ',', '.') }} KZ
+                                    </span>
+                                </div>
+                            </li>
+                            @endforeach
+                        </ul>
+                        @else
+                        <div class="text-center py-8 text-gray-500">
+                            <i class='bx bx-cart text-4xl mb-2'></i>
+                            <p>Carrinho vazio</p>
+                            <p class="text-sm">Adicione produtos para iniciar {{ $modoRetificacao ? 'a retificação' : 'a
+                                venda' }}</p>
                         </div>
-                    </button>
+                        @endif
+                    </div>
                 </div>
             </div>
 
-            <!-- Coluna Direita: Carrinho (8 colunas) -->
-            <div
-                class="lg:col-span-8 h-full flex flex-col bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
-
-                <!-- Cabeçalho Carrinho -->
-                <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center shrink-0">
-                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                        <i class='bx bx-cart'></i> Carrinho <span
-                            class="bg-indigo-600 text-white text-xs py-0.5 px-2 rounded-full">{{
-                            count($produtosCarrinho) }}</span>
+            <!-- Right Section (35%) - Resumo -->
+            <div class="w-[400px]">
+                <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-5 sticky top-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 pb-3 border-b border-gray-200">
+                        Resumo {{ $modoRetificacao ? '(Retificação)' : '' }}
                     </h2>
-                    <span class="text-sm text-slate-500">Total Estimado</span>
-                </div>
 
-                <!-- Lista de Itens -->
-                <div class="flex-1 overflow-y-auto p-0 bg-white custom-scrollbar relative">
-                    @if(count($produtosCarrinho) > 0)
-                    <table class="w-full text-left border-collapse">
-                        <thead class="bg-slate-50 sticky top-0 z-10 text-xs uppercase text-slate-500 font-semibold">
-                            <tr>
-                                <th class="p-4">Item</th>
-                                <th class="p-4 text-center">Qtd</th>
-                                <th class="p-4 text-right">Total</th>
-                                <th class="p-4 w-10"></th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            @foreach($produtosCarrinho as $index => $item)
-                            <tr class="hover:bg-slate-50 group transition-colors">
-                                <td class="p-4">
-                                    <div class="font-medium text-slate-800">{{ $item['descricao'] }}</div>
-                                    <div class="text-xs text-slate-500">{{ number_format($item['preco_venda'], 2, ',',
-                                        '.') }} KZ | Cód: {{ $item['codigo_barras'] }}</div>
-                                </td>
-                                <td class="p-4">
-                                    <div class="flex items-center justify-center gap-1">
-                                        <button wire:click="alterarQuantidade({{ $index }}, -1)"
-                                            class="w-7 h-7 rounded bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600"><i
-                                                class='bx bx-minus'></i></button>
-                                        <input type="text" readonly value="{{ $item['quantidade'] }}"
-                                            class="w-10 text-center font-bold text-slate-700 bg-transparent border-none focus:ring-0 p-0">
-                                        <button wire:click="alterarQuantidade({{ $index }}, 1)"
-                                            class="w-7 h-7 rounded bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600"><i
-                                                class='bx bx-plus'></i></button>
-                                    </div>
-                                </td>
-                                <td class="p-4 text-right font-bold text-indigo-600">
-                                    {{ number_format($item['preco_venda'] * $item['quantidade'], 2, ',', '.') }}
-                                </td>
-                                <td class="p-4 text-center">
-                                    <button wire:click="removerProduto({{ $index }})"
-                                        class="text-slate-300 hover:text-red-500 transition-colors"><i
-                                            class='bx bx-trash text-xl'></i></button>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                    @else
-                    <div class="absolute inset-0 flex flex-col items-center justify-center text-slate-300">
-                        <i class='bx bx-basket text-8xl mb-4 opacity-50'></i>
-                        <p class="text-lg font-medium">O carrinho está vazio</p>
-                        <p class="text-sm">Use os botões ao lado para adicionar itens</p>
-                    </div>
-                    @endif
-                </div>
-
-                <!-- Rodapé Totais -->
-                <div class="p-6 bg-slate-50 border-t border-slate-200 shrink-0">
-                    <div class="flex justify-between items-end mb-4">
-                        <div class="text-sm text-slate-500 space-y-1">
-                            <p>Subtotal: {{ number_format($subtotal, 2, ',', '.') }} KZ</p>
-                            @if($tipoDocumento === 'fatura')
-                            <p>IVA: {{ number_format($iva, 2, ',', '.') }} KZ</p>
-                            @endif
-                        </div>
-                        <div class="text-right">
-                            <p class="text-sm text-slate-500 mb-1">Total a Pagar</p>
-                            <p class="text-4xl font-extrabold text-slate-800 tracking-tight">{{ number_format($total, 2,
-                                ',', '.') }} <span class="text-lg font-medium text-slate-500">KZ</span></p>
-                        </div>
+                    <div class="mb-4 text-sm text-gray-600">
+                        <p class="flex items-center gap-2">
+                            <i class='bx bx-calendar'></i>
+                            <span>Data: <strong>{{ now()->format('d/m/Y') }}</strong></span>
+                        </p>
+                        @if($modoRetificacao)
+                        <p class="flex items-center gap-2 mt-2 text-orange-600">
+                            <i class='bx bx-info-circle'></i>
+                            <span class="text-xs">Documento Original: <strong>{{ $documentoOriginalNumero
+                                    }}</strong></span>
+                        </p>
+                        @endif
                     </div>
 
+                    <div class="space-y-3 mb-4 pb-4 border-b border-gray-200">
+                        <div class="flex justify-between text-gray-700">
+                            <span>Subtotal:</span>
+                            <span class="font-semibold">{{ number_format($subtotal, 2, ',', '.') }} KZ</span>
+                        </div>
+
+                        @if($tipoDocumento === 'fatura')
+                        <div class="flex justify-between text-gray-700">
+                            <span>Incidência:</span>
+                            <span class="font-semibold">{{ number_format($incidencia, 2, ',', '.') }} KZ</span>
+                        </div>
+                        <div class="flex justify-between text-gray-700">
+                            <span>IVA (14%):</span>
+                            <span class="font-semibold">{{ number_format($iva, 2, ',', '.') }} KZ</span>
+                        </div>
+                        @endif
+                    </div>
+
+                    <div class="flex justify-between items-center mb-4 pb-4 border-b border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-800">Total a Pagar:</h3>
+                        <span class="text-2xl font-bold text-blue-600">{{ number_format($total, 2, ',', '.') }}
+                            KZ</span>
+                    </div>
+
+                    <!-- Botão de finalizar -->
                     <button wire:click="finalizarVenda" wire:loading.attr="disabled"
-                        class="w-full py-4 rounded-xl font-bold text-lg text-white shadow-xl transform hover:-translate-y-0.5 transition-all
-                        {{ $modoRetificacao ? 'bg-amber-600 hover:bg-amber-700 shadow-amber-200' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200' }}">
+                        class="w-full py-3.5 {{ $modoRetificacao ? 'bg-orange-600 hover:bg-orange-700' : 'bg-blue-600 hover:bg-blue-700' }} text-white text-lg font-semibold rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-50">
+                        <i class='bx {{ $modoRetificacao ? ' bx-refresh' : 'bx-check-circle' }} text-2xl'></i>
                         <span wire:loading.remove>
-                            {{ $modoRetificacao ? 'Finalizar Retificação' : 'Finalizar Venda' }}
+                            {{ $modoRetificacao ? 'Finalizar Retificação' : 'Finalizar ' . ($tipoDocumento === 'fatura'
+                            ? 'Fatura' : 'Recibo') }}
                         </span>
-                        <span wire:loading>
-                            <i class='bx bx-loader-alt animate-spin'></i> Processando...
-                        </span>
+                        <span wire:loading>Processando...</span>
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ✅ MODAL DE ITENS (PRODUTOS/SERVIÇOS) - CENTRALIZADO COM FIX -->
-    @if($showItemModal)
-    <div class="fixed inset-0 z-[60] flex items-center justify-center w-full h-full bg-slate-900/75 backdrop-blur-sm p-4 animate-fade-in"
-        aria-labelledby="modal-items" role="dialog" aria-modal="true">
-
-        <div
-            class="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-
-            <!-- Header Modal -->
-            <div class="bg-white p-5 border-b border-slate-100 flex justify-between items-center shrink-0">
-                <div>
-                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        @if($natureza == 'servico')
-                        <i class='bx bx-briefcase-alt-2 text-emerald-600'></i> Selecionar Serviços
-                        @else
-                        <i class='bx bx-package text-indigo-600'></i> Selecionar Produtos
-                        @endif
-                    </h3>
-                    <p class="text-sm text-slate-500">Clique no item para adicionar ao carrinho</p>
-                </div>
-                <button wire:click="fecharModalItem"
-                    class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors">
-                    <i class='bx bx-x text-xl'></i>
+    <!-- Modal de Clientes -->
+    @if($showModal)
+    <div class="fixed inset-0 bg-[rgba(0,0,0,0.28)] flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4">
+            <div class="flex justify-between items-center p-5 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-800">Selecionar Cliente</h2>
+                <button wire:click="fecharModal" class="text-gray-400 hover:text-gray-600 text-2xl">
+                    <i class='bx bx-x'></i>
                 </button>
             </div>
-
-            <!-- Search Bar -->
-            <div class="p-5 bg-slate-50 border-b border-slate-100 shrink-0">
-                <div class="relative">
-                    <i class='bx bx-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl'></i>
-                    <input type="text" wire:model.live.debounce.200ms="searchProdutoTerm" autofocus
-                        class="w-full pl-12 pr-4 py-3 rounded-xl border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent shadow-sm text-lg"
-                        placeholder="Digite o nome, código ou referência...">
-                    <div wire:loading wire:target="searchProdutoTerm" class="absolute right-4 top-1/2 -translate-y-1/2">
-                        <i class='bx bx-loader-alt animate-spin text-indigo-500 text-xl'></i>
+            <div class="p-5">
+                <div class="mb-4">
+                    <div class="relative">
+                        <i class='bx bx-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400'></i>
+                        <input type="text" wire:model.live.debounce.300ms="searchClienteTerm"
+                            class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            placeholder="Pesquisar por nome ou NIF">
                     </div>
                 </div>
-            </div>
-
-            <!-- Lista de Itens -->
-            <div class="flex-1 overflow-y-auto p-5 bg-slate-50 custom-scrollbar">
-                @if(count($produtos) > 0)
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    @foreach($produtos as $produto)
-                    <button wire:click="adicionarProduto({{ $produto->id }})" wire:key="prod-{{ $produto->id }}"
-                        class="flex flex-col bg-white border border-slate-200 rounded-xl p-4 hover:border-indigo-500 hover:ring-1 hover:ring-indigo-500 hover:shadow-md transition-all text-left group h-full">
-
-                        <div class="flex justify-between items-start w-full mb-2">
-                            <span class="bg-slate-100 text-slate-500 text-[10px] font-mono px-1.5 py-0.5 rounded">{{
-                                $produto->codigo_barras }}</span>
-                            <span
-                                class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $produto->estoque > 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600' }}">
-                                Est: {{ $produto->estoque }}
-                            </span>
-                        </div>
-
-                        <h4 class="font-bold text-slate-800 text-sm line-clamp-2 mb-2 group-hover:text-indigo-700">{{
-                            $produto->descricao }}</h4>
-
-                        <div class="mt-auto pt-2 border-t border-slate-50 flex justify-between items-center w-full">
-                            <span class="text-lg font-bold text-slate-900">{{ number_format($produto->preco_venda, 2,
-                                ',', '.') }} <small class="text-slate-400 font-normal">KZ</small></span>
-                            <div
-                                class="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                                <i class='bx bx-plus'></i>
-                            </div>
-                        </div>
-                    </button>
-                    @endforeach
+                <div class="overflow-auto max-h-96">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">NIF</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Nome</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($clientes as $cliente)
+                            <tr wire:click="selecionarCliente({{ $cliente->id }})"
+                                class="border-b border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors duration-150">
+                                <td class="px-4 py-3 text-gray-700">{{ $cliente->nif }}</td>
+                                <td class="px-4 py-3 text-gray-700">{{ $cliente->nome }}</td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="2" class="px-4 py-8 text-center text-gray-500">
+                                    Nenhum cliente encontrado
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
-                @else
-                <div class="flex flex-col items-center justify-center h-full text-slate-400 opacity-60">
-                    <i class='bx bx-search-x text-6xl mb-2'></i>
-                    <p>Nenhum item encontrado</p>
-                </div>
-                @endif
             </div>
         </div>
     </div>
     @endif
-
-    <!-- ✅ MODAL DE CLIENTES - CENTRALIZADO COM FIX -->
-    @if($showModalCliente)
-    <div class="fixed inset-0 z-[60] flex items-center justify-center w-full h-full bg-slate-900/75 backdrop-blur-sm p-4 animate-fade-in"
-        aria-labelledby="modal-clientes" role="dialog" aria-modal="true">
-
-        <div
-            class="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
-            <div class="p-5 border-b border-slate-100 flex justify-between items-center">
-                <h3 class="text-xl font-bold text-slate-800">Selecionar Cliente</h3>
-                <button wire:click="fecharModalCliente" class="text-slate-400 hover:text-slate-600"><i
-                        class='bx bx-x text-2xl'></i></button>
-            </div>
-
-            <div class="p-4 bg-slate-50">
-                <input type="text" wire:model.live.debounce.300ms="searchClienteTerm" autofocus
-                    class="w-full rounded-xl border-slate-200 focus:ring-indigo-500 py-3"
-                    placeholder="Pesquisar cliente...">
-            </div>
-
-            <div class="flex-1 overflow-y-auto p-0 custom-scrollbar bg-white">
-                @foreach($clientes as $cliente)
-                <div wire:click="selecionarCliente({{ $cliente->id }})"
-                    class="p-4 border-b border-slate-100 hover:bg-indigo-50 cursor-pointer transition-colors flex justify-between items-center">
-                    <div>
-                        <p class="font-bold text-slate-800">{{ $cliente->nome }}</p>
-                        <p class="text-xs text-slate-500">NIF: {{ $cliente->nif }}</p>
-                    </div>
-                    <i class='bx bx-chevron-right text-slate-300'></i>
-                </div>
-                @endforeach
-            </div>
-        </div>
-    </div>
-    @endif
-
-    <style>
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 10px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        .animate-fade-in {
-            animation: fadeIn 0.2s ease-out;
-        }
-    </style>
 </div>

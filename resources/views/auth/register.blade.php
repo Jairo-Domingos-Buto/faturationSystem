@@ -6,7 +6,7 @@
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
-    <title>Cadastrar | OmiFinance</title>
+    <title>Cadastrar | OMINIFINANCE</title>
 
     <meta name="description" content="" />
 
@@ -103,7 +103,7 @@
                                         </g>
                                     </svg>
                                 </span>
-                                <span class="app-brand-text demo text-body fw-bolder">OmiFinance</span>
+                                <span class="app-brand-text demo text-body fw-bolder">OMINIFINANCE</span>
                             </a>
                         </div>
                         <!-- /Logo -->

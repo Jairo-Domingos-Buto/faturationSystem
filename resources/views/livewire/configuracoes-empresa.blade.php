@@ -15,7 +15,7 @@
                             <span id="basic-icon-default-name2" class="input-group-text"><i
                                     class="bx bx-user"></i></span>
                             <input type="text" wire:model="name" class="form-control" id="basic-icon-default-name"
-                                placeholder="OmiFinance" aria-label="OmiFinance"
+                                placeholder="OMINIFINANCE" aria-label="OMINIFINANCE"
                                 aria-describedby="basic-icon-default-name2" />
                         </div>
                         @error('name') <span class="text-danger text-sm">{{ $message }}</span> @enderror

@@ -346,7 +346,7 @@
         <!-- HEADER -->
         <div class="header clearfix">
             <div class="header-left">
-                <div class="logo-text">OmiFinance</div>
+                <div class="logo-text">OMINIFINANCE</div>
                 <div class="company-info">
                     <div class="company-name">{{ $dados['empresa']['nome'] }}</div>
                     <div>Contribuinte N.º: {{ $dados['empresa']['nif'] }}</div>

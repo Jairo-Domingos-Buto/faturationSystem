@@ -25,7 +25,7 @@ class ResetPasswordNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('Redefinição de Senha - OmiFinance')
+            ->subject('Redefinição de Senha - OMINIFINANCE')
             ->line('Você solicitou redefinir sua senha.')
             ->action(
                 'Redefinir Senha',

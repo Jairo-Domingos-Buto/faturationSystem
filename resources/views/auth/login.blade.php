@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Login | OmiFinance</title>
+    <title>Login | OMINIFINANCE</title>
 
     <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -57,7 +57,7 @@
                         <div class="app-brand justify-content-center mb-4">
                             <span class="app-brand-link gap-2 align-items-center">
 
-                                <span class="app-brand-text">OmiFinance</span>
+                                <span class="app-brand-text">OMINIFINANCE</span>
                             </span>
                         </div>
 

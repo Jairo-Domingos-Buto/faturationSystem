@@ -2,8 +2,8 @@
 
 namespace App\Livewire;
 
-use App\Models\Fatura;
 use App\Models\DadosEmpresa;
+use App\Models\Fatura;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -12,13 +12,19 @@ class FaturaList extends Component
     use WithPagination;
 
     public $start_date;
+
     public $end_date;
+
     public $empresa;
 
-    protected $paginationTheme = 'tailwind';
-    protected $queryString = ['start_date', 'end_date', 'page'];
+    // ✅ NOVO: Filtro por Tipo de Documento
+    public $filtro_tipo = 'todos'; // todos, FT, FR, FP
 
-    // ✅ Listener para recarregar após anulação
+    protected $paginationTheme = 'tailwind';
+
+    protected $queryString = ['start_date', 'end_date', 'filtro_tipo', 'page'];
+
+    // ✅ Listener para recarregar
     protected $listeners = ['faturaAnulada' => '$refresh'];
 
     public function mount()
@@ -41,83 +47,107 @@ class FaturaList extends Component
         $this->resetPage();
     }
 
+    public function updatedFiltroTipo()
+    {
+        $this->resetPage();
+    } // Reset ao mudar filtro
+
     protected function normalizeDates()
     {
-        if (!$this->start_date) {
+        if (! $this->start_date) {
             $this->start_date = now()->subMonth()->format('Y-m-d');
         }
-
-        if (!$this->end_date) {
+        if (! $this->end_date) {
             $this->end_date = now()->format('Y-m-d');
         }
-
         if (strtotime($this->start_date) > strtotime($this->end_date)) {
             [$this->start_date, $this->end_date] = [$this->end_date, $this->start_date];
         }
     }
 
     /**
-     * ✅ MÉTODO ATUALIZADO: Abre modal via JavaScript
+     * Abrir Modal de Anulação
      */
     public function delete($faturaId)
     {
         try {
             $fatura = Fatura::findOrFail($faturaId);
-            
-            if (!$fatura->pode_ser_anulada) {
-                session()->flash('error', 'Esta fatura não pode ser anulada.');
+
+            if (! $fatura->pode_ser_anulada) {
+                session()->flash('error', 'Este documento não pode ser anulado.');
+
                 return;
             }
 
-            // ✅ Dispara evento JavaScript para abrir modal
             $this->dispatch('abrirModalAnulacao',
-                tipo: 'fatura',
+                tipo: 'fatura', // A lógica de anulação no modal é genérica
                 id: $faturaId,
                 numero: $fatura->numero
             );
 
         } catch (\Exception $e) {
-            session()->flash('error', 'Erro: ' . $e->getMessage());
+            session()->flash('error', 'Erro: '.$e->getMessage());
         }
     }
 
-    public function eliminar($faturaId)
+    /**
+     * Converter Proforma em Fatura (Redireciona para o POV)
+     */
+    public function converterProforma($id)
     {
-        $fatura = Fatura::find($faturaId);
-
-        if ($fatura) {
-            $fatura->delete();
-            session()->flash('message', 'Fatura eliminada com sucesso.');
-        }
+        // Envia para o POV carregando os dados da Proforma
+        return redirect()->route('admin.pov', [
+            'retificar_id' => $id,
+            'tipo' => 'fatura',
+            // O POV atual entende "retificar_id" como carregar dados.
+            // Na prática, isso permite carregar os itens.
+            // Depois, basta salvar como FT normal.
+        ]);
     }
 
     public function render()
     {
-        // ✅ MOSTRA APENAS FATURAS ATIVAS (não retificadas, não anuladas)
+        // Base Query: Não retificadas, não anuladas
         $query = Fatura::query()
+            ->with(['cliente', 'user', 'faturaRetificacao']) // Eager Loading otimizado
             ->where('retificada', false)
             ->where('anulada', false);
 
+        // Filtro de Datas
         if ($this->start_date && $this->end_date) {
-            $start = $this->start_date.' 00:00:00';
-            $end = $this->end_date.' 23:59:59';
-            $query->whereBetween('created_at', [$start, $end]);
+            $query->whereBetween('data_emissao', [
+                $this->start_date.' 00:00:00',
+                $this->end_date.' 23:59:59',
+            ]);
         }
 
-        $faturas = $query
-            ->with(['cliente', 'user'])
-            ->orderByDesc('created_at')
-            ->paginate(15);
+        // Filtro por Tipo (FT, FR, FP)
+        if ($this->filtro_tipo !== 'todos') {
+            $query->where('tipo_documento', $this->filtro_tipo);
+        }
 
-        $totalFaturas = $faturas->total();
-        $somaSubtotal = $query->clone()->sum('subtotal');
-        $somaImpostos = $query->clone()->sum('total_impostos');
-        $somaTotal = $query->clone()->sum('total');
+        // Paginação
+        $faturas = $query->orderByDesc('created_at')->paginate(15);
+
+        // ✅ CÁLCULO DE TOTAIS (Inteligente)
+        // Só soma nos quadros de "Receita" o que for FT e FR.
+        // Se o usuário filtrar por FP, os quadros mostram totais de Proformas.
+
+        $queryTotais = $query->clone();
+
+        // Se estiver vendo "todos", removemos Proformas do cálculo financeiro real
+        if ($this->filtro_tipo === 'todos') {
+            $queryTotais->where('tipo_documento', '!=', 'FP');
+        }
+
+        $totalDocumentos = $faturas->total();
+        $somaSubtotal = $queryTotais->sum('subtotal');
+        $somaImpostos = $queryTotais->sum('total_impostos');
+        $somaTotal = $queryTotais->sum('total');
 
         return view('livewire.fatura-list', [
             'faturas' => $faturas,
-            'empresa' => $this->empresa,
-            'totalFaturas' => $totalFaturas,
+            'totalFaturas' => $totalDocumentos,
             'somaSubtotal' => $somaSubtotal,
             'somaImpostos' => $somaImpostos,
             'somaTotal' => $somaTotal,

@@ -10,60 +10,21 @@ use Barryvdh\DomPDF\Facade\Pdf;
 class NotaCreditoController extends Controller
 {
     /**
-     * ✅ VISUALIZAR: Abre a Nota de Crédito da Fatura no navegador (Stream)
+     * =========================================================================
+     * VISUALIZAÇÃO E DOWNLOAD (Fatura, Fatura-Recibo, Proforma convertida)
+     * =========================================================================
      */
     public function visualizarFatura($id)
     {
         try {
-            // 1. Buscar dados
             $faturaOriginal = Fatura::with([
                 'cliente', 'user',
-                'items.produto.categoria', 'items.produto.imposto', 'items.produto.motivoIsencao',
-                'faturaRetificacao.cliente', 'faturaRetificacao.user',
-                'faturaRetificacao.items.produto.categoria', 'faturaRetificacao.items.produto.imposto', 'faturaRetificacao.items.produto.motivoIsencao',
+                'items.produto', 'items.imposto', 'items.motivoIsencao',
+                'faturaRetificacao.items.produto', 'faturaRetificacao.items.imposto', 'faturaRetificacao.items.motivoIsencao',
             ])->findOrFail($id);
 
             if (! $faturaOriginal->retificada) {
-                return redirect()->back()->with('error', 'Esta fatura não foi retificada.');
-            }
-
-            $empresa = DadosEmpresa::first();
-
-            // 2. Montar array de dados (usando o método padronizado que criamos antes)
-            $dados = $this->montarDadosNotaCredito($faturaOriginal, $empresa);
-
-            // 3. Configurar e Gerar PDF
-            $pdf = Pdf::loadView('pdf.notaCredito', ['dados' => $dados])
-                ->setPaper('a4', 'portrait')
-                ->setOptions([
-                    'isHtml5ParserEnabled' => true,
-                    'isRemoteEnabled' => true,
-                    'defaultFont' => 'sans-serif',
-                    'isFontSubsettingEnabled' => true,
-                ]);
-
-            // 4. Retornar Stream (Visualizar na aba)
-            return $pdf->stream('NC-Fatura-'.$faturaOriginal->numero.'.pdf');
-
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Erro ao gerar PDF: '.$e->getMessage());
-        }
-    }
-
-    /**
-     * ✅ DOWNLOAD: Baixa a Nota de Crédito da Fatura diretamente
-     */
-    public function downloadFatura($id)
-    {
-        try {
-            $faturaOriginal = Fatura::with([
-                'cliente', 'user',
-                'items.produto.categoria', 'items.produto.imposto', 'items.produto.motivoIsencao',
-                'faturaRetificacao', // Simplificado pois o montarDados busca o resto
-            ])->findOrFail($id);
-
-            if (! $faturaOriginal->retificada) {
-                return redirect()->back()->with('error', 'Esta fatura não foi retificada.');
+                return redirect()->back()->with('error', 'Este documento não foi retificado.');
             }
 
             $empresa = DadosEmpresa::first();
@@ -73,59 +34,48 @@ class NotaCreditoController extends Controller
                 ->setPaper('a4', 'portrait')
                 ->setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true]);
 
-            // Retornar Download forçado
-            return $pdf->download('NC-Fatura-'.$faturaOriginal->numero.'.pdf');
+            return $pdf->stream('NC-'.$faturaOriginal->numero.'.pdf');
 
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Erro ao baixar PDF: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Erro ao gerar PDF: '.$e->getMessage());
+        }
+    }
+
+    public function downloadFatura($id)
+    {
+        try {
+            $faturaOriginal = Fatura::with([
+                'cliente', 'user', 'items.produto', 'faturaRetificacao',
+            ])->findOrFail($id);
+
+            if (! $faturaOriginal->retificada) {
+                return redirect()->back()->with('error', 'Este documento não foi retificado.');
+            }
+
+            $empresa = DadosEmpresa::first();
+            $dados = $this->montarDadosNotaCredito($faturaOriginal, $empresa);
+
+            $pdf = Pdf::loadView('pdf.notaCredito', ['dados' => $dados])
+                ->setPaper('a4', 'portrait')
+                ->setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true]);
+
+            return $pdf->download('NC-'.$faturaOriginal->numero.'.pdf');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Erro: '.$e->getMessage());
         }
     }
 
     /**
-     * ✅ VISUALIZAR: Abre a Nota de Crédito do Recibo no navegador (Stream)
+     * =========================================================================
+     * VISUALIZAÇÃO E DOWNLOAD (Recibos de Liquidação - Tabela 'recibos')
+     * =========================================================================
      */
     public function visualizarRecibo($id)
     {
         try {
             $reciboOriginal = Recibo::with([
-                'cliente', 'user',
-                'items.produto.categoria', 'items.produto.imposto', 'items.produto.motivoIsencao',
-                'reciboRetificacao.cliente', 'reciboRetificacao.user',
-                'reciboRetificacao.items.produto.categoria', 'reciboRetificacao.items.produto.imposto', 'reciboRetificacao.items.produto.motivoIsencao',
-            ])->findOrFail($id);
-
-            if (! $reciboOriginal->retificado) {
-                return redirect()->back()->with('error', 'Este recibo não foi retificado.');
-            }
-
-            $empresa = DadosEmpresa::first();
-            $dados = $this->montarDadosNotaCreditoRecibo($reciboOriginal, $empresa);
-
-            $pdf = Pdf::loadView('pdf.notaCredito', ['dados' => $dados])
-                ->setPaper('a4', 'portrait')
-                ->setOptions([
-                    'isHtml5ParserEnabled' => true,
-                    'isRemoteEnabled' => true,
-                    'defaultFont' => 'sans-serif',
-                ]);
-
-            return $pdf->stream('NC-Recibo-'.$reciboOriginal->numero.'.pdf');
-
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Erro ao gerar PDF: '.$e->getMessage());
-        }
-    }
-
-    /**
-     * ✅ DOWNLOAD: Baixa a Nota de Crédito do Recibo diretamente
-     */
-    public function downloadRecibo($id)
-    {
-        try {
-            $reciboOriginal = Recibo::with([
-                'cliente', 'user',
-                'items.produto',
-                'reciboRetificacao',
+                'cliente', 'user', 'items.produto', 'reciboRetificacao.items.produto',
             ])->findOrFail($id);
 
             if (! $reciboOriginal->retificado) {
@@ -139,92 +89,99 @@ class NotaCreditoController extends Controller
                 ->setPaper('a4', 'portrait')
                 ->setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true]);
 
-            return $pdf->download('NC-Recibo-'.$reciboOriginal->numero.'.pdf');
+            return $pdf->stream('NC-'.$reciboOriginal->numero.'.pdf');
 
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Erro ao baixar PDF: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Erro: '.$e->getMessage());
+        }
+    }
+
+    public function downloadRecibo($id)
+    {
+        try {
+            $reciboOriginal = Recibo::with(['cliente', 'reciboRetificacao'])->findOrFail($id);
+
+            if (! $reciboOriginal->retificado) {
+                return redirect()->back()->with('error', 'Este recibo não foi retificado.');
+            }
+
+            $empresa = DadosEmpresa::first();
+            $dados = $this->montarDadosNotaCreditoRecibo($reciboOriginal, $empresa);
+
+            $pdf = Pdf::loadView('pdf.notaCredito', ['dados' => $dados])
+                ->setPaper('a4', 'portrait');
+
+            return $pdf->download('NC-'.$reciboOriginal->numero.'.pdf');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Erro: '.$e->getMessage());
         }
     }
 
     /**
-     * ✅ FATURA: Padronizada para usar as chaves genéricas
+     * =========================================================================
+     * PREPARAÇÃO DE DADOS (Helpers)
+     * =========================================================================
      */
-    private function montarDadosNotaCredito($faturaOriginal, $empresa)
+
+    // ✅ Helper para FATURAS e FATURAS-RECIBO
+    private function montarDadosNotaCredito($docOriginal, $empresa)
     {
-        $faturaRetificacao = $faturaOriginal->faturaRetificacao;
+        $docRetificacao = $docOriginal->faturaRetificacao;
 
-        // Formatar produtos
-        $produtos_original = $this->formatarProdutos($faturaOriginal->items);
-        $resumo_impostos_original = $this->calcularResumoImpostos($faturaOriginal->items);
-
-        $produtos_retificacao = $faturaRetificacao ? $this->formatarProdutos($faturaRetificacao->items) : [];
-        $resumo_impostos_retificacao = $faturaRetificacao ? $this->calcularResumoImpostos($faturaRetificacao->items) : [];
-
-        // Análise de diferenças
-        $analise = $faturaRetificacao ? $this->analisarDiferencaProdutos($faturaOriginal->items, $faturaRetificacao->items) : [];
+        // Determinar o label correto baseado no tipo_documento (FT, FR)
+        $tipoLabel = match ($docOriginal->tipo_documento) {
+            'FR' => 'NOTA DE CRÉDITO - FATURA RECIBO',
+            'FT' => 'NOTA DE CRÉDITO - FATURA',
+            'FP' => 'CORREÇÃO DE PROFORMA', // Raro acontecer retificação em FP, mas previne erro
+            default => 'NOTA DE CRÉDITO'
+        };
 
         return [
-            'tipo_documento' => 'nota_credito_fatura', // Usado para lógica interna
-            'tipo_label' => 'NOTA DE CRÉDITO - FATURA', // Usado na View
-            'numero_nota_credito' => 'NC-'.$faturaOriginal->numero,
+            'tipo_label' => $tipoLabel,
+            'numero_nota_credito' => 'NC-'.$docOriginal->numero,
             'data_emissao_nota' => now()->format('Y-m-d'),
 
-            // Empresa e Cliente (Estrutura Padrão)
             'empresa' => $this->formatarEmpresa($empresa),
-            'cliente' => $this->formatarCliente($faturaOriginal->cliente),
+            'cliente' => $this->formatarCliente($docOriginal->cliente),
 
-            // Informações da Retificação
             'retificacao' => [
-                'data' => $faturaOriginal->data_retificacao ? $faturaOriginal->data_retificacao->format('d/m/Y H:i') : now()->format('d/m/Y'),
-                'motivo' => $faturaOriginal->motivo_retificacao ?? $faturaOriginal->motivo_anulacao ?? 'Correção de Fatura',
-                'usuario' => $faturaOriginal->user->name ?? 'Sistema',
+                'data' => $docOriginal->data_retificacao ? $docOriginal->data_retificacao->format('d/m/Y H:i') : '-',
+                'motivo' => $docOriginal->motivo_retificacao ?? 'Correção de valores/itens',
+                'usuario' => $docOriginal->user->name ?? 'Sistema',
             ],
 
-            // ✅ PADRONIZAÇÃO: Chamei de 'documento_anulado' igual ao recibo
+            // Padronizado como 'documento_anulado'
             'documento_anulado' => [
-                'tipo' => 'Fatura Original',
-                'numero' => $faturaOriginal->numero,
-                'data_emissao' => $faturaOriginal->data_emissao->format('d/m/Y'),
-                'subtotal' => (float) $faturaOriginal->subtotal,
-                'total_impostos' => (float) $faturaOriginal->total_impostos,
-                'total' => (float) $faturaOriginal->total,
-                'produtos' => $produtos_original,
-                'resumo_impostos' => $resumo_impostos_original,
+                'tipo' => $docOriginal->tipo_legivel ?? 'Documento',
+                'numero' => $docOriginal->numero,
+                'data_emissao' => $docOriginal->data_emissao->format('d/m/Y'),
+                'subtotal' => (float) $docOriginal->subtotal,
+                'total_impostos' => (float) $docOriginal->total_impostos,
+                'total' => (float) $docOriginal->total,
+                'produtos' => $this->formatarProdutos($docOriginal->items),
+                'resumo_impostos' => $this->calcularResumoImpostos($docOriginal->items),
             ],
 
-            // ✅ PADRONIZAÇÃO: Chamei de 'documento_retificacao' igual ao recibo
-            'documento_retificacao' => $faturaRetificacao ? [
-                'tipo' => 'Fatura Nova',
-                'numero' => $faturaRetificacao->numero,
-                'data_emissao' => $faturaRetificacao->data_emissao->format('d/m/Y'),
-                'subtotal' => (float) $faturaRetificacao->subtotal,
-                'total_impostos' => (float) $faturaRetificacao->total_impostos,
-                'total' => (float) $faturaRetificacao->total,
-                'produtos' => $produtos_retificacao,
-                'resumo_impostos' => $resumo_impostos_retificacao,
+            // Padronizado como 'documento_retificacao' (A nova versão válida)
+            'documento_retificacao' => $docRetificacao ? [
+                'numero' => $docRetificacao->numero,
+                'data_emissao' => $docRetificacao->data_emissao->format('d/m/Y'),
+                'subtotal' => (float) $docRetificacao->subtotal,
+                'total_impostos' => (float) $docRetificacao->total_impostos,
+                'total' => (float) $docRetificacao->total,
+                'produtos' => $this->formatarProdutos($docRetificacao->items),
+                'resumo_impostos' => $this->calcularResumoImpostos($docRetificacao->items),
             ] : null,
-
-            'analise_produtos' => $analise,
         ];
     }
 
-    /**
-     * ✅ RECIBO: Padronizada e Limpa
-     */
+    // ✅ Helper para RECIBOS (RC - Liquidação)
     private function montarDadosNotaCreditoRecibo($reciboOriginal, $empresa)
     {
         $reciboRetificacao = $reciboOriginal->reciboRetificacao;
 
-        $produtos_original = $this->formatarProdutos($reciboOriginal->items);
-        $resumo_impostos_original = $this->calcularResumoImpostos($reciboOriginal->items);
-
-        $produtos_retificacao = $reciboRetificacao ? $this->formatarProdutos($reciboRetificacao->items) : [];
-        $resumo_impostos_retificacao = $reciboRetificacao ? $this->calcularResumoImpostos($reciboRetificacao->items) : [];
-
-        $analise = $reciboRetificacao ? $this->analisarDiferencaProdutos($reciboOriginal->items, $reciboRetificacao->items) : [];
-
         return [
-            'tipo_documento' => 'nota_credito_recibo',
             'tipo_label' => 'NOTA DE CRÉDITO - RECIBO',
             'numero_nota_credito' => 'NC-'.$reciboOriginal->numero,
             'data_emissao_nota' => now()->format('Y-m-d'),
@@ -233,50 +190,44 @@ class NotaCreditoController extends Controller
             'cliente' => $this->formatarCliente($reciboOriginal->cliente),
 
             'retificacao' => [
-                'data' => $reciboOriginal->data_retificacao ? $reciboOriginal->data_retificacao->format('d/m/Y H:i') : now()->format('d/m/Y'),
-                'motivo' => $reciboOriginal->motivo_retificacao ?? $reciboOriginal->motivo_anulacao ?? 'Correção de Recibo',
+                'data' => $reciboOriginal->data_retificacao ? $reciboOriginal->data_retificacao->format('d/m/Y H:i') : '-',
+                'motivo' => $reciboOriginal->motivo_retificacao ?? 'Correção do recibo',
                 'usuario' => $reciboOriginal->user->name ?? 'Sistema',
             ],
 
             'documento_anulado' => [
-                'tipo' => 'Recibo Original',
+                'tipo' => 'Recibo',
                 'numero' => $reciboOriginal->numero,
-                'data_emissao' => $reciboOriginal->data_emissao ? $reciboOriginal->data_emissao->format('d/m/Y') : null,
-                'subtotal' => (float) ($reciboOriginal->subtotal ?? 0),
-                'total_impostos' => (float) ($reciboOriginal->total_impostos ?? 0),
-                'total' => (float) ($reciboOriginal->valor ?? 0),
-                'produtos' => $produtos_original,
-                'resumo_impostos' => $resumo_impostos_original,
+                'data_emissao' => $reciboOriginal->data_emissao->format('d/m/Y'),
+                'subtotal' => (float) ($reciboOriginal->subtotal ?? $reciboOriginal->valor),
+                'total_impostos' => 0, // Recibos RC geralmente não têm imposto discriminado assim
+                'total' => (float) $reciboOriginal->valor,
+                'produtos' => $this->formatarProdutos($reciboOriginal->items),
+                'resumo_impostos' => [], // Recibo de liquidação não incide IVA novamente
             ],
 
             'documento_retificacao' => $reciboRetificacao ? [
-                'tipo' => 'Recibo Novo',
                 'numero' => $reciboRetificacao->numero,
-                'data_emissao' => $reciboRetificacao->data_emissao ? $reciboRetificacao->data_emissao->format('d/m/Y') : null,
-                'subtotal' => (float) ($reciboRetificacao->subtotal ?? 0),
-                'total_impostos' => (float) ($reciboRetificacao->total_impostos ?? 0),
-                'total' => (float) ($reciboRetificacao->valor ?? 0),
-                'produtos' => $produtos_retificacao,
-                'resumo_impostos' => $resumo_impostos_retificacao,
+                'data_emissao' => $reciboRetificacao->data_emissao->format('d/m/Y'),
+                'total' => (float) $reciboRetificacao->valor,
+                'produtos' => $this->formatarProdutos($reciboRetificacao->items),
             ] : null,
-
-            'analise_produtos' => $analise,
         ];
     }
 
-    // --- Helpers de Formatação para evitar repetição de código ---
+    // --- MÉTODOS DE FORMATAÇÃO E CÁLCULO ---
 
     private function formatarEmpresa($empresa)
     {
         return [
-            'nome' => $empresa->name ?? '',
-            'nif' => $empresa->nif ?? '',
+            'nome' => $empresa->name ?? 'Nome da Empresa',
+            'nif' => $empresa->nif ?? '999999999',
             'telefone' => $empresa->telefone ?? '',
             'email' => $empresa->email ?? '',
             'endereco' => $empresa->rua ?? '',
-            'edificio' => $empresa->edificio ?? '', // Adicionado
-            'cidade' => $empresa->cidade ?? '',
-            'banco' => $empresa->nomeDoBanco ?? $empresa->banco ?? '', // Fallback duplo
+            'edificio' => $empresa->edificio ?? '',
+            'cidade' => $empresa->cidade ?? 'Luanda',
+            'banco' => $empresa->nomeDoBanco ?? '',
             'iban' => $empresa->iban ?? '',
         ];
     }
@@ -284,17 +235,17 @@ class NotaCreditoController extends Controller
     private function formatarCliente($cliente)
     {
         if (! $cliente) {
-            return [];
+            return null;
         }
 
         return [
             'id' => $cliente->id,
             'nome' => $cliente->nome,
             'nif' => $cliente->nif,
-            'telefone' => $cliente->telefone ?? '',
-            'localizacao' => $cliente->localizacao ?? $cliente->endereco ?? '', // Padronizei para localizacao
+            'localizacao' => $cliente->localizacao ?? $cliente->endereco ?? '',
             'cidade' => $cliente->cidade ?? '',
             'provincia' => $cliente->provincia ?? '',
+            'telefone' => $cliente->telefone ?? '',
         ];
     }
 
@@ -302,31 +253,26 @@ class NotaCreditoController extends Controller
     {
         $produtos = [];
         foreach ($items as $item) {
-            $produto = $item->produto;
+            // Suporte para ambos os models (FaturaItem e ReciboItem)
+            $produtoRelacao = $item->produto;
 
-            // Lógica Unificada de Imposto
+            // Taxas
             if ($item->motivo_isencaos_id) {
                 $taxa = 0;
-                $descImp = 'Isento';
             } elseif ($item->imposto_id) {
                 $taxa = (float) $item->taxa_iva;
-                $descImp = 'IVA '.number_format($taxa, 0).'%';
             } else {
-                $taxa = 14;
-                $descImp = 'IVA 14%';
+                $taxa = 14; // Default
             }
 
             $produtos[] = [
-                'codigo' => $item->codigo_barras ?? $produto->codigo_barras,
-                'descricao' => $item->descricao ?? $produto->descricao,
+                'codigo' => $item->codigo_barras ?? ($produtoRelacao->codigo_barras ?? '-'),
+                'descricao' => $item->descricao ?? ($produtoRelacao->descricao ?? 'Item'),
                 'quantidade' => $item->quantidade,
-                'unidade' => 'UN',
                 'preco_unitario' => (float) $item->preco_unitario,
-                'desconto' => 0, // Se tiver campo desconto no item, adicione aqui
                 'taxa_iva' => $taxa,
-                'valor_iva' => (float) $item->valor_iva,
-                'total' => (float) $item->total ?? ($item->subtotal + $item->valor_iva),
-                'descricao_imposto' => $descImp,
+                'valor_iva' => (float) ($item->valor_iva ?? 0),
+                'total' => (float) ($item->total ?? ($item->preco_unitario * $item->quantidade)),
             ];
         }
 
@@ -337,19 +283,22 @@ class NotaCreditoController extends Controller
     {
         $resumo = [];
         foreach ($items as $item) {
-            $taxa = (float) $item->taxa_iva;
+            $taxa = (float) ($item->taxa_iva ?? 14);
             $chave = (string) $taxa;
 
             if (! isset($resumo[$chave])) {
                 $resumo[$chave] = [
-                    'taxa' => $taxa,
                     'descricao' => $taxa == 0 ? 'Isento' : 'IVA '.number_format($taxa, 0).'%',
                     'incidencia' => 0,
                     'valor_imposto' => 0,
                 ];
             }
-            $resumo[$chave]['incidencia'] += (float) $item->subtotal;
-            $resumo[$chave]['valor_imposto'] += (float) $item->valor_iva;
+            // Usa ?? 0 para prevenir erros em recibos legados que podem não ter esses campos
+            $subtotalItem = $item->subtotal ?? ($item->preco_unitario * $item->quantidade);
+            $ivaItem = $item->valor_iva ?? ($taxa > 0 ? $subtotalItem * ($taxa / 100) : 0);
+
+            $resumo[$chave]['incidencia'] += (float) $subtotalItem;
+            $resumo[$chave]['valor_imposto'] += (float) $ivaItem;
         }
 
         return array_values($resumo);

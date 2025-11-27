@@ -2,8 +2,8 @@
 
 namespace App\Livewire;
 
-use App\Models\Recibo;
 use App\Models\DadosEmpresa;
+use App\Models\Recibo;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -12,19 +12,20 @@ class ReciboList extends Component
     use WithPagination;
 
     public $start_date;
+
     public $end_date;
+
     public $empresa;
 
     protected $paginationTheme = 'tailwind';
+
     protected $queryString = ['start_date', 'end_date', 'page'];
 
-    // ✅ Listener para recarregar após anulação
+    // Listener para atualizar a lista após uma anulação feita no Modal Global
     protected $listeners = ['reciboAnulado' => '$refresh'];
 
     public function mount()
     {
-        $this->end_date = $this->end_date ?? now()->format('Y-m-d');
-        $this->start_date = $this->start_date ?? now()->subMonth()->format('Y-m-d');
         $this->normalizeDates();
         $this->empresa = DadosEmpresa::first();
     }
@@ -43,85 +44,65 @@ class ReciboList extends Component
 
     protected function normalizeDates()
     {
-        if (!$this->start_date) {
-            $this->start_date = now()->subMonth()->format('Y-m-d');
-        }
-
-        if (!$this->end_date) {
-            $this->end_date = now()->format('Y-m-d');
-        }
-
-        if (strtotime($this->start_date) > strtotime($this->end_date)) {
-            [$this->start_date, $this->end_date] = [$this->end_date, $this->start_date];
-        }
+        $this->start_date = $this->start_date ?? now()->startOfMonth()->format('Y-m-d');
+        $this->end_date = $this->end_date ?? now()->endOfMonth()->format('Y-m-d');
     }
 
     /**
-     * ✅ MÉTODO ATUALIZADO: Abre modal via JavaScript
+     * ✅ Abrir Modal de Anulação
+     * Este método agora dispara o evento correto para o modal global
      */
-    public function delete($reciboId)
+    public function confirmarAnulacao($id)
     {
-        try {
-            $recibo = Recibo::findOrFail($reciboId);
-            
-            if (!$recibo->pode_ser_anulado) {
-                session()->flash('error', 'Este recibo não pode ser anulado.');
-                return;
-            }
-            
+        $recibo = Recibo::find($id);
 
-            // ✅ Dispara evento JavaScript para abrir modal
-            $this->dispatch('abrirModalAnulacao',
-                tipo: 'recibo',
-                id: $reciboId,
-                numero: $recibo->numero
-            );
+        if (! $recibo || ! $recibo->pode_ser_anulado) {
+            session()->flash('error', 'Este recibo não pode ser anulado.');
 
-        } catch (\Exception $e) {
-            session()->flash('error', 'Erro: ' . $e->getMessage());
+            return;
         }
-    }
 
-    public function eliminar($reciboId)
-    {
-        $recibo = Recibo::find($reciboId);
-
-        if ($recibo) {
-            $recibo->delete();
-            session()->flash('message', 'Recibo eliminado com sucesso.');
-        }
+        // Dispara evento para o JavaScript (alpine/script) que controla o modal
+        $this->dispatch('abrirModalAnulacao',
+            tipo: 'recibo',
+            id: $recibo->id,
+            numero: $recibo->numero
+        );
     }
 
     public function render()
     {
-        // ✅ MOSTRA APENAS RECIBOS ATIVOS (não retificados, não anulados)
         $query = Recibo::query()
-            ->where('retificado', false)
+            ->with(['cliente', 'user']) // Eager loading
+            ->where('retificado', false) // Apenas recibos válidos
             ->where('anulado', false);
 
         if ($this->start_date && $this->end_date) {
-            $start = $this->start_date.' 00:00:00';
-            $end = $this->end_date.' 23:59:59';
-            $query->whereBetween('created_at', [$start, $end]);
+            $query->whereBetween('data_emissao', [
+                $this->start_date.' 00:00:00',
+                $this->end_date.' 23:59:59',
+            ]);
         }
 
-        $recibos = $query
-            ->with(['fatura', 'cliente', 'user'])
-            ->orderByDesc('created_at')
-            ->paginate(15);
+        $recibos = $query->orderByDesc('created_at')->paginate(15);
 
+        // Totais para os Cards
         $totalRecibos = $recibos->total();
         $somaValores = $query->clone()->sum('valor');
-        $recibosDinheiro = $query->clone()->where('metodo_pagamento', 'dinheiro')->count();
-        $recibosMulticaixa = $query->where('metodo_pagamento', 'cartao')->count();
+
+        // Contagem por método (usando a query filtrada)
+        $qClone = $query->clone();
+        $recibosDinheiro = (clone $qClone)->where('metodo_pagamento', 'dinheiro')->count();
+        $recibosMulticaixa = (clone $qClone)->where('metodo_pagamento', 'cartao')->count();
+        $recibosTransf = (clone $qClone)->where('metodo_pagamento', 'transferencia')->count();
 
         return view('livewire.recibo-list', [
             'recibos' => $recibos,
-            'empresa' => $this->empresa,
             'totalRecibos' => $totalRecibos,
             'somaValores' => $somaValores,
             'recibosDinheiro' => $recibosDinheiro,
             'recibosMulticaixa' => $recibosMulticaixa,
+            'recibosTransf' => $recibosTransf,
         ]);
     }
 }

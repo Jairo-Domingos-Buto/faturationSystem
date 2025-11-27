@@ -17,6 +17,9 @@
     <link rel="stylesheet" href="../../assets//vendor/fonts/iconify-icons.css" />
     <!-- CDN Lucide -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    {{-- boxicon cdn--}}
+    <!-- Boxicons CDN -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -252,11 +255,7 @@
                                     <div data-i18n="Recibos">Recibos</div>
                                 </a>
                             </li>
-                            <li class="menu-item">
-                                <a href="{{ route('admin.faturas.recibo') }}" class="menu-link">
-                                    <div data-i18n="Faturas-Recibo">Faturas-Recibo</div>
-                                </a>
-                            </li>
+
                             <li class="menu-item">
                                 <a href="{{ route('admin.notas-credito') }}" class="menu-link">
                                     <div data-i18n="Notas Crédito">Notas de Crédito</div>

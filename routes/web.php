@@ -1,15 +1,16 @@
 <?php
 
 use App\Http\Controllers\AnulacaoController;
+use App\Http\Controllers\CadastraController;
 use App\Http\Controllers\ImpressaoController;
 use App\Http\Controllers\NotaCreditoController;
 use App\Http\Controllers\pdfFaturaController;
-use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\pdfReciboController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CadastraController;
-use Illuminate\Support\Facades\Password;
+use App\Http\Controllers\PerfilController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Route;
+
 /*
 |--------------------------------------------------------------------------
 | Rotas Públicas
@@ -105,7 +106,6 @@ Route::middleware(['auth'])
         Route::get('/notas-credito/anulacao/{tipo}/{id}/pdf', [AnulacaoController::class, 'gerarPDFAnulacao'])
             ->name('notas-credito.anulacao.pdf');
     });
-
 
 Route::get('/cadastrar', [CadastraController::class, 'index'])->name('Admin.cadastrar');
 Route::post('/cadastrar', [CadastraController::class, 'store'])->name('admin.cadastrar.store');

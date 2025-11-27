@@ -39,7 +39,7 @@
         /* Header usando float em vez de flex */
         .header {
             width: 100%;
-            margin-bottom: 10mm;
+
             padding-bottom: 5mm;
             overflow: hidden;
         }
@@ -93,7 +93,7 @@
         /* Invoice title */
         .invoice-title {
             text-align: right;
-            margin: 3mm 0;
+            margin: 2mm 0;
             clear: both;
         }
 
@@ -163,13 +163,14 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 5mm;
+            min-height: 470px;
             font-size: 8pt;
+            border-top: 2px solid #333;
+            border-bottom: 1px solid #333;
         }
 
         .items-table thead {
             background: #f3f4f6;
-            border-top: 2px solid #333;
-            border-bottom: 1px solid #333;
         }
 
         .items-table th {
@@ -375,7 +376,7 @@
         </div>
 
         <!-- META INFORMAÇÕES -->
-        <div class="invoice-meta-grid">
+        {{-- <div class="invoice-meta-grid">
             <table class="meta-table">
                 <tr>
                     <td class="meta-left">
@@ -400,7 +401,7 @@
                     </td>
                 </tr>
             </table>
-        </div>
+        </div> --}}
 
         <!-- TABELA DE PRODUTOS -->
         <table class="items-table">
@@ -423,7 +424,8 @@
                 <tr>
                     <td>
                         {{ $produto['id'] }}
-                        <span class="item-code">{{ $produto['codigo_barras'] }}</span>
+                        {{-- codigo de barras do produto --}}
+                        {{-- <span class="item-code">{{ $produto['codigo_barras'] }}</span> --}}
                     </td>
                     <td>{{ $produto['descricao'] }}</td>
                     <td class="text-right">{{ number_format($produto['quantidade'], 0) }}</td>

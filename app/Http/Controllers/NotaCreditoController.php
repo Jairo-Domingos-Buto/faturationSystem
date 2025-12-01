@@ -17,10 +17,12 @@ class NotaCreditoController extends Controller
     public function visualizarFatura($id)
     {
         try {
+            // ✅ Adicionado items.servico para suportar serviços
             $faturaOriginal = Fatura::with([
                 'cliente', 'user',
-                'items.produto', 'items.imposto', 'items.motivoIsencao',
-                'faturaRetificacao.items.produto', 'faturaRetificacao.items.imposto', 'faturaRetificacao.items.motivoIsencao',
+                'items.produto', 'items.servico', 'items.imposto', 'items.motivoIsencao',
+                'faturaRetificacao.items.produto', 'faturaRetificacao.items.servico',
+                'faturaRetificacao.items.imposto', 'faturaRetificacao.items.motivoIsencao',
             ])->findOrFail($id);
 
             if (! $faturaOriginal->retificada) {
@@ -44,8 +46,11 @@ class NotaCreditoController extends Controller
     public function downloadFatura($id)
     {
         try {
+            // ✅ Adicionado items.servico
             $faturaOriginal = Fatura::with([
-                'cliente', 'user', 'items.produto', 'faturaRetificacao',
+                'cliente', 'user',
+                'items.produto', 'items.servico',
+                'faturaRetificacao.items.produto', 'faturaRetificacao.items.servico',
             ])->findOrFail($id);
 
             if (! $faturaOriginal->retificada) {
@@ -74,8 +79,11 @@ class NotaCreditoController extends Controller
     public function visualizarRecibo($id)
     {
         try {
+            // ✅ Adicionado items.servico
             $reciboOriginal = Recibo::with([
-                'cliente', 'user', 'items.produto', 'reciboRetificacao.items.produto',
+                'cliente', 'user',
+                'items.produto', 'items.servico',
+                'reciboRetificacao.items.produto', 'reciboRetificacao.items.servico',
             ])->findOrFail($id);
 
             if (! $reciboOriginal->retificado) {
@@ -99,7 +107,12 @@ class NotaCreditoController extends Controller
     public function downloadRecibo($id)
     {
         try {
-            $reciboOriginal = Recibo::with(['cliente', 'reciboRetificacao'])->findOrFail($id);
+            // ✅ Adicionado items.servico
+            $reciboOriginal = Recibo::with([
+                'cliente', 'reciboRetificacao',
+                'items.produto', 'items.servico',
+                'reciboRetificacao.items.produto', 'reciboRetificacao.items.servico',
+            ])->findOrFail($id);
 
             if (! $reciboOriginal->retificado) {
                 return redirect()->back()->with('error', 'Este recibo não foi retificado.');
@@ -129,11 +142,17 @@ class NotaCreditoController extends Controller
     {
         $docRetificacao = $docOriginal->faturaRetificacao;
 
-        // Determinar o label correto baseado no tipo_documento (FT, FR)
+        // Análise de diferenças entre documentos (Útil para saber o que mudou na retificação)
+        $analise = [];
+        if ($docRetificacao) {
+            $analise = $this->analisarDiferencaProdutos($docOriginal->items, $docRetificacao->items);
+        }
+
+        // Determinar o label correto
         $tipoLabel = match ($docOriginal->tipo_documento) {
             'FR' => 'NOTA DE CRÉDITO - FATURA RECIBO',
             'FT' => 'NOTA DE CRÉDITO - FATURA',
-            'FP' => 'CORREÇÃO DE PROFORMA', // Raro acontecer retificação em FP, mas previne erro
+            'FP' => 'CORREÇÃO DE PROFORMA',
             default => 'NOTA DE CRÉDITO'
         };
 
@@ -151,6 +170,8 @@ class NotaCreditoController extends Controller
                 'usuario' => $docOriginal->user->name ?? 'Sistema',
             ],
 
+            'analise_alteracoes' => $analise,
+
             // Padronizado como 'documento_anulado'
             'documento_anulado' => [
                 'tipo' => $docOriginal->tipo_legivel ?? 'Documento',
@@ -163,7 +184,7 @@ class NotaCreditoController extends Controller
                 'resumo_impostos' => $this->calcularResumoImpostos($docOriginal->items),
             ],
 
-            // Padronizado como 'documento_retificacao' (A nova versão válida)
+            // Padronizado como 'documento_retificacao'
             'documento_retificacao' => $docRetificacao ? [
                 'numero' => $docRetificacao->numero,
                 'data_emissao' => $docRetificacao->data_emissao->format('d/m/Y'),
@@ -200,10 +221,10 @@ class NotaCreditoController extends Controller
                 'numero' => $reciboOriginal->numero,
                 'data_emissao' => $reciboOriginal->data_emissao->format('d/m/Y'),
                 'subtotal' => (float) ($reciboOriginal->subtotal ?? $reciboOriginal->valor),
-                'total_impostos' => 0, // Recibos RC geralmente não têm imposto discriminado assim
+                'total_impostos' => 0,
                 'total' => (float) $reciboOriginal->valor,
                 'produtos' => $this->formatarProdutos($reciboOriginal->items),
-                'resumo_impostos' => [], // Recibo de liquidação não incide IVA novamente
+                'resumo_impostos' => [],
             ],
 
             'documento_retificacao' => $reciboRetificacao ? [
@@ -249,25 +270,34 @@ class NotaCreditoController extends Controller
         ];
     }
 
+    /**
+     * ✅ Lógica unificada para formatar lista de itens (Produtos e Serviços)
+     */
     private function formatarProdutos($items)
     {
         $produtos = [];
         foreach ($items as $item) {
-            // Suporte para ambos os models (FaturaItem e ReciboItem)
-            $produtoRelacao = $item->produto;
+            // Verifica se é Serviço ou Produto
+            $isServico = ! empty($item->servico_id);
+            $entidade = $item->produto ?? $item->servico;
 
-            // Taxas
-            if ($item->motivo_isencaos_id) {
+            // Determina a taxa (se não estiver salva explícita no item)
+            if ($item->motivo_isencaos_id || ($isServico && ($item->taxa_iva ?? 0) == 0)) {
                 $taxa = 0;
             } elseif ($item->imposto_id) {
                 $taxa = (float) $item->taxa_iva;
             } else {
-                $taxa = 14; // Default
+                // Default: se for produto sem info 14%, se serviço sem info 0% ou 14% dependendo da sua regra.
+                // Assumindo lógica do POV:
+                $taxa = $item->taxa_iva ?? 14;
             }
 
+            // Define o Código
+            $codigo = $isServico ? 'SERV' : ($item->codigo_barras ?? ($entidade->codigo_barras ?? '-'));
+
             $produtos[] = [
-                'codigo' => $item->codigo_barras ?? ($produtoRelacao->codigo_barras ?? '-'),
-                'descricao' => $item->descricao ?? ($produtoRelacao->descricao ?? 'Item'),
+                'codigo' => $codigo,
+                'descricao' => $item->descricao ?? ($entidade->descricao ?? 'Item'),
                 'quantidade' => $item->quantidade,
                 'preco_unitario' => (float) $item->preco_unitario,
                 'taxa_iva' => $taxa,
@@ -293,7 +323,7 @@ class NotaCreditoController extends Controller
                     'valor_imposto' => 0,
                 ];
             }
-            // Usa ?? 0 para prevenir erros em recibos legados que podem não ter esses campos
+            // Usa ?? 0 para prevenir erros
             $subtotalItem = $item->subtotal ?? ($item->preco_unitario * $item->quantidade);
             $ivaItem = $item->valor_iva ?? ($taxa > 0 ? $subtotalItem * ($taxa / 100) : 0);
 
@@ -305,7 +335,7 @@ class NotaCreditoController extends Controller
     }
 
     /**
-     * ✅ Analisar Diferença entre Produtos (Original vs Retificação)
+     * ✅ Análise robusta de diferenças para Itens Mistos (Prod + Serv)
      */
     private function analisarDiferencaProdutos($itemsOriginais, $itemsRetificacao)
     {
@@ -315,56 +345,67 @@ class NotaCreditoController extends Controller
             'produtos_alterados' => [],
         ];
 
-        // Mapear produtos originais por ID
+        // Função para gerar Chave Única para comparação
+        $getKey = function ($item) {
+            if ($item->produto_id) {
+                return 'PROD-'.$item->produto_id;
+            }
+            if ($item->servico_id) {
+                return 'SERV-'.$item->servico_id;
+            }
+
+            return 'ID-'.$item->id; // Fallback
+        };
+
+        // Mapear originais
         $mapaOriginais = [];
         foreach ($itemsOriginais as $item) {
-            $mapaOriginais[$item->produto_id] = $item;
+            $mapaOriginais[$getKey($item)] = $item;
         }
 
-        // Mapear produtos retificados por ID
+        // Mapear novos e checar adições/alterações
         $mapaRetificacao = [];
         foreach ($itemsRetificacao as $item) {
-            $mapaRetificacao[$item->produto_id] = $item;
+            $key = $getKey($item);
+            $mapaRetificacao[$key] = $item;
+
+            if (! isset($mapaOriginais[$key])) {
+                // Novo Item
+                $analise['produtos_adicionados'][] = [
+                    'descricao' => $item->descricao,
+                    'quantidade' => $item->quantidade,
+                    'total' => (float) $item->total,
+                ];
+            } else {
+                // Item Existente - Checar mudanças
+                $itemOriginal = $mapaOriginais[$key];
+
+                // Compara Quantidade e Preço (com tolerância float)
+                if ($itemOriginal->quantidade != $item->quantidade ||
+                    abs($itemOriginal->preco_unitario - $item->preco_unitario) > 0.01) {
+
+                    $analise['produtos_alterados'][] = [
+                        'descricao' => $item->descricao,
+                        'quantidade_original' => $itemOriginal->quantidade,
+                        'quantidade_nova' => $item->quantidade,
+                        'preco_original' => (float) $itemOriginal->preco_unitario,
+                        'preco_novo' => (float) $item->preco_unitario,
+                        'total_original' => (float) $itemOriginal->total,
+                        'total_novo' => (float) $item->total,
+                        'diferenca' => (float) $item->total - (float) $itemOriginal->total,
+                    ];
+                }
+            }
         }
 
-        // Identificar produtos removidos
-        foreach ($mapaOriginais as $produtoId => $itemOriginal) {
-            if (! isset($mapaRetificacao[$produtoId])) {
+        // Checar Removidos
+        foreach ($mapaOriginais as $key => $itemOriginal) {
+            if (! isset($mapaRetificacao[$key])) {
                 $analise['produtos_removidos'][] = [
                     'descricao' => $itemOriginal->descricao,
                     'quantidade' => $itemOriginal->quantidade,
                     'total' => (float) $itemOriginal->total,
                 ];
-            }
-        }
-
-        // Identificar produtos adicionados e alterados
-        foreach ($mapaRetificacao as $produtoId => $itemRetificacao) {
-            if (! isset($mapaOriginais[$produtoId])) {
-                // Produto adicionado
-                $analise['produtos_adicionados'][] = [
-                    'descricao' => $itemRetificacao->descricao,
-                    'quantidade' => $itemRetificacao->quantidade,
-                    'total' => (float) $itemRetificacao->total,
-                ];
-            } else {
-                // Produto existente - verificar alterações
-                $itemOriginal = $mapaOriginais[$produtoId];
-
-                if ($itemOriginal->quantidade != $itemRetificacao->quantidade ||
-                    $itemOriginal->preco_unitario != $itemRetificacao->preco_unitario) {
-
-                    $analise['produtos_alterados'][] = [
-                        'descricao' => $itemRetificacao->descricao,
-                        'quantidade_original' => $itemOriginal->quantidade,
-                        'quantidade_nova' => $itemRetificacao->quantidade,
-                        'preco_original' => (float) $itemOriginal->preco_unitario,
-                        'preco_novo' => (float) $itemRetificacao->preco_unitario,
-                        'total_original' => (float) $itemOriginal->total,
-                        'total_novo' => (float) $itemRetificacao->total,
-                        'diferenca' => (float) $itemRetificacao->total - (float) $itemOriginal->total,
-                    ];
-                }
             }
         }
 

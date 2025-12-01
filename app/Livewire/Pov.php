@@ -18,16 +18,16 @@ class Pov extends Component
     // --- Configuração do Documento ---
     public $tipoDocumento = 'FT'; // Opções: FT, FR, FP ou RC
 
-    public $natureza = 'produto'; // produto ou servico
+    public $natureza = 'produto'; // 'produto' ou 'servico'
 
     // --- Dados de Pagamento e Datas ---
-    public $metodoPagamento = 'dinheiro'; // Obrigatório para FR e RC
+    public $metodoPagamento = 'dinheiro';
 
-    public $dataVencimento;               // Obrigatório para FT e FP
+    public $dataVencimento;
 
-    public $totalRecebido = 0;            // Valor entregue pelo cliente
+    public $totalRecebido = 0;
 
-    public $troco = 0;                    // Troco calculado
+    public $troco = 0;
 
     // --- Modo Retificação ---
     public $modoRetificacao = false;
@@ -49,12 +49,12 @@ class Pov extends Component
 
     public $showModal = false;
 
-    // --- Produtos e Carrinho ---
-    public $produtos = [];
+    // --- Listagens e Carrinho ---
+    public $produtos = []; // Lista de produtos do DB
 
-    public $servicos = [];
+    public $servicos = []; // Lista de serviços do DB
 
-    public $produtosCarrinho = [];
+    public $produtosCarrinho = []; // Itens no carrinho (Misturados)
 
     public $searchProdutoTerm = '';
 
@@ -75,11 +75,14 @@ class Pov extends Component
 
     public function mount()
     {
+        // Define vencimento padrão (30 dias)
         $this->dataVencimento = Carbon::now()->addDays(30)->format('Y-m-d');
+
         $this->carregarClientes();
         $this->carregarProdutos();
         $this->carregarServicos();
 
+        // Verificar parâmetros de retificação via URL
         $retificar_id = request()->get('retificar_id');
         $tipo = request()->get('tipo');
 
@@ -94,7 +97,6 @@ class Pov extends Component
     // WATCHERS (ATUALIZAÇÃO EM TEMPO REAL)
     // =========================================================================
 
-    // Ao mudar o tipo de documento, ajusta vencimentos
     public function updatedTipoDocumento($value)
     {
         if ($value === 'FR' || $value === 'RC') {
@@ -117,9 +119,18 @@ class Pov extends Component
         $this->carregarClientes();
     }
 
+    public function updatedSearchProdutoTerm()
+    {
+        if ($this->natureza === 'produto') {
+            $this->carregarProdutos();
+        } else {
+            $this->carregarServicos();
+        }
+    }
+
     public function updatedNatureza()
     {
-        // Recarrega a lista ao trocar de natureza
+        $this->searchProdutoTerm = ''; // Limpa busca ao trocar aba
         if ($this->natureza === 'produto') {
             $this->carregarProdutos();
         } else {
@@ -128,7 +139,7 @@ class Pov extends Component
     }
 
     // =========================================================================
-    // LÓGICA DO CARRINHO
+    // LÓGICA DO CARRINHO E TOTAIS
     // =========================================================================
 
     public function calcularTotais()
@@ -138,13 +149,16 @@ class Pov extends Component
         $this->resumoImpostos = [];
 
         foreach ($this->produtosCarrinho as $item) {
-            // Busca o produto ou serviço baseado na natureza
-            if ($item['natureza'] === 'servico') {
-                $entidade = Servico::with(['imposto', 'motivoIsencao'])->find($item['id']);
+            $entidade = null;
+
+            // Definição da Entidade Baseada na Natureza do Item do Carrinho
+            if (isset($item['natureza']) && $item['natureza'] === 'servico') {
+                $entidade = Servico::find($item['id']);
             } else {
                 $entidade = Produto::with(['imposto', 'motivoIsencao'])->find($item['id']);
             }
 
+            // Se o item foi deletado do banco, ignoramos o calculo
             if (! $entidade) {
                 continue;
             }
@@ -152,22 +166,29 @@ class Pov extends Component
             $subtotalItem = $item['preco_venda'] * $item['quantidade'];
             $this->subtotal += $subtotalItem;
 
-            // Determinar taxa e isenção
-            if ($entidade->motivoIsencao) {
+            // --- LÓGICA DE IMPOSTOS ---
+            $taxa = 14;
+            $descricaoImposto = 'IVA';
+            $motivoIsencao = null;
+            $codigoMotivo = null;
+
+            if ($item['natureza'] === 'servico') {
+                // SERVIÇO: Forçar isenção (conforme regra de negócio)
                 $taxa = 0;
                 $descricaoImposto = 'Isento';
-                $motivoIsencao = $entidade->motivoIsencao->descricao;
-                $codigoMotivo = $entidade->motivoIsencao->codigo;
-            } elseif ($entidade->imposto) {
-                $taxa = (float) $entidade->imposto->taxa;
-                $descricaoImposto = $entidade->imposto->descricao;
-                $motivoIsencao = null;
-                $codigoMotivo = null;
+                $motivoIsencao = 'Prestação de Serviços';
+                $codigoMotivo = 'M02'; // Ajuste conforme tabela da AGT
             } else {
-                $taxa = 14;
-                $descricaoImposto = 'IVA';
-                $motivoIsencao = null;
-                $codigoMotivo = null;
+                // PRODUTO: Lógica normal do cadastro
+                if ($entidade->motivoIsencao) {
+                    $taxa = 0;
+                    $descricaoImposto = 'Isento';
+                    $motivoIsencao = $entidade->motivoIsencao->descricao;
+                    $codigoMotivo = $entidade->motivoIsencao->codigo;
+                } elseif ($entidade->imposto) {
+                    $taxa = (float) $entidade->imposto->taxa;
+                    $descricaoImposto = $entidade->imposto->descricao;
+                }
             }
 
             // Agrupamento para resumo fiscal
@@ -203,13 +224,14 @@ class Pov extends Component
     {
         $recebido = floatval(str_replace(',', '.', str_replace(' ', '', $this->totalRecebido)));
 
-        // Troco só se aplica a Fatura-Recibo ou Recibo
         if (in_array($this->tipoDocumento, ['FR', 'RC']) && $recebido > 0) {
             $this->troco = max(0, $recebido - $this->total);
         } else {
             $this->troco = 0;
         }
     }
+
+    // --- Adição de Itens ---
 
     public function adicionarProduto($produtoId)
     {
@@ -218,12 +240,13 @@ class Pov extends Component
             return;
         }
 
-        // Se for PROFORMA, pode adicionar sem estoque. Se não, valida.
-        $permiteSemEstoque = ($this->tipoDocumento === 'FP' || $this->natureza === 'servico');
+        $permiteSemEstoque = ($this->tipoDocumento === 'FP'); // Proforma aceita sem stock
 
-        $index = collect($this->produtosCarrinho)->search(fn ($item) => $item['id'] == $produtoId);
+        $index = collect($this->produtosCarrinho)->search(fn ($item) => $item['id'] == $produtoId && $item['natureza'] === 'produto'
+        );
 
         if ($index !== false) {
+            // Item já existe no carrinho, incrementa
             $qtdAtual = $this->produtosCarrinho[$index]['quantidade'];
             $estoqueDisponivel = $this->produtosCarrinho[$index]['estoque_disponivel'];
 
@@ -235,7 +258,7 @@ class Pov extends Component
                 return;
             }
         } else {
-            // Se for venda (FT/FR) e estoque zerado, bloqueia (exceto serviços)
+            // Item novo
             if (! $permiteSemEstoque && $produto->estoque <= 0) {
                 session()->flash('error', 'Produto sem estoque.');
 
@@ -249,14 +272,13 @@ class Pov extends Component
                 'preco_venda' => (float) $produto->preco_venda,
                 'quantidade' => 1,
                 'estoque_disponivel' => $produto->estoque,
-                'natureza' => $this->natureza,
+                'natureza' => 'produto', // IMPORTANTE
             ];
         }
 
         $this->calcularTotais();
     }
 
-    // adicionar servico
     public function adicionarServico($servicoId)
     {
         $servico = Servico::find($servicoId);
@@ -264,6 +286,7 @@ class Pov extends Component
             return;
         }
 
+        // Procura se já tem esse serviço no carrinho (baseado em ID E Natureza)
         $index = collect($this->produtosCarrinho)->search(fn ($item) => $item['id'] == $servicoId && $item['natureza'] === 'servico'
         );
 
@@ -273,11 +296,11 @@ class Pov extends Component
             $this->produtosCarrinho[] = [
                 'id' => $servico->id,
                 'descricao' => $servico->descricao,
-                'codigo_barras' => '', // Serviços não têm código de barras
-                'preco_venda' => (float) $servico->preco_venda,
+                'codigo_barras' => '', // Serviços não têm EAN
+                'preco_venda' => (float) ($servico->valor ?? $servico->preco_venda),
                 'quantidade' => 1,
-                'estoque_disponivel' => $servico->estoque ?? 999999,
-                'natureza' => 'servico',
+                'estoque_disponivel' => 999999, // Stock infinito
+                'natureza' => 'servico', // IMPORTANTE
             ];
         }
 
@@ -294,11 +317,11 @@ class Pov extends Component
         $nova = $item['quantidade'] + $valor;
         $est = $item['estoque_disponivel'];
 
-        // Serviços sempre permitem
-        $permiteSemEstoque = ($this->tipoDocumento === 'FP' || $item['natureza'] === 'servico');
+        // Se for serviço ou proforma, ignora limite de stock
+        $ignorarStock = ($this->tipoDocumento === 'FP' || $item['natureza'] === 'servico');
 
         if ($nova > 0) {
-            if ($permiteSemEstoque || $nova <= $est) {
+            if ($ignorarStock || $nova <= $est) {
                 $this->produtosCarrinho[$index]['quantidade'] = $nova;
                 $this->calcularTotais();
             } else {
@@ -317,12 +340,11 @@ class Pov extends Component
     }
 
     // =========================================================================
-    // FINALIZAÇÃO DE VENDA (FT, FR, FP, RC)
+    // FINALIZAÇÃO DE VENDA
     // =========================================================================
 
     public function finalizarVenda()
     {
-        // 1. Validações Básicas
         if (! $this->clienteSelecionado) {
             session()->flash('error', 'Selecione um cliente.');
 
@@ -339,11 +361,10 @@ class Pov extends Component
             return;
         }
 
-        // 2. Validação de Pagamento para Fatura-Recibo
-        if ($this->tipoDocumento === 'FR') {
+        // Validação Fatura-Recibo e Recibo (Dinheiro)
+        if (in_array($this->tipoDocumento, ['FR', 'RC']) && $this->metodoPagamento === 'dinheiro') {
             $recebido = floatval(str_replace(',', '.', str_replace(' ', '', $this->totalRecebido)));
-            // Opcional: permitir fechar sem valor exato se for TPA, mas para Dinheiro geralmente valida
-            if ($this->metodoPagamento === 'dinheiro' && $recebido < $this->total) {
+            if ($recebido < $this->total) {
                 session()->flash('error', 'Valor recebido inferior ao total.');
 
                 return;
@@ -369,21 +390,16 @@ class Pov extends Component
 
     private function processarNovoDocumento()
     {
-        // Caso Especial: Recibo de Liquidação (RC) isolado
+        // 1. Caso Especial: Recibo Isolado (RC)
         if ($this->tipoDocumento === 'RC') {
             $this->gerarReciboIsolado();
 
             return;
         }
 
-        // Fatura (FT), Fatura-Recibo (FR) ou Proforma (FP)
+        // 2. Faturas (FT, FR, FP)
         $numeroGerado = Fatura::gerarProximoNumero($this->tipoDocumento);
-
-        // Define estado inicial
-        $estado = 'emitida';
-        if ($this->tipoDocumento === 'FR') {
-            $estado = 'paga';
-        } // Nasce paga
+        $estado = ($this->tipoDocumento === 'FR') ? 'paga' : 'emitida';
 
         $doc = Fatura::create([
             'numero' => $numeroGerado,
@@ -402,19 +418,12 @@ class Pov extends Component
 
         $this->salvarItensFatura($doc);
 
-        // Se NÃO for Proforma, movimenta estoque
+        // Movimentação de Estoque (Se não for Proforma e não for Serviço)
         if ($this->tipoDocumento !== 'FP') {
             $this->atualizarEstoque('decrementar');
         }
 
-        $nomeTipo = match ($this->tipoDocumento) {
-            'FT' => 'Fatura',
-            'FR' => 'Fatura-Recibo',
-            'FP' => 'Proforma',
-            default => 'Documento'
-        };
-
-        session()->flash('success', "$nomeTipo $numeroGerado emitido(a) com sucesso!");
+        session()->flash('success', "{$this->tipoDocumento} {$numeroGerado} emitido com sucesso!");
         $this->resetarFormulario();
     }
 
@@ -433,19 +442,21 @@ class Pov extends Component
 
         $this->salvarItensRecibo($recibo);
 
-        session()->flash('success', "Recibo $numero gerado!");
+        session()->flash('success', "Recibo {$numero} gerado!");
         $this->resetarFormulario();
     }
 
     // =========================================================================
-    // RETIFICAÇÃO
+    // RETIFICAÇÃO (Lógica Mista Produto/Serviço)
     // =========================================================================
 
     private function processarRetificacao()
     {
-        // Se for Recibo Legado
         if ($this->tipoDocumento === 'RC' || $this->tipoDocumento === 'recibo') {
+            // --- RETIFICAR RECIBO ---
             $original = Recibo::with('items')->findOrFail($this->documentoOriginalId);
+
+            // Devolve estoque apenas de PRODUTOS (Ignora serviços)
             $this->devolverEstoqueRecibo($original);
 
             $novoNumero = 'RC-RECT-'.date('Ymd').'-'.rand(1000, 9999);
@@ -457,20 +468,26 @@ class Pov extends Component
                 'valor' => $this->total,
                 'metodo_pagamento' => $this->metodoPagamento,
                 'recibo_original_id' => $this->documentoOriginalId,
+                'observacoes' => 'Retificação: '.$this->motivoRetificacao,
             ]);
+
             $this->salvarItensRecibo($novo);
+
+            // Baixa novo estoque (se houver novos produtos físicos adicionados)
+            $this->atualizarEstoque('decrementar');
+
             $original->marcarComoRetificado($novo->id, $this->motivoRetificacao);
 
         } else {
-            // Fatura, Fatura-Recibo ou Proforma
+            // --- RETIFICAR FATURA (FT/FR/FP) ---
             $original = Fatura::with('items')->findOrFail($this->documentoOriginalId);
 
-            // Devolve estoque antigo (se não for proforma)
+            // Devolve estoque antigo (Apenas Produtos físicos)
             if ($original->tipo_documento !== 'FP') {
-                $original->devolverEstoque();
+                $original->devolverEstoque(); // Esta função no Model Fatura deve verificar se é produto
             }
 
-            // Gera novo número mantendo o tipo original
+            // Gera nova fatura
             $tipo = $original->tipo_documento;
             $novoNumero = Fatura::gerarProximoNumero($tipo);
 
@@ -486,18 +503,17 @@ class Pov extends Component
                 'subtotal' => $this->subtotal,
                 'total_impostos' => $this->iva,
                 'total' => $this->total,
-                'fatura_original_id' => $this->documentoOriginalId, // Link para original
+                'fatura_original_id' => $this->documentoOriginalId,
                 'observacoes' => 'Retificação: '.$this->motivoRetificacao,
             ]);
 
             $this->salvarItensFatura($novoDoc);
 
-            // Baixa novo estoque (se não for proforma)
+            // Baixa novo estoque (Apenas produtos fisicos)
             if ($tipo !== 'FP') {
                 $this->atualizarEstoque('decrementar');
             }
 
-            // Marca a antiga
             $original->marcarComoRetificada($novoDoc->id, $this->motivoRetificacao);
         }
 
@@ -506,17 +522,15 @@ class Pov extends Component
     }
 
     // =========================================================================
-    // HELPERS DE BANCO DE DADOS
+    // SALVAMENTO NO BANCO (Itens com suporte a ID Misto)
     // =========================================================================
 
     private function salvarItensFatura(Fatura $documento)
     {
         foreach ($this->produtosCarrinho as $item) {
-            if ($item['natureza'] === 'servico') {
-                $entidade = Servico::with(['imposto', 'motivoIsencao'])->find($item['id']);
-            } else {
-                $entidade = Produto::with(['imposto', 'motivoIsencao'])->find($item['id']);
-            }
+            $entidade = ($item['natureza'] === 'servico')
+                ? Servico::find($item['id'])
+                : Produto::with(['imposto', 'motivoIsencao'])->find($item['id']);
 
             if ($entidade) {
                 $this->criarItem($documento->id, $entidade, $item, FaturaItem::class, 'fatura_id');
@@ -527,11 +541,9 @@ class Pov extends Component
     private function salvarItensRecibo(Recibo $recibo)
     {
         foreach ($this->produtosCarrinho as $item) {
-            if ($item['natureza'] === 'servico') {
-                $entidade = Servico::with(['imposto', 'motivoIsencao'])->find($item['id']);
-            } else {
-                $entidade = Produto::with(['imposto', 'motivoIsencao'])->find($item['id']);
-            }
+            $entidade = ($item['natureza'] === 'servico')
+               ? Servico::find($item['id'])
+               : Produto::with(['imposto', 'motivoIsencao'])->find($item['id']);
 
             if ($entidade) {
                 $this->criarItem($recibo->id, $entidade, $item, ReciboItem::class, 'recibo_id');
@@ -539,18 +551,28 @@ class Pov extends Component
         }
     }
 
-    private function criarItem($docId, $produto, $itemCarrinho, $modelClass, $fk)
+    private function criarItem($docId, $entidade, $itemCarrinho, $modelClass, $fk)
     {
-        $taxa = 14;
-        $impostoId = null;
-        $motivoId = null;
-
-        if ($produto->motivoIsencao) {
+        // Padrão Serviço
+        if ($itemCarrinho['natureza'] === 'servico') {
             $taxa = 0;
-            $motivoId = $produto->motivo_isencaos_id;
-        } elseif ($produto->imposto) {
-            $taxa = (float) $produto->imposto->taxa;
-            $impostoId = $produto->imposto_id;
+            $motivoId = 1; // Ajuste ID do motivo "Transmissão Isenta"
+            $impostoId = null;
+        } else {
+            // Padrão Produto
+            if ($entidade->motivoIsencao) {
+                $taxa = 0;
+                $motivoId = $entidade->motivo_isencaos_id;
+                $impostoId = null;
+            } elseif ($entidade->imposto) {
+                $taxa = (float) $entidade->imposto->taxa;
+                $impostoId = $entidade->imposto_id;
+                $motivoId = null;
+            } else {
+                $taxa = 14;
+                $impostoId = null;
+                $motivoId = null;
+            }
         }
 
         $subtotal = $itemCarrinho['preco_venda'] * $itemCarrinho['quantidade'];
@@ -558,9 +580,11 @@ class Pov extends Component
 
         $modelClass::create([
             $fk => $docId,
-            'produto_id' => $produto->id,
-            'descricao' => $produto->descricao,
-            'codigo_barras' => $produto->codigo_barras,
+            // Preenche um e deixa o outro null
+            'produto_id' => ($itemCarrinho['natureza'] === 'produto') ? $entidade->id : null,
+            'servico_id' => ($itemCarrinho['natureza'] === 'servico') ? $entidade->id : null,
+            'descricao' => $entidade->descricao,
+            'codigo_barras' => $itemCarrinho['codigo_barras'],
             'quantidade' => $itemCarrinho['quantidade'],
             'preco_unitario' => $itemCarrinho['preco_venda'],
             'subtotal' => $subtotal,
@@ -572,14 +596,19 @@ class Pov extends Component
         ]);
     }
 
+    // =========================================================================
+    // CONTROLE DE ESTOQUE (SEGURO PARA SERVIÇOS)
+    // =========================================================================
+
     private function atualizarEstoque($acao)
     {
         foreach ($this->produtosCarrinho as $item) {
-            // Serviços não afetam estoque
-            if ($item['natureza'] === 'servico') {
+            // Serviços não têm controle de estoque -> PULAR
+            if (isset($item['natureza']) && $item['natureza'] === 'servico') {
                 continue;
             }
 
+            // Apenas Produtos
             $produto = Produto::find($item['id']);
             if ($produto) {
                 if ($acao == 'decrementar') {
@@ -594,53 +623,78 @@ class Pov extends Component
     private function devolverEstoqueRecibo($recibo)
     {
         foreach ($recibo->items as $item) {
-            $produto = Produto::find($item->produto_id);
-            if ($produto) {
-                $produto->increment('estoque', $item->quantidade);
+            // Validação Crucial: Só devolve se tiver ID de Produto e NÃO de Serviço
+            if ($item->produto_id) {
+                $produto = Produto::find($item->produto_id);
+                if ($produto) {
+                    $produto->increment('estoque', $item->quantidade);
+                }
             }
         }
     }
 
     // =========================================================================
-    // UTILITÁRIOS (MODAIS, CARREGAMENTOS, RESET)
+    // UTILITÁRIOS: Carregamento para Retificação (Smart Loader)
     // =========================================================================
 
     public function carregarDocumentoParaRetificacao($id, $tipo)
     {
         try {
-            // Tenta carregar Fatura (FT, FR, FP)
-            if (in_array($tipo, ['fatura', 'FT', 'FR', 'FP'])) {
-                $doc = Fatura::with(['cliente', 'items.produto'])->findOrFail($id);
-                if (! $doc->pode_ser_retificada) {
-                    session()->flash('error', 'Documento não pode ser retificado.');
+            $doc = null;
 
-                    return redirect()->back();
-                }
+            if (in_array($tipo, ['fatura', 'FT', 'FR', 'FP'])) {
+                // Carrega relações completas
+                $doc = Fatura::with(['cliente', 'items.produto', 'items.servico'])->findOrFail($id);
                 $this->tipoDocumento = $doc->tipo_documento;
             } else {
-                // Legado Recibo
-                $doc = Recibo::with(['cliente', 'items.produto'])->findOrFail($id);
+                $doc = Recibo::with(['cliente', 'items.produto', 'items.servico'])->findOrFail($id);
                 $this->tipoDocumento = 'RC';
             }
 
             $this->modoRetificacao = true;
             $this->documentoOriginalId = $doc->id;
             $this->documentoOriginalNumero = $doc->numero;
-            $this->selecionarCliente($doc->cliente_id);
 
-            // Popula carrinho
-            foreach ($doc->items as $item) {
-                $p = $item->produto;
-                $this->produtosCarrinho[] = [
-                    'id' => $p->id,
-                    'descricao' => $p->descricao,
-                    'codigo_barras' => $p->codigo_barras,
-                    'preco_venda' => (float) $item->preco_unitario,
-                    'quantidade' => $item->quantidade,
-                    'estoque_disponivel' => $p->estoque + $item->quantidade,
-                    'natureza' => 'produto',
-                ];
+            if ($doc->cliente_id) {
+                $this->selecionarCliente($doc->cliente_id);
             }
+
+            // Recriação do Carrinho Inteligente
+            $this->produtosCarrinho = [];
+
+            foreach ($doc->items as $item) {
+                // Cenário A: Serviço
+                if ($item->servico_id && $item->servico) {
+                    $s = $item->servico;
+                    $this->produtosCarrinho[] = [
+                        'id' => $s->id,
+                        'descricao' => $item->descricao,
+                        'codigo_barras' => '',
+
+                        'preco_venda' => (float) $item->preco_unitario,
+                        'quantidade' => $item->quantidade,
+                        'estoque_disponivel' => 999999,
+                        'natureza' => 'servico',
+                    ];
+                }
+                // Cenário B: Produto
+                elseif ($item->produto_id && $item->produto) {
+                    $p = $item->produto;
+                    // Stock Virtual = Stock Atual na prateleira + o que o cliente está devolvendo
+                    $stockVirtual = $p->estoque + $item->quantidade;
+
+                    $this->produtosCarrinho[] = [
+                        'id' => $p->id,
+                        'descricao' => $item->descricao,
+                        'codigo_barras' => $p->codigo_barras,
+                        'preco_venda' => (float) $item->preco_unitario,
+                        'quantidade' => $item->quantidade,
+                        'estoque_disponivel' => $stockVirtual,
+                        'natureza' => 'produto',
+                    ];
+                }
+            }
+
             $this->calcularTotais();
 
         } catch (\Exception $e) {
@@ -665,7 +719,6 @@ class Pov extends Component
 
     public function exportarDadosFatura()
     {
-        // Redireciona para download da última fatura do usuário
         $ultima = Fatura::where('user_id', auth()->id())->latest()->first();
         if ($ultima) {
             return redirect()->route('admin.fatura.download', $ultima->id);
@@ -674,18 +727,23 @@ class Pov extends Component
 
     public function carregarClientes()
     {
-        $this->clientes = Cliente::when($this->searchClienteTerm, fn ($q) => $q->where('nome', 'like', '%'.$this->searchClienteTerm.'%')->orWhere('nif', 'like', '%'.$this->searchClienteTerm.'%'))->limit(10)->get();
+        $this->clientes = Cliente::when($this->searchClienteTerm, fn ($q) => $q->where('nome', 'like', '%'.$this->searchClienteTerm.'%')
+            ->orWhere('nif', 'like', '%'.$this->searchClienteTerm.'%'))
+            ->limit(10)->get();
     }
 
     public function carregarProdutos()
     {
-        $this->produtos = Produto::with(['categoria'])->when($this->searchProdutoTerm, fn ($q) => $q->where('descricao', 'like', '%'.$this->searchProdutoTerm.'%')->orWhere('codigo_barras', 'like', '%'.$this->searchProdutoTerm.'%'))->limit(20)->get();
+        $this->produtos = Produto::with(['categoria'])->when($this->searchProdutoTerm, fn ($q) => $q->where('descricao', 'like', '%'.$this->searchProdutoTerm.'%')
+            ->orWhere('codigo_barras', 'like', '%'.$this->searchProdutoTerm.'%'))
+            ->limit(20)->get();
+
     }
 
     public function carregarServicos()
     {
-        $this->servicos = Servico::when($this->searchProdutoTerm, fn ($q) => $q->where('descricao', 'like', '%'.$this->searchProdutoTerm.'%')
-        )->limit(20)->get();
+        $this->servicos = Servico::when($this->searchProdutoTerm, fn ($q) => $q->where('descricao', 'like', '%'.$this->searchProdutoTerm.'%'))
+            ->limit(20)->get();
     }
 
     public function abrirModal()
@@ -712,6 +770,13 @@ class Pov extends Component
     public function alterarNatureza($t)
     {
         $this->natureza = $t;
+        // Limpar a busca ao trocar para não confundir
+        $this->searchProdutoTerm = '';
+        if ($t === 'produto') {
+            $this->carregarProdutos();
+        } else {
+            $this->carregarServicos();
+        }
     }
 
     public function render()

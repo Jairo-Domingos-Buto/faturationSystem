@@ -10,6 +10,7 @@ class FaturaItem extends Model
         'fatura_id',
         'produto_id',
         'descricao',
+        'servico_id',
         'codigo_barras',
         'quantidade',
         'preco_unitario',
@@ -48,5 +49,10 @@ class FaturaItem extends Model
     public function motivoIsencao()
     {
         return $this->belongsTo(MotivoIsencao::class, 'motivo_isencaos_id');
+    }
+
+    public function servico()
+    {
+        return $this->belongsTo(Servico::class);
     }
 }

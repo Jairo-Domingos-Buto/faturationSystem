@@ -169,9 +169,16 @@
                         <!-- Lista de Resultados (Esquerda - 60%) -->
                         <div
                             class="w-3/5 overflow-y-auto p-4 border-r border-slate-100 custom-scrollbar bg-slate-50/50">
-                            <h4 class="text-xs font-bold text-slate-400 uppercase mb-3 ml-1">Disponíveis ({{
-                                count($produtos) }})</h4>
+                            <h4 class="text-xs font-bold text-slate-400 uppercase mb-3 ml-1">
+                                @if($natureza === 'produto')
+                                Produtos Disponíveis ({{ count($produtos) }})
+                                @else
+                                Serviços Disponíveis ({{ count($servicos) }})
+                                @endif
+                            </h4>
 
+                            <!-- LISTAGEM DE PRODUTOS -->
+                            @if($natureza === 'produto')
                             @if(count($produtos) > 0)
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 @foreach($produtos as $produto)
@@ -181,20 +188,23 @@
 
                                     <div
                                         class="font-bold text-slate-700 text-sm line-clamp-2 group-hover:text-blue-700 mb-1">
-                                        {{ $produto->descricao }}</div>
+                                        {{ $produto->descricao }}
+                                    </div>
 
                                     <div class="flex justify-between items-end mt-2">
                                         <div>
                                             <div
                                                 class="text-[10px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded w-fit mb-1">
-                                                {{ $produto->codigo_barras }}</div>
+                                                {{ $produto->codigo_barras }}
+                                            </div>
                                             <span
                                                 class="text-xs {{ $produto->estoque > 0 ? 'text-green-600 bg-green-50' : 'text-red-500 bg-red-50' }} px-1.5 py-0.5 rounded font-bold">
                                                 {{ $produto->estoque }} un
                                             </span>
                                         </div>
-                                        <span class="text-lg font-bold text-slate-800">{{
-                                            number_format($produto->preco_venda, 2, ',', '.') }}</span>
+                                        <span class="text-lg font-bold text-slate-800">
+                                            {{ number_format($produto->preco_venda, 2, ',', '.') }}
+                                        </span>
                                     </div>
                                 </button>
                                 @endforeach
@@ -205,67 +215,122 @@
                                 <p class="text-sm">Nenhum produto encontrado</p>
                             </div>
                             @endif
+                            @endif
+
+                            <!-- LISTAGEM DE SERVIÇOS -->
+                            @if($natureza === 'servico')
+                            @if(count($servicos) > 0)
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                @foreach($servicos as $servico)
+                                <button wire:click="adicionarServico({{ $servico->id }})"
+                                    wire:key="serv-{{$servico->id}}"
+                                    class="text-left bg-white p-3 rounded-lg border border-green-200 shadow-sm hover:border-green-400 hover:shadow-md transition-all group relative">
+
+                                    <!-- Badge de Serviço -->
+                                    <div class="absolute top-2 right-2">
+                                        <span
+                                            class="text-[9px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-bold">
+                                            SERVIÇO
+                                        </span>
+                                    </div>
+
+                                    <div
+                                        class="font-bold text-slate-700 text-sm line-clamp-2 group-hover:text-green-700 mb-1 pr-16">
+                                        {{ $servico->descricao }}
+                                    </div>
+
+                                    <div class="flex justify-between items-end mt-3">
+                                        <div>
+                                            <span
+                                                class="text-xs text-green-600 bg-green-50 px-1.5 py-0.5 rounded font-bold flex items-center gap-1">
+                                                <i class='bx bx-infinite'></i> Disponível
+                                            </span>
+                                        </div>
+                                        <span class="text-lg font-bold text-slate-800">
+                                            {{ number_format($servico->preco_venda, 2, ',', '.') }}
+                                        </span>
+                                    </div>
+                                </button>
+                                @endforeach
+                            </div>
+                            @else
+                            <div class="flex flex-col items-center justify-center h-40 text-slate-400">
+                                <i class='bx bx-briefcase-alt-2 text-4xl mb-2'></i>
+                                <p class="text-sm">Nenhum serviço encontrado</p>
+                            </div>
+                            @endif
+                            @endif
                         </div>
 
                         <!-- Carrinho (Direita - 40%) -->
-                        <div class="w-2/5 flex flex-col bg-white">
+                        <div class="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
+                            @forelse($produtosCarrinho as $index => $item)
                             <div
-                                class="p-3 bg-slate-100/50 border-b border-slate-200 flex justify-between items-center">
-                                <h4 class="text-xs font-bold text-slate-500 uppercase flex items-center gap-2">
-                                    <i class='bx bx-cart text-lg'></i> Carrinho
-                                </h4>
-                                <span class="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">{{
-                                    count($produtosCarrinho) }}</span>
-                            </div>
+                                class="bg-white border border-slate-100 rounded-lg p-3 hover:border-blue-200 transition-colors shadow-sm relative group">
+                                <!-- Badge de Natureza -->
+                                <div class="absolute top-2 right-8">
+                                    @if($item['natureza'] === 'servico')
+                                    <span
+                                        class="text-[8px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-bold">
+                                        <i class='bx bx-briefcase-alt-2'></i> SERVIÇO
+                                    </span>
+                                    @else
+                                    <span
+                                        class="text-[8px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full font-bold">
+                                        <i class='bx bx-package'></i> PRODUTO
+                                    </span>
+                                    @endif
+                                </div>
 
-                            <div class="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
-                                @forelse($produtosCarrinho as $index => $item)
-                                <div
-                                    class="bg-white border border-slate-100 rounded-lg p-3 hover:border-blue-200 transition-colors shadow-sm relative group">
-                                    <div class="flex justify-between items-start mb-2 pr-6">
-                                        <div>
-                                            <div class="font-bold text-sm text-slate-700 line-clamp-1"
-                                                title="{{ $item['descricao'] }}">{{ $item['descricao'] }}</div>
-                                            <div class="text-[10px] text-slate-400">{{
-                                                number_format($item['preco_venda'], 2, ',', '.') }} KZ</div>
+                                <div class="flex justify-between items-start mb-2 pr-6">
+                                    <div>
+                                        <div class="font-bold text-sm text-slate-700 line-clamp-1"
+                                            title="{{ $item['descricao'] }}">
+                                            {{ $item['descricao'] }}
+                                        </div>
+                                        <div class="text-[10px] text-slate-400">
+                                            {{ number_format($item['preco_venda'], 2, ',', '.') }} KZ
                                         </div>
                                     </div>
+                                </div>
 
-                                    <div class="flex justify-between items-center">
-                                        <!-- Controle Quantidade -->
-                                        <div class="flex items-center border border-slate-200 rounded">
-                                            <button wire:click="alterarQuantidade({{ $index }}, -1)"
-                                                class="w-6 h-6 hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors"><i
-                                                    class='bx bx-minus text-xs'></i></button>
-                                            <span class="w-8 text-center text-sm font-bold text-slate-800">{{
-                                                $item['quantidade'] }}</span>
-                                            <button wire:click="alterarQuantidade({{ $index }}, 1)"
-                                                class="w-6 h-6 hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors"><i
-                                                    class='bx bx-plus text-xs'></i></button>
-                                        </div>
-
-                                        <div class="text-right">
-                                            <div class="text-sm font-bold text-blue-600">{{
-                                                number_format($item['preco_venda'] * $item['quantidade'], 2, ',', '.')
-                                                }}</div>
-                                        </div>
+                                <div class="flex justify-between items-center">
+                                    <!-- Controle Quantidade -->
+                                    <div class="flex items-center border border-slate-200 rounded">
+                                        <button wire:click="alterarQuantidade({{ $index }}, -1)"
+                                            class="w-6 h-6 hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors">
+                                            <i class='bx bx-minus text-xs'></i>
+                                        </button>
+                                        <span class="w-8 text-center text-sm font-bold text-slate-800">
+                                            {{ $item['quantidade'] }}
+                                        </span>
+                                        <button wire:click="alterarQuantidade({{ $index }}, 1)"
+                                            class="w-6 h-6 hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors">
+                                            <i class='bx bx-plus text-xs'></i>
+                                        </button>
                                     </div>
 
-                                    <!-- Botão Remover -->
-                                    <button wire:click="removerProduto({{ $index }})"
-                                        class="absolute top-2 right-2 text-slate-300 hover:text-red-500 transition-colors">
-                                        <i class='bx bx-trash text-lg'></i>
-                                    </button>
+                                    <div class="text-right">
+                                        <div class="text-sm font-bold text-blue-600">
+                                            {{ number_format($item['preco_venda'] * $item['quantidade'], 2, ',', '.') }}
+                                        </div>
+                                    </div>
                                 </div>
-                                @empty
-                                <div
-                                    class="flex flex-col items-center justify-center h-full text-slate-400 text-center p-4">
-                                    <i class='bx bx-basket text-4xl mb-2 opacity-50'></i>
-                                    <p class="text-sm">Carrinho vazio.</p>
-                                    <p class="text-xs mt-1">Selecione itens ao lado.</p>
-                                </div>
-                                @endforelse
+
+                                <!-- Botão Remover -->
+                                <button wire:click="removerProduto({{ $index }})"
+                                    class="absolute top-2 right-2 text-slate-300 hover:text-red-500 transition-colors">
+                                    <i class='bx bx-trash text-lg'></i>
+                                </button>
                             </div>
+                            @empty
+                            <div
+                                class="flex flex-col items-center justify-center h-full text-slate-400 text-center p-4">
+                                <i class='bx bx-basket text-4xl mb-2 opacity-50'></i>
+                                <p class="text-sm">Carrinho vazio.</p>
+                                <p class="text-xs mt-1">Selecione itens ao lado.</p>
+                            </div>
+                            @endforelse
                         </div>
                     </div>
                 </div>

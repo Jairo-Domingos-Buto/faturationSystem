@@ -9,6 +9,7 @@ class ReciboItem extends Model
     protected $fillable = [
         'recibo_id',
         'produto_id',
+        'servico_id',
         'descricao',
         'codigo_barras',
         'quantidade',
@@ -48,5 +49,10 @@ class ReciboItem extends Model
     public function motivoIsencao()
     {
         return $this->belongsTo(MotivoIsencao::class, 'motivo_isencaos_id');
+    }
+
+    public function servico()
+    {
+        return $this->belongsTo(Servico::class);
     }
 }

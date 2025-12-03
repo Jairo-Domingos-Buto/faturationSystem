@@ -175,11 +175,15 @@
                                     <div data-i18n="Fornecedores">Fornecedores</div>
                                 </a>
                             </li>
+                            @auth
+                            @if(auth()->user()->typeUser->value === 'admin')
                             <li class="menu-item">
-                                <a href="{{ route('admin.usuarios') }}" class="menu-link">
+                                <a href="{{ route('Admin.cadastrar') }}" class="menu-link">
                                     <div data-i18n="Usuários">Usuários</div>
                                 </a>
                             </li>
+                            @endif
+                            @endauth
                         </ul>
                     </li>
 
@@ -366,13 +370,12 @@
                                         <img src=" {{ asset($profile->foto ?? 'assets/img/avatars/default.png') }}"
                                             alt="FP"
                                             class="profile-photo-big rounded-circle mb-3 shadow d-flex flex-column align-items-center justify-content-center"
-                                            width="
-            90" height="90">
+                                            width="90" height="90">
                                     </div>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li>
-                                        <a class="dropdown-item" href="#">
+                                        <a class="dropdown-item" href="{{ route('Admin.perfil') }}">
                                             <div class="d-flex">
                                                 <div class="flex-shrink-0 me-3">
                                                     <div class="avatar avatar-online">

@@ -3,44 +3,44 @@
 @section('content')
 
 <style>
-    .profile-header {
-        background: linear-gradient(135deg, #0d6efd, #3b82f6);
-        padding: 50px 20px;
-        border-radius: 12px;
-        color: white;
-        text-align: center;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
+.profile-header {
+    background: linear-gradient(135deg, #0d6efd, #3b82f6);
+    padding: 50px 20px;
+    border-radius: 12px;
+    color: white;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
 
-    .profile-photo-big {
-        width: 90px;
-        height: 80px;
-        border-radius: 50%;
-        border: 4px solid white;
-        object-fit: cover;
-        margin-bottom: 15px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.20);
-    }
+.profile-photo-big {
+    width: 90px;
+    height: 80px;
+    border-radius: 50%;
+    border: 4px solid white;
+    object-fit: cover;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.20);
+}
 
-    img {
-        width: 100%;
-    }
+img {
+    width: 100%;
+}
 
-    .info-card {
-        border-radius: 12px;
-        border: none;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.07);
-    }
+.info-card {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.07);
+}
 
-    .info-title {
-        font-weight: 600;
-        color: #555;
-    }
+.info-title {
+    font-weight: 600;
+    color: #555;
+}
 
-    h2 {
-        color: white;
-        text-transform: uppercase;
-    }
+h2 {
+    color: white;
+    text-transform: uppercase;
+}
 </style>
 
 <div class="container mt-4">
@@ -219,7 +219,7 @@
                             <i class="bx bx-x-circle me-1"></i> Cancelar
                         </button>
                         <button type="submit" class="btn btn-primary px-4">
-                            <i class="bx bx-save me-1"></i> Salvar Alterações
+                            <i class="bx bx-save me-1"></i> Guardar Alterações
                         </button>
                     </div>
 

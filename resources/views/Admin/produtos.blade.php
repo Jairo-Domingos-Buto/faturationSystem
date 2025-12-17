@@ -162,7 +162,7 @@
                             <i class="bx bx-x"></i> Cancelar
                         </button>
                         <button type="submit" class="btn btn-primary">
-                            <i class="bx bx-save"></i> Salvar
+                            <i class="bx bx-save"></i> Guardar
                         </button>
                     </div>
                 </form>

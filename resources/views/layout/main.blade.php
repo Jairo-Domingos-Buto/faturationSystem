@@ -56,28 +56,28 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <style>
-        .menu-icon.tf-icons {
-            width: 18px;
-            height: 18px;
-            stroke-width: 1.5;
-        }
+    .menu-icon.tf-icons {
+        width: 18px;
+        height: 18px;
+        stroke-width: 1.5;
+    }
 
-        .menu-link:hover .menu-icon.tf-icons {
-            stroke-width: 2;
-        }
+    .menu-link:hover .menu-icon.tf-icons {
+        stroke-width: 2;
+    }
 
-        .menu-sub .menu-link {
-            padding-left: 3rem;
-        }
+    .menu-sub .menu-link {
+        padding-left: 3rem;
+    }
 
-        .menu-header {
-            padding: 0.75rem 1rem 0.5rem;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 600;
-            color: #a1a5b7;
-        }
+    .menu-header {
+        padding: 0.75rem 1rem 0.5rem;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        color: #a1a5b7;
+    }
     </style>
 </head>
 
@@ -179,11 +179,11 @@
                             @if(auth()->user()->typeUser->value === 'admin')
                             <li class="menu-item">
                                 <a href="{{ route('Admin.cadastrar') }}" class="menu-link">
-                                    <div data-i18n="Usuários">Usuários</div>
+                                    <div data-i18n="Usuários">Utilizadores</div>
                                 </a>
-                            </li>
-                            @endif
-                            @endauth
+                                </lir>
+                                @endif
+                                @endauth
                         </ul>
                     </li>
 
@@ -477,7 +477,7 @@
 
     <!-- Scripts no final do body -->
     <script>
-        // Inicializar ícones Lucide quando o DOM estiver pronto
+    // Inicializar ícones Lucide quando o DOM estiver pronto
     document.addEventListener('DOMContentLoaded', function() {
         lucide.createIcons();
     });

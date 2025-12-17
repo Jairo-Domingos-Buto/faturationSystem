@@ -176,7 +176,7 @@
                     </button>
                     <button type="submit"
                         class="px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-md transition-colors font-medium flex items-center gap-2">
-                        <i class="bx bx-save"></i> Guardar Cliente
+                        <i class="bx bx-save"></i> Guardar
                     </button>
                 </div>
             </form>

@@ -62,7 +62,7 @@
                             <i class="bx bx-x me-1"></i>Cancelar
                         </button>
                         <button type="submit" class="btn btn-primary">
-                            <i class="bx bx-save me-1"></i>Salvar
+                            <i class="bx bx-save me-1"></i>Guardar
                         </button>
                     </div>
                 </form>

@@ -7,6 +7,7 @@ use App\Models\Fatura;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+
 class FaturaList extends Component
 {
     use WithPagination;
@@ -18,7 +19,7 @@ class FaturaList extends Component
     public $empresa;
 
     // ✅ NOVO: Filtro por Tipo de Documento
-    public $filtro_tipo = 'todos'; // todos, FT, FR, FP
+    public $filtro_tipo = 'todos'; // todos, FT, FR, FP e FT + FR
 
     protected $paginationTheme = 'tailwind';
 
@@ -113,19 +114,13 @@ class FaturaList extends Component
             ->where('retificada', false)
             ->where('anulada', false);
 
-        // Filtro de Datas
-        if ($this->start_date && $this->end_date) {
-            $query->whereBetween('data_emissao', [
-                $this->start_date.' 00:00:00',
-                $this->end_date.' 23:59:59',
-            ]);
-        }
+if ($this->filtro_tipo !== 'todos') {
+    $tipos = is_array($this->filtro_tipo)
+        ? $this->filtro_tipo
+        : explode(',', $this->filtro_tipo);
 
-        // Filtro por Tipo (FT, FR, FP)
-        if ($this->filtro_tipo !== 'todos') {
-            $query->where('tipo_documento', $this->filtro_tipo);
-        }
-
+    $query->whereIn('tipo_documento', $tipos);
+}
         // Paginação
         $faturas = $query->orderByDesc('created_at')->paginate(15);
 

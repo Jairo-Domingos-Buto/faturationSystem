@@ -56,6 +56,7 @@
                     <option value="FT">Faturas (FT)</option>
                     <option value="FR">Faturas-Recibo (FR)</option>
                     <option value="FP">Proformas (FP)</option>
+                      <option value="FT,FR">FT + FR</option>
                 </select>
             </div>
 

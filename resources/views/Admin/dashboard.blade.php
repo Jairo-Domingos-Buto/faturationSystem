@@ -12,7 +12,7 @@
                     class="w-5 h-5 lucide lucide-trending-up text-success">
                     <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
                     <polyline points="16 7 22 7 22 13"></polyline>
-                </svg>Bem-vindo ao Software
+                </svg>Bem-vindo ao OmniFinance!
             </h3>
         </div>
         <div class="p-6 pt-0">

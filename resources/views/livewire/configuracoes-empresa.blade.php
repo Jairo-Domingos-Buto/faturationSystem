@@ -194,7 +194,7 @@
                 <!-- Action Buttons -->
                 <div class="row justify-content-end">
                     <div class="col-sm-10">
-                        <button type="submit" class="btn btn-primary">Salvar Informações</button>
+                        <button type="submit" class="btn btn-primary">Guardar Informações</button>
                     </div>
                 </div>
 

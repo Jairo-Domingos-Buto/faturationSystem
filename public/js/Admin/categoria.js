@@ -81,8 +81,8 @@ document.addEventListener('DOMContentLoaded', function() {
             bootstrap.Modal.getInstance(document.getElementById('categoriaModal')).hide();
             carregarCategorias();
         } catch (err) {
-            console.error('Erro ao salvar:', err);
-            alert('Erro ao salvar categoria.');
+            console.error('Erro ao guardar:', err);
+            alert('Erro ao guardar categoria.');
         }
     });
 

@@ -135,7 +135,7 @@
 
                         <button type="submit" class="btn btn-primary">
                             <span wire:loading.remove wire:target="save">
-                                <i class="bx bx-save me-1"></i> Salvar
+                                <i class="bx bx-save me-1"></i>Guardar
                             </span>
                             <span wire:loading wire:target="save">
                                 <i class='bx bx-loader-alt animate-spin'></i> A gravar...

@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function () {
             editandoId = null;
             carregarClientes();
         })
-        .catch(error => console.error('Erro ao salvar cliente:', error));
+        .catch(error => console.error('Erro ao guardar cliente:', error));
     });
 
     // 🔹 EDITAR CLIENTE

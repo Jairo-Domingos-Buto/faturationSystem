@@ -10,7 +10,9 @@ use App\Models\Recibo;
 use App\Models\ReciboItem;
 use App\Models\Servico;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Services\Saft\SignatureService;
 use Livewire\Component;
 
 class Pov extends Component
@@ -192,7 +194,7 @@ class Pov extends Component
             }
 
             // Agrupamento para resumo fiscal
-            $chaveResumo = $taxa.'|'.$descricaoImposto;
+            $chaveResumo = $taxa . '|' . $descricaoImposto;
             if (! isset($this->resumoImpostos[$chaveResumo])) {
                 $this->resumoImpostos[$chaveResumo] = [
                     'taxa' => $taxa,
@@ -242,7 +244,8 @@ class Pov extends Component
 
         $permiteSemEstoque = ($this->tipoDocumento === 'FP'); // Proforma aceita sem stock
 
-        $index = collect($this->produtosCarrinho)->search(fn ($item) => $item['id'] == $produtoId && $item['natureza'] === 'produto'
+        $index = collect($this->produtosCarrinho)->search(
+            fn($item) => $item['id'] == $produtoId && $item['natureza'] === 'produto'
         );
 
         if ($index !== false) {
@@ -287,7 +290,8 @@ class Pov extends Component
         }
 
         // Procura se já tem esse serviço no carrinho (baseado em ID E Natureza)
-        $index = collect($this->produtosCarrinho)->search(fn ($item) => $item['id'] == $servicoId && $item['natureza'] === 'servico'
+        $index = collect($this->produtosCarrinho)->search(
+            fn($item) => $item['id'] == $servicoId && $item['natureza'] === 'servico'
         );
 
         if ($index !== false) {
@@ -381,145 +385,179 @@ class Pov extends Component
             }
 
             DB::commit();
-
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'Erro ao processar: '.$e->getMessage());
+            session()->flash('error', 'Erro ao processar: ' . $e->getMessage());
         }
     }
 
-    private function processarNovoDocumento()
-    {
-        // 1. Caso Especial: Recibo Isolado (RC)
-        if ($this->tipoDocumento === 'RC') {
-            $this->gerarReciboIsolado();
+   private function processarNovoDocumento()
+{
+    $signatureService = new SignatureService(); // Instancia o serviço
 
-            return;
-        }
-
-        // 2. Faturas (FT, FR, FP)
-        $numeroGerado = Fatura::gerarProximoNumero($this->tipoDocumento);
-        $estado = ($this->tipoDocumento === 'FR') ? 'paga' : 'emitida';
-
-        $doc = Fatura::create([
-            'numero' => $numeroGerado,
-            'tipo_documento' => $this->tipoDocumento,
-            'cliente_id' => $this->clienteSelecionado,
-            'user_id' => auth()->id(),
-            'data_emissao' => now(),
-            'data_vencimento' => $this->dataVencimento ?: now(),
-            'estado' => $estado,
-            'metodo_pagamento' => ($this->tipoDocumento === 'FR') ? $this->metodoPagamento : null,
-            'subtotal' => $this->subtotal,
-            'total_impostos' => $this->iva,
-            'total' => $this->total,
-            'convertida' => false,
-        ]);
-
-        $this->salvarItensFatura($doc);
-
-        // Movimentação de Estoque (Se não for Proforma e não for Serviço)
-        if ($this->tipoDocumento !== 'FP') {
-            $this->atualizarEstoque('decrementar');
-        }
-
-        session()->flash('success', "{$this->tipoDocumento} {$numeroGerado} emitido com sucesso!");
-        $this->resetarFormulario();
+    // 1. Caso Especial: Recibo Isolado (RC)
+    if ($this->tipoDocumento === 'RC') {
+        $this->gerarReciboIsolado($signatureService); // Passamos o serviço para o metodo do recibo
+        return;
     }
 
-    private function gerarReciboIsolado()
-    {
-        $numero = 'RC-'.date('Ymd').'-'.str_pad(Recibo::count() + 1, 4, '0', STR_PAD_LEFT);
+    // 2. Faturas (FT, FR, FP)
+    $numeroGerado = Fatura::gerarProximoNumero($this->tipoDocumento);
+    $estado = ($this->tipoDocumento === 'FR') ? 'paga' : 'emitida';
 
-        $recibo = Recibo::create([
-            'numero' => $numero,
-            'cliente_id' => $this->clienteSelecionado,
-            'user_id' => auth()->id(),
-            'data_emissao' => now(),
-            'valor' => $this->total,
-            'metodo_pagamento' => $this->metodoPagamento,
-        ]);
+    // Obter Hash Anterior (Regra de Ouro do SAF-T)
+    $hashAnterior = $this->obterHashAnterior($this->tipoDocumento);
 
-        $this->salvarItensRecibo($recibo);
+    // Preparar objeto (SEM SALVAR AINDA)
+    // Instanciamos manualmente para poder passar pelo assinador
+    $doc = new Fatura();
+    $doc->numero = $numeroGerado;
+    $doc->tipo_documento = $this->tipoDocumento;
+    $doc->cliente_id = $this->clienteSelecionado;
+    $doc->user_id = Auth::id();
+    $doc->data_emissao = now();
+    $doc->data_vencimento = $this->dataVencimento ?: now();
+    $doc->estado = $estado;
+    $doc->metodo_pagamento = ($this->tipoDocumento === 'FR') ? $this->metodoPagamento : null;
+    $doc->subtotal = $this->subtotal;
+    $doc->total_impostos = $this->iva;
+    $doc->total = $this->total;
+    $doc->convertida = false;
 
-        session()->flash('success', "Recibo {$numero} gerado!");
-        $this->resetarFormulario();
+    // --- ASSINATURA ---
+    // Isto preenche o $doc->hash e $doc->system_entry_date
+    $doc->hash = $signatureService->signDocument($doc, $this->tipoDocumento, $hashAnterior);
+    $doc->hash_control = '1';
+    $doc->hash_previous = $hashAnterior; // Guarda o rastro
+    // ------------------
+
+    $doc->save(); // Agora salva com tudo preenchido
+
+    $this->salvarItensFatura($doc);
+
+    // Movimentação de Estoque
+    if ($this->tipoDocumento !== 'FP') {
+        $this->atualizarEstoque('decrementar');
     }
+
+    session()->flash('success', "{$this->tipoDocumento} {$numeroGerado} emitido e assinado!");
+    $this->resetarFormulario();
+}
+
+   private function gerarReciboIsolado(SignatureService $signer = null)
+{
+    $signer = $signer ?? new SignatureService(); // Fallback se não vier parametro
+
+    // A tua lógica original de número
+    $numero = 'RC-' . date('Ymd') . '-' . str_pad(Recibo::count() + 1, 4, '0', STR_PAD_LEFT);
+
+    $hashAnterior = $this->obterHashAnterior('RC');
+
+    $recibo = new Recibo();
+    $recibo->numero = $numero;
+    $recibo->cliente_id = $this->clienteSelecionado;
+    $recibo->user_id = Auth::id();
+    $recibo->data_emissao = now();
+    $recibo->valor = $this->total;
+    $recibo->metodo_pagamento = $this->metodoPagamento;
+
+    // --- ASSINATURA ---
+    // Nota: Como o Recibo não tinha campo "total", no passo 1 eu disse para ver isso.
+    // O SignatureService usa ->total ou ->valor, então deve funcionar.
+    $recibo->hash = $signer->signDocument($recibo, 'RC', $hashAnterior);
+    $recibo->system_entry_date = $recibo->data_emissao; // Força system_entry
+    // ------------------
+
+    $recibo->save();
+
+    $this->salvarItensRecibo($recibo);
+
+    session()->flash('success', "Recibo {$numero} gerado e assinado!");
+    $this->resetarFormulario();
+}
 
     // =========================================================================
     // RETIFICAÇÃO (Lógica Mista Produto/Serviço)
     // =========================================================================
 
-    private function processarRetificacao()
-    {
-        if ($this->tipoDocumento === 'RC' || $this->tipoDocumento === 'recibo') {
-            // --- RETIFICAR RECIBO ---
-            $original = Recibo::with('items')->findOrFail($this->documentoOriginalId);
+   private function processarRetificacao()
+{
+    $signatureService = new SignatureService();
 
-            // Devolve estoque apenas de PRODUTOS (Ignora serviços)
-            $this->devolverEstoqueRecibo($original);
+    if ($this->tipoDocumento === 'RC' || $this->tipoDocumento === 'recibo') {
+        // ... (Tua lógica de carregar original e estoque) ...
+        $original = Recibo::with('items')->findOrFail($this->documentoOriginalId);
+        $this->devolverEstoqueRecibo($original);
 
-            $novoNumero = 'RC-RECT-'.date('Ymd').'-'.rand(1000, 9999);
-            $novo = Recibo::create([
-                'numero' => $novoNumero,
-                'cliente_id' => $this->clienteSelecionado,
-                'user_id' => auth()->id(),
-                'data_emissao' => now(),
-                'valor' => $this->total,
-                'metodo_pagamento' => $this->metodoPagamento,
-                'recibo_original_id' => $this->documentoOriginalId,
-                'observacoes' => 'Retificação: '.$this->motivoRetificacao,
-            ]);
+        $hashAnterior = $this->obterHashAnterior('RC');
 
-            $this->salvarItensRecibo($novo);
+        $novoNumero = 'RC-RECT-'.date('Ymd').'-'.rand(1000, 9999);
 
-            // Baixa novo estoque (se houver novos produtos físicos adicionados)
-            $this->atualizarEstoque('decrementar');
+        $novo = new Recibo();
+        $novo->numero = $novoNumero;
+        $novo->cliente_id = $this->clienteSelecionado;
+        $novo->user_id = Auth::id();
+        $novo->data_emissao = now();
+        $novo->valor = $this->total;
+        $novo->metodo_pagamento = $this->metodoPagamento;
+        $novo->recibo_original_id = $this->documentoOriginalId;
+        $novo->observacoes = 'Retificação: '.$this->motivoRetificacao;
 
-            $original->marcarComoRetificado($novo->id, $this->motivoRetificacao);
+        // Assina
+        $novo->hash = $signatureService->signDocument($novo, 'RC', $hashAnterior);
+        $novo->system_entry_date = now();
+        $novo->save();
 
-        } else {
-            // --- RETIFICAR FATURA (FT/FR/FP) ---
-            $original = Fatura::with('items')->findOrFail($this->documentoOriginalId);
+        // ... (Salvar itens, estoque, marcar original) ...
+        $this->salvarItensRecibo($novo);
+        $this->atualizarEstoque('decrementar');
+        $original->marcarComoRetificado($novo->id, $this->motivoRetificacao);
 
-            // Devolve estoque antigo (Apenas Produtos físicos)
-            if ($original->tipo_documento !== 'FP') {
-                $original->devolverEstoque(); // Esta função no Model Fatura deve verificar se é produto
-            }
+    } else {
+        // ... (Tua lógica FATURA) ...
+        $original = Fatura::with('items')->findOrFail($this->documentoOriginalId);
 
-            // Gera nova fatura
-            $tipo = $original->tipo_documento;
-            $novoNumero = Fatura::gerarProximoNumero($tipo);
-
-            $novoDoc = Fatura::create([
-                'numero' => $novoNumero,
-                'tipo_documento' => $tipo,
-                'cliente_id' => $this->clienteSelecionado,
-                'user_id' => auth()->id(),
-                'data_emissao' => now(),
-                'data_vencimento' => $this->dataVencimento,
-                'estado' => $original->tipo_documento === 'FR' ? 'paga' : 'emitida',
-                'metodo_pagamento' => $original->tipo_documento === 'FR' ? $this->metodoPagamento : null,
-                'subtotal' => $this->subtotal,
-                'total_impostos' => $this->iva,
-                'total' => $this->total,
-                'fatura_original_id' => $this->documentoOriginalId,
-                'observacoes' => 'Retificação: '.$this->motivoRetificacao,
-            ]);
-
-            $this->salvarItensFatura($novoDoc);
-
-            // Baixa novo estoque (Apenas produtos fisicos)
-            if ($tipo !== 'FP') {
-                $this->atualizarEstoque('decrementar');
-            }
-
-            $original->marcarComoRetificada($novoDoc->id, $this->motivoRetificacao);
+        // ... (Estoque original) ...
+        if ($original->tipo_documento !== 'FP') {
+            $original->devolverEstoque();
         }
 
-        session()->flash('success', 'Documento retificado com sucesso.');
-        $this->resetarFormulario();
+        $tipo = $original->tipo_documento;
+        $novoNumero = Fatura::gerarProximoNumero($tipo);
+        $hashAnterior = $this->obterHashAnterior($tipo);
+
+        $novoDoc = new Fatura();
+        $novoDoc->numero = $novoNumero;
+        $novoDoc->tipo_documento = $tipo;
+        $novoDoc->cliente_id = $this->clienteSelecionado;
+        $novoDoc->user_id = Auth::id();
+        $novoDoc->data_emissao = now();
+        $novoDoc->data_vencimento = $this->dataVencimento;
+        $novoDoc->estado = $original->tipo_documento === 'FR' ? 'paga' : 'emitida';
+        $novoDoc->metodo_pagamento = $original->tipo_documento === 'FR' ? $this->metodoPagamento : null;
+        $novoDoc->subtotal = $this->subtotal;
+        $novoDoc->total_impostos = $this->iva;
+        $novoDoc->total = $this->total;
+        $novoDoc->fatura_original_id = $this->documentoOriginalId;
+        $novoDoc->observacoes = 'Retificação: '.$this->motivoRetificacao;
+
+        // Assina
+        $novoDoc->hash = $signatureService->signDocument($novoDoc, $tipo, $hashAnterior);
+        $novoDoc->hash_control = '1';
+        $novoDoc->hash_previous = $hashAnterior;
+        $novoDoc->save();
+
+        $this->salvarItensFatura($novoDoc);
+        // ... (Resto da tua lógica de estoque) ...
+        if ($tipo !== 'FP') {
+            $this->atualizarEstoque('decrementar');
+        }
+        $original->marcarComoRetificada($novoDoc->id, $this->motivoRetificacao);
     }
+
+    session()->flash('success', 'Documento retificado e assinado com sucesso.');
+    $this->resetarFormulario();
+}
 
     // =========================================================================
     // SALVAMENTO NO BANCO (Itens com suporte a ID Misto)
@@ -542,8 +580,8 @@ class Pov extends Component
     {
         foreach ($this->produtosCarrinho as $item) {
             $entidade = ($item['natureza'] === 'servico')
-               ? Servico::find($item['id'])
-               : Produto::with(['imposto', 'motivoIsencao'])->find($item['id']);
+                ? Servico::find($item['id'])
+                : Produto::with(['imposto', 'motivoIsencao'])->find($item['id']);
 
             if ($entidade) {
                 $this->criarItem($recibo->id, $entidade, $item, ReciboItem::class, 'recibo_id');
@@ -696,17 +734,22 @@ class Pov extends Component
             }
 
             $this->calcularTotais();
-
         } catch (\Exception $e) {
-            session()->flash('error', 'Erro ao carregar documento: '.$e->getMessage());
+            session()->flash('error', 'Erro ao carregar documento: ' . $e->getMessage());
         }
     }
 
     private function resetarFormulario()
     {
         $this->reset([
-            'produtosCarrinho', 'clienteSelecionado', 'clienteNome', 'totalRecebido', 'desconto',
-            'troco', 'modoRetificacao', 'motivoRetificacao',
+            'produtosCarrinho',
+            'clienteSelecionado',
+            'clienteNome',
+            'totalRecebido',
+            'desconto',
+            'troco',
+            'modoRetificacao',
+            'motivoRetificacao',
         ]);
 
         $this->clienteNome = 'Nenhum cliente selecionado';
@@ -719,7 +762,7 @@ class Pov extends Component
 
     public function exportarDadosFatura()
     {
-        $ultima = Fatura::where('user_id', auth()->id())->latest()->first();
+        $ultima = Fatura::where('user_id', Auth::id())->latest()->first();
         if ($ultima) {
             return redirect()->route('admin.fatura.download', $ultima->id);
         }
@@ -727,22 +770,21 @@ class Pov extends Component
 
     public function carregarClientes()
     {
-        $this->clientes = Cliente::when($this->searchClienteTerm, fn ($q) => $q->where('nome', 'like', '%'.$this->searchClienteTerm.'%')
-            ->orWhere('nif', 'like', '%'.$this->searchClienteTerm.'%'))
+        $this->clientes = Cliente::when($this->searchClienteTerm, fn($q) => $q->where('nome', 'like', '%' . $this->searchClienteTerm . '%')
+            ->orWhere('nif', 'like', '%' . $this->searchClienteTerm . '%'))
             ->limit(10)->get();
     }
 
     public function carregarProdutos()
     {
-        $this->produtos = Produto::with(['categoria'])->when($this->searchProdutoTerm, fn ($q) => $q->where('descricao', 'like', '%'.$this->searchProdutoTerm.'%')
-            ->orWhere('codigo_barras', 'like', '%'.$this->searchProdutoTerm.'%'))
+        $this->produtos = Produto::with(['categoria'])->when($this->searchProdutoTerm, fn($q) => $q->where('descricao', 'like', '%' . $this->searchProdutoTerm . '%')
+            ->orWhere('codigo_barras', 'like', '%' . $this->searchProdutoTerm . '%'))
             ->limit(20)->get();
-
     }
 
     public function carregarServicos()
     {
-        $this->servicos = Servico::when($this->searchProdutoTerm, fn ($q) => $q->where('descricao', 'like', '%'.$this->searchProdutoTerm.'%'))
+        $this->servicos = Servico::when($this->searchProdutoTerm, fn($q) => $q->where('descricao', 'like', '%' . $this->searchProdutoTerm . '%'))
             ->limit(20)->get();
     }
 
@@ -777,6 +819,31 @@ class Pov extends Component
         } else {
             $this->carregarServicos();
         }
+    }
+
+    // obter o hash
+    private function obterHashAnterior($tipoDoc)
+    {
+        // A Lógica: Buscar o último documento desse tipo,
+        // emitido NESTE ANO (Série 2026), ordenado pelo ID decrescente.
+
+        // Se for RC (Recibo), busca na tabela Recibos
+        if ($tipoDoc === 'RC' || $tipoDoc === 'recibo') {
+            $ultimo = Recibo::whereYear('data_emissao', date('Y'))
+                ->orderBy('id', 'desc') // Pega o último criado
+                ->first();
+        }
+        // Se for Fatura (FT, FR, FP - Nota: FP Proforma não assina na teoria, mas no teu sistema segue o fluxo)
+        else {
+            $ultimo = Fatura::where('tipo_documento', $tipoDoc)
+                ->whereYear('data_emissao', date('Y'))
+                ->orderBy('id', 'desc')
+                ->first();
+        }
+
+        // Se encontrou (ex: FT 2026/1), devolve o seu hash.
+        // Se não encontrou (é o FT 2026/1), devolve vazio.
+        return $ultimo ? ($ultimo->hash ?? "") : "";
     }
 
     public function render()

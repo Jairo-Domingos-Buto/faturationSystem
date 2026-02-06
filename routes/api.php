@@ -33,16 +33,16 @@ Route::apiResource('servicos', ServicoController::class);
 Route::apiResource('impostos', ImpostoController::class);
 Route::apiResource('motivo_isencaos', MotivoIsencaoController::class);
 
-// Faturação
+/* // Faturação
 Route::apiResource('faturas', FaturaController::class);
 Route::post('faturas/{fatura}/emitir', [FaturaController::class, 'emitir']);
 Route::post('faturas/{fatura}/anular', [FaturaController::class, 'anular']);
 Route::get('faturas/{fatura}/pdf', [FaturaController::class, 'gerarPdf']);
 Route::get('faturas/saft', [FaturaController::class, 'exportarSaft']);
-
+ */
 // Recibos
-Route::apiResource('recibos', ReciboController::class);
-
+/* Route::apiResource('recibos', ReciboController::class);
+ */
 // Backups
 Route::post('backups/run', [BackupController::class, 'run']);
 Route::get('backups/logs', [BackupController::class, 'logs']);

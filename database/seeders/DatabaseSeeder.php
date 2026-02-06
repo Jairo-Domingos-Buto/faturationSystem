@@ -16,10 +16,6 @@ class DatabaseSeeder extends Seeder
             ClienteSeeder::class,
             ImpostoSeeder::class,
             MotivoIsencaoSeeder::class,
-            ProdutoSeeder::class,
-            ServicoSeeder::class,
-            FaturaSeeder::class,
-            ReciboSeeder::class,
 
         ]);
     }

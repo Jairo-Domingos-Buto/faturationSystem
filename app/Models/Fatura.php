@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class Fatura extends Model
 {
@@ -44,6 +45,11 @@ class Fatura extends Model
 
         // Controle de Proforma
         'convertida',           // ✅ NOVO: Se a proforma virou fatura
+        // ✅ NOVOS CAMPOS SAF-T (Adiciona estes 4)
+        'hash',
+        'hash_control',
+        'hash_previous',
+        'system_entry_date'
     ];
 
     protected $casts = [
@@ -237,7 +243,7 @@ class Fatura extends Model
             'anulada' => true,
             'data_anulacao' => now(),
             'motivo_anulacao' => $motivo,
-            'anulada_por_user_id' => auth()->id(),
+            'anulada_por_user_id' => Auth::id(),
             'estado' => 'anulada',
         ]);
     }

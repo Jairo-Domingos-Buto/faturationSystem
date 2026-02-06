@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
 
 class Recibo extends Model
 {
@@ -24,19 +25,24 @@ class Recibo extends Model
         'valor',
         'metodo_pagamento',
         'observacoes',
-        
+
         // ===== Campos de Retificação =====
         'retificado',
         'recibo_original_id',
         'recibo_retificacao_id',
         'data_retificacao',
         'motivo_retificacao',
-        
+
         // ===== Campos de Anulação =====
         'anulado',
         'data_anulacao',
         'motivo_anulacao',
         'anulado_por_user_id',
+        // ✅ NOVOS CAMPOS SAF-T
+    'hash',
+    'hash_control',  // (Opcional no recibo, mas boa prática)
+    'hash_previous',
+    'system_entry_date',
     ];
 
     // ========================================
@@ -54,7 +60,7 @@ class Recibo extends Model
     // ========================================
     // RELACIONAMENTOS BÁSICOS
     // ========================================
-    
+
     /**
      * Fatura associada ao recibo (se houver)
      */
@@ -90,10 +96,10 @@ class Recibo extends Model
     // ========================================
     // RELACIONAMENTOS DE RETIFICAÇÃO
     // ========================================
-    
+
     /**
      * Recibo original que foi retificado (quando este é a retificação)
-     * 
+     *
      * Uso:
      * $reciboRetificacao = Recibo::find(50);
      * $original = $reciboRetificacao->reciboOriginal;
@@ -106,7 +112,7 @@ class Recibo extends Model
 
     /**
      * Novo recibo criado como retificação (quando este foi retificado)
-     * 
+     *
      * Uso:
      * $reciboOriginal = Recibo::find(15);
      * $novo = $reciboOriginal->reciboRetificacao;
@@ -120,10 +126,10 @@ class Recibo extends Model
     // ========================================
     // RELACIONAMENTO DE ANULAÇÃO
     // ========================================
-    
+
     /**
      * Usuário que anulou o recibo
-     * 
+     *
      * Uso:
      * $recibo = Recibo::with('anuladoPor')->find(15);
      * if ($recibo->anulado) {
@@ -138,10 +144,10 @@ class Recibo extends Model
     // ========================================
     // SCOPES (QUERY HELPERS)
     // ========================================
-    
+
     /**
      * Scope: Recibos Ativos (não retificados nem anulados)
-     * 
+     *
      * Uso:
      * $recibos = Recibo::ativos()->get();
      * $recibos = Recibo::ativos()->where('cliente_id', 10)->paginate(20);
@@ -154,7 +160,7 @@ class Recibo extends Model
 
     /**
      * Scope: Recibos Retificados (inválidos, foram substituídos)
-     * 
+     *
      * Uso:
      * $retificados = Recibo::retificados()->get();
      * $totalRetificados = Recibo::retificados()
@@ -168,7 +174,7 @@ class Recibo extends Model
 
     /**
      * Scope: Recibos Anulados
-     * 
+     *
      * Uso:
      * $anulados = Recibo::anulados()->get();
      * $anuladosHoje = Recibo::anulados()
@@ -182,7 +188,7 @@ class Recibo extends Model
 
     /**
      * Scope: Notas de Crédito (retificados OU anulados)
-     * 
+     *
      * Uso:
      * $notasCredito = Recibo::notasCredito()->get();
      * $notasCredito = Recibo::notasCredito()
@@ -201,15 +207,15 @@ class Recibo extends Model
     // ========================================
     // ACCESSORS (ATRIBUTOS COMPUTADOS)
     // ========================================
-    
+
     /**
      * Accessor: Pode ser retificado?
-     * 
+     *
      * Regras:
      * - NÃO pode se já foi retificado
      * - NÃO pode se foi anulado
      * - SÓ pode se estiver ativo
-     * 
+     *
      * Uso na View:
      * @if($recibo->pode_ser_retificado)
      *     <a href="...">Retificar</a>
@@ -222,9 +228,9 @@ class Recibo extends Model
 
     /**
      * Accessor: É uma retificação?
-     * 
+     *
      * Verifica se este recibo é uma retificação de outro
-     * 
+     *
      * Uso:
      * if ($recibo->is_retificacao) {
      *     echo "Este recibo corrige: " . $recibo->reciboOriginal->numero;
@@ -237,11 +243,11 @@ class Recibo extends Model
 
     /**
      * Accessor: Pode ser anulado?
-     * 
+     *
      * Regras:
      * - NÃO pode se já foi anulado
      * - NÃO pode se já foi retificado (deve anular a nova versão)
-     * 
+     *
      * Uso na View:
      * @if($recibo->pode_ser_anulado)
      *     <button onclick="anular()">Anular</button>
@@ -254,14 +260,14 @@ class Recibo extends Model
 
     /**
      * Accessor: Status consolidado
-     * 
+     *
      * Retorna status em texto maiúsculo para exibição
-     * 
+     *
      * Hierarquia:
      * 1. ANULADO (prioridade máxima)
      * 2. RETIFICADO
      * 3. EMITIDO (padrão)
-     * 
+     *
      * Uso:
      * <span class="badge">{{ $recibo->status }}</span>
      */
@@ -274,9 +280,9 @@ class Recibo extends Model
 
     /**
      * Accessor: Data de emissão formatada
-     * 
+     *
      * Retorna data no formato brasileiro ou '-' se nulo
-     * 
+     *
      * Uso:
      * {{ $recibo->emissao }} // 14/11/2025
      */
@@ -288,10 +294,10 @@ class Recibo extends Model
     // ========================================
     // CAMPOS CALCULADOS (COMPATIBILIDADE)
     // ========================================
-    
+
     /**
      * Accessor: Subtotal (compatibilidade com Fatura)
-     * 
+     *
      * Recibos não têm breakdown de impostos, então subtotal = valor
      * Permite usar mesma view para faturas e recibos
      */
@@ -302,7 +308,7 @@ class Recibo extends Model
 
     /**
      * Accessor: Total Impostos (compatibilidade com Fatura)
-     * 
+     *
      * Recibos geralmente não calculam impostos separadamente
      */
     public function getTotalImpostosAttribute()
@@ -312,7 +318,7 @@ class Recibo extends Model
 
     /**
      * Accessor: Total (compatibilidade com Fatura)
-     * 
+     *
      * Para recibo, total = valor
      */
     public function getTotalAttribute()
@@ -322,7 +328,7 @@ class Recibo extends Model
 
     /**
      * Accessor: Estado (compatibilidade com Fatura)
-     * 
+     *
      * Recibos sempre são "emitidos" por padrão
      */
     public function getEstadoAttribute()
@@ -335,16 +341,16 @@ class Recibo extends Model
     // ========================================
     // MÉTODOS PÚBLICOS
     // ========================================
-    
+
     /**
      * Marcar recibo como retificado
-     * 
+     *
      * Atualiza todos os campos relacionados à retificação
      * de forma atômica (1 UPDATE no banco)
-     * 
+     *
      * @param int $novoReciboId ID do novo recibo criado
      * @param string|null $motivo Justificativa da retificação
-     * 
+     *
      * Uso:
      * $reciboOriginal->marcarComoRetificado($novoRecibo->id, 'Correção de valores');
      */
@@ -360,14 +366,14 @@ class Recibo extends Model
 
     /**
      * Marcar recibo como anulado
-     * 
+     *
      * Registra anulação com usuário responsável
-     * 
+     *
      * @param string|null $motivo Justificativa da anulação
-     * 
+     *
      * Uso:
      * $recibo->marcarComoAnulado('Cliente cancelou a compra');
-     * 
+     *
      * Resultado:
      * - anulado = true
      * - data_anulacao = agora
@@ -380,25 +386,25 @@ class Recibo extends Model
             'anulado' => true,
             'data_anulacao' => now(),
             'motivo_anulacao' => $motivo,
-            'anulado_por_user_id' => auth()->id(),
+            'anulado_por_user_id' => Auth::id(),
         ]);
     }
 
     /**
      * Devolver estoque de todos os produtos do recibo
-     * 
+     *
      * Itera sobre todos os items e incrementa o estoque
      * de cada produto pela quantidade do item
-     * 
+     *
      * Uso:
      * // Ao retificar:
      * $reciboOriginal->devolverEstoque(); // Devolve tudo
      * // ... criar novo recibo ...
      * // ... descontar estoque do novo ...
-     * 
+     *
      * // Ao anular:
      * $recibo->devolverEstoque(); // Devolve tudo, FIM
-     * 
+     *
      * Proteção:
      * - Verifica se produto existe (if $produto)
      * - Ignora produtos deletados do cadastro
@@ -416,12 +422,12 @@ class Recibo extends Model
     // ========================================
     // MÉTODOS DE VALIDAÇÃO
     // ========================================
-    
+
     /**
      * Validar se pode ser retificado
-     * 
+     *
      * Lança exceção se não puder
-     * 
+     *
      * @throws \Exception
      */
     public function validarRetificacao()
@@ -437,9 +443,9 @@ class Recibo extends Model
 
     /**
      * Validar se pode ser anulado
-     * 
+     *
      * Lança exceção se não puder
-     * 
+     *
      * @throws \Exception
      */
     public function validarAnulacao()
@@ -456,12 +462,12 @@ class Recibo extends Model
     // ========================================
     // MÉTODOS AUXILIARES
     // ========================================
-    
+
     /**
      * Obter histórico de alterações do recibo
-     * 
+     *
      * Retorna array com todas as versões do recibo
-     * 
+     *
      * @return array
      */
     public function getHistoricoCompleto()
@@ -511,7 +517,7 @@ class Recibo extends Model
 
     /**
      * Obter diferenças entre este recibo e sua retificação
-     * 
+     *
      * @return array|null
      */
     public function getDiferencasRetificacao()
@@ -526,8 +532,8 @@ class Recibo extends Model
             'valor_original' => $this->valor,
             'valor_novo' => $novo->valor,
             'diferenca' => $novo->valor - $this->valor,
-            'percentual' => $this->valor > 0 
-                ? (($novo->valor - $this->valor) / $this->valor) * 100 
+            'percentual' => $this->valor > 0
+                ? (($novo->valor - $this->valor) / $this->valor) * 100
                 : 0,
             'cliente_mudou' => $this->cliente_id !== $novo->cliente_id,
             'metodo_pagamento_mudou' => $this->metodo_pagamento !== $novo->metodo_pagamento,
